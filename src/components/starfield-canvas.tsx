@@ -10,16 +10,18 @@ type Star = {
   x: number;
   y: number;
   z: number;
+  drift: number;
+  alpha: number;
   size: number;
-  twinkle: number;
-  hue: number;
 };
 
-const starCount = 210;
+const density = 2.9;
+const maxInputVelocity = 52;
 
 export function StarfieldCanvas({ className = "" }: StarfieldCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointer = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+  const pointer = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
+  const velocity = useRef({ x: 0, y: 0, tx: 0, ty: 0, z: 0.00052 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,15 +40,40 @@ export function StarfieldCanvas({ className = "" }: StarfieldCanvasProps) {
     let stars: Star[] = [];
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const createStars = () => {
-      stars = Array.from({ length: starCount }, () => ({
-        x: (Math.random() - 0.5) * 2,
-        y: (Math.random() - 0.5) * 2,
-        z: Math.random() * 0.9 + 0.1,
-        size: Math.random() * 1.9 + 0.55,
-        twinkle: Math.random() * Math.PI * 2,
-        hue: 170 + Math.random() * 70,
-      }));
+    const random = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const placeStar = (star: Star) => {
+      star.x = random(-width * 0.12, width * 1.12);
+      star.y = random(-height * 0.12, height * 1.12);
+      star.z = random(0.2, 1);
+      star.drift = random(-0.42, 0.42);
+      star.alpha = random(0.22, 0.94);
+      star.size = random(0.7, 1.9);
+    };
+
+    const recycleStar = (star: Star) => {
+      const velocityState = velocity.current;
+
+      if (star.x > width || star.x < 0 || star.y > height || star.y < 0) {
+        if (Math.abs(velocityState.x) > Math.abs(velocityState.y)) {
+          star.x = velocityState.x > 0 ? 0 : width;
+          star.y = random(0, height);
+        } else {
+          star.x = random(0, width);
+          star.y = velocityState.y > 0 ? 0 : height;
+        }
+
+        star.z = random(0.2, 1);
+      }
+    };
+
+    const populate = () => {
+      const count = Math.round((width + height) / density);
+      stars = Array.from({ length: count }, () => {
+        const star = { x: 0, y: 0, z: 0, drift: 0, alpha: 0, size: 1 };
+        placeStar(star);
+        return star;
+      });
     };
 
     const resize = () => {
@@ -58,90 +85,103 @@ export function StarfieldCanvas({ className = "" }: StarfieldCanvasProps) {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      createStars();
+      ctx.lineCap = "round";
+      pointer.current.x = width / 2;
+      pointer.current.y = height / 2;
+      pointer.current.ox = pointer.current.x;
+      pointer.current.oy = pointer.current.y;
+      populate();
+    };
+
+    const moveInput = (x: number, y: number) => {
+      pointer.current.x = x;
+      pointer.current.y = y;
+      velocity.current.tx += (pointer.current.x - pointer.current.ox) * 0.06;
+      velocity.current.ty += (pointer.current.y - pointer.current.oy) * 0.06;
+      pointer.current.ox = pointer.current.x;
+      pointer.current.oy = pointer.current.y;
     };
 
     const movePointer = (event: PointerEvent) => {
-      pointer.current.tx = (event.clientX / width - 0.5) * 2;
-      pointer.current.ty = (event.clientY / height - 0.5) * 2;
+      moveInput(event.clientX, event.clientY);
     };
 
-    const draw = (time: number) => {
-      const isDark = document.documentElement.classList.contains("dark");
-      ctx.clearRect(0, 0, width, height);
-      pointer.current.x += (pointer.current.tx - pointer.current.x) * 0.045;
-      pointer.current.y += (pointer.current.ty - pointer.current.y) * 0.045;
+    const moveTouch = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
 
-      const centerX = width / 2;
-      const centerY = height / 2;
-      const focal = Math.min(width, height) * 0.72;
-      const drift = reducedMotion.matches ? 0 : time * 0.000018;
+      moveInput(touch.clientX, touch.clientY);
+    };
+
+    const draw = () => {
+      animationFrame = requestAnimationFrame(draw);
+
+      const velocityState = velocity.current;
+
+      velocityState.tx *= 0.94;
+      velocityState.ty *= 0.94;
+      velocityState.x += (velocityState.tx - velocityState.x) * 0.18;
+      velocityState.y += (velocityState.ty - velocityState.y) * 0.18;
+      velocityState.x = Math.max(-maxInputVelocity, Math.min(maxInputVelocity, velocityState.x));
+      velocityState.y = Math.max(-maxInputVelocity, Math.min(maxInputVelocity, velocityState.y));
+
+      if (reducedMotion.matches) {
+        velocityState.x *= 0.08;
+        velocityState.y *= 0.08;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(3, 7, 18, 0.2)";
+      ctx.fillRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "lighter";
 
       for (const star of stars) {
-        const z = star.z;
-        const rotate = drift * (1.05 - z);
-        const cos = Math.cos(rotate);
-        const sin = Math.sin(rotate);
-        const rotatedX = star.x * cos - star.y * sin;
-        const rotatedY = star.x * sin + star.y * cos;
-        const px = centerX + rotatedX * focal * (1.05 + z) + pointer.current.x * 48 * z;
-        const py = centerY + rotatedY * focal * (1.05 + z) + pointer.current.y * 34 * z;
+        star.x += velocityState.x * star.z;
+        star.y += velocityState.y * star.z;
+        star.x += star.drift * star.z;
+        star.y += Math.sin(star.x * 0.004 + star.drift) * 0.08;
 
-        if (px < -20 || px > width + 20 || py < -20 || py > height + 20) {
-          continue;
-        }
+        star.x += (star.x - width / 2) * velocityState.z * star.z;
+        star.y += (star.y - height / 2) * velocityState.z * star.z;
+        star.z += velocityState.z;
 
-        const pulse = 0.55 + Math.sin(time * 0.0015 + star.twinkle) * 0.28;
-        const alpha = isDark ? 0.2 + pulse * 0.58 * z : 0.035 + pulse * 0.1 * z;
-        const radius = star.size * (isDark ? 1.15 : 0.88) * (0.65 + z);
-        const glow = ctx.createRadialGradient(px, py, 0, px, py, radius * 5);
-        glow.addColorStop(0, `hsla(${star.hue}, 96%, ${isDark ? 78 : 56}%, ${alpha})`);
-        glow.addColorStop(0.38, `hsla(${star.hue + 12}, 96%, 70%, ${alpha * 0.34})`);
-        glow.addColorStop(1, `hsla(${star.hue + 28}, 96%, 68%, 0)`);
+        recycleStar(star);
 
-        ctx.fillStyle = glow;
+        const tailX = velocityState.x * 2;
+        const tailY = velocityState.y * 2;
+        const tailZx = (star.x - width / 2) * velocityState.z * 26;
+        const tailZy = (star.y - height / 2) * velocityState.z * 26;
+        const z = Math.min(star.z, 1.8);
+        const alpha = Math.min(0.86, star.alpha * z * 0.78);
+        const hue = 192 + z * 34 + star.drift * 20;
+
         ctx.beginPath();
-        ctx.arc(px, py, radius * 5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.lineWidth = Math.max(0.4, z * star.size);
+        ctx.strokeStyle = `hsla(${hue}, 96%, 80%, ${alpha})`;
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(star.x + tailX + tailZx, star.y + tailY + tailZy);
+        ctx.stroke();
       }
 
-      if (isDark) {
-        ctx.strokeStyle = "rgba(142, 230, 255, 0.06)";
-        ctx.lineWidth = 1;
-        for (let i = 0; i < stars.length; i += 14) {
-          const first = stars[i];
-          const second = stars[(i + 9) % stars.length];
-          const ax = centerX + first.x * focal * (1 + first.z) + pointer.current.x * 48 * first.z;
-          const ay = centerY + first.y * focal * (1 + first.z) + pointer.current.y * 34 * first.z;
-          const bx = centerX + second.x * focal * (1 + second.z) + pointer.current.x * 48 * second.z;
-          const by = centerY + second.y * focal * (1 + second.z) + pointer.current.y * 34 * second.z;
-          ctx.beginPath();
-          ctx.moveTo(ax, ay);
-          ctx.lineTo(bx, by);
-          ctx.stroke();
-        }
-      }
-
-      animationFrame = requestAnimationFrame(draw);
+      ctx.globalCompositeOperation = "source-over";
     };
 
     resize();
+
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", movePointer);
+    window.addEventListener("pointermove", movePointer, { passive: true });
+    window.addEventListener("touchmove", moveTouch, { passive: true });
     animationFrame = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", movePointer);
+      window.removeEventListener("touchmove", moveTouch);
       cancelAnimationFrame(animationFrame);
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className={`pointer-events-none fixed inset-0 -z-20 h-screen w-screen ${className}`}
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden="true" className={`rymd-canvas ${className}`} />;
 }

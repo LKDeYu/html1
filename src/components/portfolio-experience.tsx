@@ -2,34 +2,58 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import {
-  ArrowDown,
   BookOpen,
   Cloud,
   Code2,
+  List,
   Mail,
-  Menu,
   MessageCircle,
-  Moon,
   Search,
   ShieldCheck,
   Sparkles,
-  Sun,
   Tags,
   X,
 } from "lucide-react";
 import { blogPreview, navItems, projects, skillGroups } from "@/lib/content";
+import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
+import { IntroWorkstation } from "@/components/intro-workstation";
 
 export function PortfolioExperience() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [isDark, setIsDark] = useState(false);
+  const menuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const clearMenuCloseTimer = () => {
+    if (menuCloseTimerRef.current) {
+      clearTimeout(menuCloseTimerRef.current);
+      menuCloseTimerRef.current = null;
+    }
+  };
+
+  const openMenu = () => {
+    clearMenuCloseTimer();
+    setMenuOpen(true);
+  };
+
+  const scheduleMenuClose = () => {
+    clearMenuCloseTimer();
+    menuCloseTimerRef.current = setTimeout(() => {
+      setMenuOpen(false);
+      menuCloseTimerRef.current = null;
+    }, 220);
+  };
+
+  const toggleMenu = () => {
+    clearMenuCloseTimer();
+    setMenuOpen((value) => !value);
+  };
+
   const handleNavigate = (href: string) => {
+    clearMenuCloseTimer();
     setMenuOpen(false);
 
     requestAnimationFrame(() => {
@@ -56,9 +80,20 @@ export function PortfolioExperience() {
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    window.localStorage.setItem("namranta-theme", isDark ? "dark" : "light");
-  }, [isDark]);
+    document.documentElement.classList.add("dark", "cosmic");
+
+    return () => {
+      document.documentElement.classList.remove("cosmic");
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (menuCloseTimerRef.current) {
+        clearTimeout(menuCloseTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -137,7 +172,7 @@ export function PortfolioExperience() {
         autoAlpha: 0,
         y: 70,
         scale: 0.97,
-        filter: "blur(10px)",
+        filter: "blur(8px)",
       });
       gsap.set(scenes[0], {
         autoAlpha: 1,
@@ -153,7 +188,7 @@ export function PortfolioExperience() {
           autoAlpha: 1,
           y: 0,
           scale: 1,
-          filter: "none",
+          filter: "blur(0px)",
         });
         return;
       }
@@ -213,7 +248,7 @@ export function PortfolioExperience() {
             autoAlpha: 0,
             y: -58,
             scale: 0.985,
-            filter: "blur(10px)",
+            filter: "blur(7px)",
             duration: 0.42,
           },
           at,
@@ -265,38 +300,29 @@ export function PortfolioExperience() {
 
   return (
     <div ref={rootRef} className={`site-shell ${menuOpen ? "menu-open" : ""}`}>
+      <div
+        className="menu-edge-zone"
+        aria-hidden="true"
+        onPointerEnter={openMenu}
+        onPointerLeave={scheduleMenuClose}
+      />
       <Header
-        isDark={isDark}
         menuOpen={menuOpen}
         onNavigate={handleNavigate}
-        onToggleMenu={() => setMenuOpen((value) => !value)}
-        onToggleTheme={() => setIsDark((value) => !value)}
+        onToggleMenu={toggleMenu}
       />
-      <SpatialMenu open={menuOpen} onNavigate={handleNavigate} />
+      <SpatialMenu
+        open={menuOpen}
+        onPointerEnter={openMenu}
+        onPointerLeave={scheduleMenuClose}
+      />
 
       <main className="site-main">
         <section id="home" className="hero-section">
+          <InfiniteCityCanvas className="hero-city-canvas" />
           <div className="hero-noise" aria-hidden="true" />
-          <div className="liquid-glass glass-one" aria-hidden="true" />
-          <div className="liquid-glass glass-two" aria-hidden="true" />
-          <div className="liquid-glass glass-three" aria-hidden="true" />
-          <div className="ambient-ring" aria-hidden="true" />
-          <div className="hero-timefield" aria-hidden="true">
-            {Array.from({ length: 7 }, (_, index) => (
-              <span key={index} style={{ "--i": index } as CSSProperties} />
-            ))}
-          </div>
-          <div className="hero-depth-cards" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
 
           <div className="hero-wordmark">
-            <div className="hero-mark" aria-hidden="true">
-              <span />
-              <span />
-            </div>
             <p className="hero-eyebrow">Cloud Garden</p>
             <h1>
               <span>NAMRANTA</span>
@@ -306,19 +332,6 @@ export function PortfolioExperience() {
               AI portfolio, learning notes, and a cloud-deployed personal website.
             </p>
           </div>
-
-          <a
-            className="scroll-cue"
-            href="#about"
-            aria-label="向下滚动查看内容"
-            onClick={(event) => {
-              event.preventDefault();
-              handleNavigate("#about");
-            }}
-          >
-            <span>Scroll</span>
-            <ArrowDown size={18} />
-          </a>
         </section>
 
         <section className="story-shell" aria-label="滚动触发的作品集动画">
@@ -351,20 +364,7 @@ export function PortfolioExperience() {
                     后端内容管理到阿里云 ECS 部署的完整实践。
                   </p>
                 </div>
-                <div className="profile-glass-card">
-                  <Image
-                    src="/avatar.png"
-                    alt="吴志宏头像"
-                    width={148}
-                    height={148}
-                    priority
-                  />
-                  <div>
-                    <span>Jiangnan University</span>
-                    <strong>Artificial Intelligence</strong>
-                    <p>24 级 / AI Student / Cloud Explorer</p>
-                  </div>
-                </div>
+                <IntroWorkstation />
               </section>
 
               <section id="skills" className="story-scene scene-skills">
@@ -541,17 +541,13 @@ export function PortfolioExperience() {
 }
 
 function Header({
-  isDark,
   menuOpen,
   onNavigate,
   onToggleMenu,
-  onToggleTheme,
 }: {
-  isDark: boolean;
   menuOpen: boolean;
   onNavigate: (href: string) => void;
   onToggleMenu: () => void;
-  onToggleTheme: () => void;
 }) {
   return (
     <header className="site-header">
@@ -581,12 +577,8 @@ function Header({
           aria-expanded={menuOpen}
           aria-controls="spatial-menu"
         >
-          {menuOpen ? <X size={18} /> : <Menu size={18} />}
-          <span>Menu</span>
-        </button>
-        <button className="theme-button" type="button" onClick={onToggleTheme}>
-          {isDark ? <Sun size={17} /> : <Moon size={17} />}
-          <span>{isDark ? "Light" : "Dark"}</span>
+          {menuOpen ? <X size={18} /> : <List size={18} />}
+          <span>{menuOpen ? "Close" : "Rail"}</span>
         </button>
       </div>
     </header>
@@ -595,35 +587,36 @@ function Header({
 
 function SpatialMenu({
   open,
-  onNavigate,
+  onPointerEnter,
+  onPointerLeave,
 }: {
   open: boolean;
-  onNavigate: (href: string) => void;
+  onPointerEnter: () => void;
+  onPointerLeave: () => void;
 }) {
+  const railItems = navItems.filter((item) => item.href !== "#home" && item.href !== "#contact");
+
   return (
     <aside
       id="spatial-menu"
       className="spatial-menu"
       aria-hidden={!open}
       aria-label="空间导航菜单"
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
     >
       <div className="spatial-menu-inner">
-        <p>Rapid Jump</p>
-        <h2>空间菜单</h2>
-        <nav>
-          {navItems.map((item, index) => (
-            <a
+        <p>Scroll Index</p>
+        <h2>Section Rail</h2>
+        <nav className="fly-rail" aria-label="滚动章节提示">
+          {railItems.map((item, index) => (
+            <div
               key={item.href}
-              href={item.href}
-              onClick={(event) => {
-                event.preventDefault();
-                onNavigate(item.href);
-              }}
               style={{ "--i": index } as CSSProperties}
             >
               <span>0{index + 1}</span>
               {item.label}
-            </a>
+            </div>
           ))}
         </nav>
       </div>
