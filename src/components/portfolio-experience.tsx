@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { gsap } from "gsap";
@@ -12,6 +12,7 @@ import {
   Cloud,
   Code2,
   Mail,
+  Menu,
   MessageCircle,
   Moon,
   Search,
@@ -19,12 +20,40 @@ import {
   Sparkles,
   Sun,
   Tags,
+  X,
 } from "lucide-react";
 import { blogPreview, navItems, projects, skillGroups } from "@/lib/content";
 
 export function PortfolioExperience() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [isDark, setIsDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleNavigate = (href: string) => {
+    setMenuOpen(false);
+
+    requestAnimationFrame(() => {
+      const sceneOrder = ["#about", "#skills", "#projects", "#blog", "#guestbook"];
+      let top = 0;
+
+      if (href === "#home") {
+        top = 0;
+      } else if (href === "#contact") {
+        top = document.querySelector<HTMLElement>("#contact")?.offsetTop ?? 0;
+      } else if (window.matchMedia("(max-width: 860px)").matches) {
+        top = document.querySelector<HTMLElement>(href)?.offsetTop ?? 0;
+      } else {
+        const index = sceneOrder.indexOf(href);
+        const shellTop = document.querySelector<HTMLElement>(".story-shell")?.offsetTop ?? 0;
+        const storyDistance = 4300;
+        const timelineDuration = sceneOrder.length * 1.1;
+        const sceneStart = index >= 0 ? (index * 1.05) / timelineDuration : 0;
+        top = shellTop + storyDistance * sceneStart + 6;
+      }
+
+      window.scrollTo({ top, behavior: "smooth" });
+    });
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -80,6 +109,27 @@ export function PortfolioExperience() {
         duration: 24,
         repeat: -1,
         ease: "none",
+      });
+
+      gsap.to(".hero-timefield span", {
+        xPercent: 18,
+        opacity: 0.82,
+        duration: 2.8,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        stagger: 0.16,
+      });
+
+      gsap.to(".hero-depth-cards span", {
+        y: -16,
+        rotateX: 8,
+        rotateY: -10,
+        duration: 5.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        stagger: 0.28,
       });
 
       const scenes = gsap.utils.toArray<HTMLElement>(".story-scene");
@@ -214,16 +264,33 @@ export function PortfolioExperience() {
   }, []);
 
   return (
-    <div ref={rootRef} className="site-shell">
-      <Header isDark={isDark} onToggleTheme={() => setIsDark((value) => !value)} />
+    <div ref={rootRef} className={`site-shell ${menuOpen ? "menu-open" : ""}`}>
+      <Header
+        isDark={isDark}
+        menuOpen={menuOpen}
+        onNavigate={handleNavigate}
+        onToggleMenu={() => setMenuOpen((value) => !value)}
+        onToggleTheme={() => setIsDark((value) => !value)}
+      />
+      <SpatialMenu open={menuOpen} onNavigate={handleNavigate} />
 
-      <main>
+      <main className="site-main">
         <section id="home" className="hero-section">
           <div className="hero-noise" aria-hidden="true" />
           <div className="liquid-glass glass-one" aria-hidden="true" />
           <div className="liquid-glass glass-two" aria-hidden="true" />
           <div className="liquid-glass glass-three" aria-hidden="true" />
           <div className="ambient-ring" aria-hidden="true" />
+          <div className="hero-timefield" aria-hidden="true">
+            {Array.from({ length: 7 }, (_, index) => (
+              <span key={index} style={{ "--i": index } as CSSProperties} />
+            ))}
+          </div>
+          <div className="hero-depth-cards" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
 
           <div className="hero-wordmark">
             <div className="hero-mark" aria-hidden="true">
@@ -240,7 +307,15 @@ export function PortfolioExperience() {
             </p>
           </div>
 
-          <a className="scroll-cue" href="#about" aria-label="向下滚动查看内容">
+          <a
+            className="scroll-cue"
+            href="#about"
+            aria-label="向下滚动查看内容"
+            onClick={(event) => {
+              event.preventDefault();
+              handleNavigate("#about");
+            }}
+          >
             <span>Scroll</span>
             <ArrowDown size={18} />
           </a>
@@ -335,20 +410,39 @@ export function PortfolioExperience() {
                 </div>
                 <div className="project-strip">
                   {projects.map((project, index) => (
-                    <article className="project-card" key={project.name}>
-                      <div className="project-visual">
-                        <span>0{index + 1}</span>
+                    <article
+                      className="project-card flip-slide-card"
+                      key={project.name}
+                      tabIndex={0}
+                      aria-label={`${project.name} 项目卡片，悬停或聚焦查看收获`}
+                    >
+                      <div className="flip-slide-inner">
+                        <div className="flip-face flip-front">
+                          <div className="project-visual">
+                            <span>0{index + 1}</span>
+                          </div>
+                          <p>{project.type}</p>
+                          <h3>{project.name}</h3>
+                          <small>{project.time}</small>
+                          <p>{project.summary}</p>
+                          <div className="tag-row">
+                            {project.stack.map((item) => (
+                              <span key={item}>{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flip-face flip-back">
+                          <p className="flip-label">难点 / 收获</p>
+                          <h3>{project.name}</h3>
+                          <strong>{project.takeaway}</strong>
+                          <div className="tag-row">
+                            {project.stack.map((item) => (
+                              <span key={item}>{item}</span>
+                            ))}
+                          </div>
+                          <small>Hover / Focus to flip back</small>
+                        </div>
                       </div>
-                      <p>{project.type}</p>
-                      <h3>{project.name}</h3>
-                      <small>{project.time}</small>
-                      <p>{project.summary}</p>
-                      <div className="tag-row">
-                        {project.stack.map((item) => (
-                          <span key={item}>{item}</span>
-                        ))}
-                      </div>
-                      <strong>{project.takeaway}</strong>
                     </article>
                   ))}
                 </div>
@@ -375,16 +469,20 @@ export function PortfolioExperience() {
                     </span>
                     <span>Pinned</span>
                   </div>
-                  <div className="blog-grid">
-                    {blogPreview.map((post) => (
-                      <article key={post.title}>
+                  <ul className="papercut-list">
+                    {blogPreview.map((post, index) => (
+                      <li
+                        key={post.title}
+                        style={{ "--i": index } as CSSProperties}
+                        tabIndex={0}
+                      >
                         <BookOpen size={20} />
                         <small>{post.category}</small>
                         <h3>{post.title}</h3>
                         <p>{post.description}</p>
-                      </article>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </section>
 
@@ -444,9 +542,15 @@ export function PortfolioExperience() {
 
 function Header({
   isDark,
+  menuOpen,
+  onNavigate,
+  onToggleMenu,
   onToggleTheme,
 }: {
   isDark: boolean;
+  menuOpen: boolean;
+  onNavigate: (href: string) => void;
+  onToggleMenu: () => void;
   onToggleTheme: () => void;
 }) {
   return (
@@ -457,16 +561,73 @@ function Header({
       </a>
       <nav aria-label="主导航">
         {navItems.map((item) => (
-          <a key={item.href} href={item.href}>
+          <a
+            key={item.href}
+            href={item.href}
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate(item.href);
+            }}
+          >
             {item.label}
           </a>
         ))}
       </nav>
-      <button className="theme-button" type="button" onClick={onToggleTheme}>
-        {isDark ? <Sun size={17} /> : <Moon size={17} />}
-        <span>{isDark ? "Light" : "Dark"}</span>
-      </button>
+      <div className="header-actions">
+        <button
+          className="menu-button"
+          type="button"
+          onClick={onToggleMenu}
+          aria-expanded={menuOpen}
+          aria-controls="spatial-menu"
+        >
+          {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          <span>Menu</span>
+        </button>
+        <button className="theme-button" type="button" onClick={onToggleTheme}>
+          {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          <span>{isDark ? "Light" : "Dark"}</span>
+        </button>
+      </div>
     </header>
+  );
+}
+
+function SpatialMenu({
+  open,
+  onNavigate,
+}: {
+  open: boolean;
+  onNavigate: (href: string) => void;
+}) {
+  return (
+    <aside
+      id="spatial-menu"
+      className="spatial-menu"
+      aria-hidden={!open}
+      aria-label="空间导航菜单"
+    >
+      <div className="spatial-menu-inner">
+        <p>Rapid Jump</p>
+        <h2>空间菜单</h2>
+        <nav>
+          {navItems.map((item, index) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={(event) => {
+                event.preventDefault();
+                onNavigate(item.href);
+              }}
+              style={{ "--i": index } as CSSProperties}
+            >
+              <span>0{index + 1}</span>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </aside>
   );
 }
 
