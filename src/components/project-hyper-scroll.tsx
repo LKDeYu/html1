@@ -134,6 +134,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
     let frame = 0;
     let last = getProjectProgress(root);
     let smoothVelocity = 0;
+    let motionEnergy = 0;
     const pointer = { x: 0, y: 0 };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -145,13 +146,26 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
     const render = () => {
       frame = requestAnimationFrame(render);
       const progress = getProjectProgress(root);
-      const targetVelocity = (progress - last) * 120;
+      const progressVelocity = (progress - last) * 520;
       last = progress;
-      smoothVelocity += (targetVelocity - smoothVelocity) * 0.14;
+      const storyVelocity = (ScrollTrigger.getById("story-scroll")?.getVelocity() ?? 0) / 420;
+      const targetVelocity =
+        Math.abs(storyVelocity) > 0.05
+          ? storyVelocity
+          : Math.abs(progressVelocity) > 0.1
+            ? progressVelocity
+            : 0;
+      smoothVelocity += (targetVelocity - smoothVelocity) * 0.16;
+      const targetEnergy = Math.abs(progressVelocity) > 0.08 ? Math.min(1, Math.abs(progressVelocity) / 1.5) : 0;
+      motionEnergy = targetEnergy > 0 ? Math.max(motionEnergy * 0.78, targetEnergy) : motionEnergy * 0.82;
+      if (motionEnergy < 0.025) {
+        motionEnergy = 0;
+      }
+      const colorEnergy = motionEnergy;
 
       const tiltX = pointer.y * 5 - smoothVelocity * 0.26;
       const tiltY = pointer.x * 6;
-      const fov = 980 - Math.min(Math.abs(smoothVelocity) * 120, 520);
+      const fov = 980 - Math.min(Math.abs(smoothVelocity) * 42, 520);
       const cameraZ = progress * LOOP_SIZE * 1.18;
 
       viewport.style.perspective = `${fov}px`;
@@ -194,12 +208,17 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
           transform += ` scale3d(1, 1, ${stretch})`;
         } else if (type === "text") {
           transform += ` rotateZ(${rot}deg)`;
-          if (Math.abs(smoothVelocity) > 0.8) {
-            const offset = smoothVelocity * 10;
-            el.style.textShadow = `${offset}px 0 #ff003c, ${-offset}px 0 #00f3ff`;
-          } else {
-            el.style.textShadow = "none";
-          }
+          const offset = Math.max(2, Math.min(18, Math.abs(smoothVelocity) * 3.4 + colorEnergy * 7));
+          el.style.setProperty("--hyper-text-energy", colorEnergy.toFixed(3));
+          el.style.setProperty("--hyper-text-shift", `${offset.toFixed(2)}px`);
+          el.style.setProperty(
+            "--hyper-text-stroke",
+            colorEnergy > 0.04 ? `rgba(255, 0, 60, ${0.26 + colorEnergy * 0.42})` : "rgba(255, 255, 255, 0.16)",
+          );
+          el.style.textShadow =
+            colorEnergy > 0.04
+              ? `${offset}px 0 #ff003c, ${-offset}px 0 #00f3ff, 0 0 ${18 + colorEnergy * 34}px rgba(0, 243, 255, ${0.22 + colorEnergy * 0.28})`
+              : "none";
         } else {
           const float = Math.sin(performance.now() * 0.001 + x * 0.01) * 10;
           transform += ` rotateZ(${rot}deg) rotateY(${float}deg)`;

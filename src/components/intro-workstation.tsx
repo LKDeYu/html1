@@ -275,7 +275,7 @@ export function IntroWorkstation() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.78;
+    renderer.toneMappingExposure = 0.64;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     root.appendChild(renderer.domElement);
@@ -304,7 +304,8 @@ export function IntroWorkstation() {
       roughness: 0.9,
       metalness: 0.08,
       transparent: true,
-      opacity: 0.74,
+      opacity: 0.3,
+      depthWrite: false,
     });
 
     const screen = createScreen(screenGradientSource.texture);
@@ -321,7 +322,7 @@ export function IntroWorkstation() {
 
     scene.add(screen, floorMesh, keyboard);
 
-    const spot = new THREE.SpotLight(0xffffff, 220);
+    const spot = new THREE.SpotLight(0xffffff, 132);
     spot.decay = 6;
     spot.distance = 35;
     spot.angle = Math.PI / 3.1;
@@ -341,16 +342,16 @@ export function IntroWorkstation() {
 
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.42, 0.72);
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.1, 0.18, 0.82);
     composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
 
     const tune = {
-      projectionIntensity: 1.64,
-      reflectionGain: 1.0,
-      blurRadiusPx: 64,
-      highlightBoost: 1.65,
-      lumaVisibilityThreshold: 0.12,
+      projectionIntensity: 1.08,
+      reflectionGain: 0.58,
+      blurRadiusPx: 24,
+      highlightBoost: 1.32,
+      lumaVisibilityThreshold: 0.22,
       invertColor: false,
       halftone: true,
       toneCut: false,
@@ -358,10 +359,10 @@ export function IntroWorkstation() {
 
     const syncProjectionFxFromTune = () => {
       const blend = Math.max(0, tune.projectionIntensity) * Math.max(0, tune.reflectionGain);
-      spot.intensity = 220 * blend;
-      floorKeyboardMat.envMapIntensity = 0.35 * Math.max(0.1, tune.reflectionGain);
-      bloomPass.radius = THREE.MathUtils.clamp(tune.blurRadiusPx / 128, 0, 1);
-      bloomPass.strength = 0.22 * Math.max(0.2, tune.highlightBoost);
+      spot.intensity = 132 * blend;
+      floorKeyboardMat.envMapIntensity = 0.14 * Math.max(0.1, tune.reflectionGain);
+      bloomPass.radius = THREE.MathUtils.clamp(tune.blurRadiusPx / 180, 0, 1);
+      bloomPass.strength = 0.1 * Math.max(0.2, tune.highlightBoost);
       bloomPass.threshold = THREE.MathUtils.clamp(tune.lumaVisibilityThreshold, 0, 1);
 
       projectionGradientSource.setEffects({

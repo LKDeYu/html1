@@ -1130,13 +1130,18 @@ html.dark .liquid-glass {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  opacity: 0.82;
   pointer-events: none;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at 63% 54%, black 0 30%, rgba(0, 0, 0, 0.7) 46%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse at 63% 54%, black 0 30%, rgba(0, 0, 0, 0.7) 46%, transparent 72%);
 }
 
 .intro-workstation canvas {
   display: block;
   width: 100%;
   height: 100%;
+  mix-blend-mode: screen;
 }
 
 .skill-cube-gallery {
@@ -1528,14 +1533,18 @@ html.dark .liquid-glass {
 
 .project-big-text span {
   display: block;
-  color: transparent;
+  color: rgba(255, 255, 255, calc(0.02 + var(--hyper-text-energy, 0) * 0.34));
   font-size: clamp(82px, 14vw, 180px);
   font-weight: 900;
   letter-spacing: -0.06em;
   text-transform: uppercase;
   transform: translate(-50%, -50%);
-  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15);
+  -webkit-text-stroke: 2px var(--hyper-text-stroke, rgba(255, 255, 255, 0.16));
   mix-blend-mode: screen;
+  filter:
+    drop-shadow(calc(var(--hyper-text-shift, 0px) * 0.35) 0 rgba(255, 0, 60, calc(var(--hyper-text-energy, 0) * 0.8)))
+    drop-shadow(calc(var(--hyper-text-shift, 0px) * -0.35) 0 rgba(0, 243, 255, calc(var(--hyper-text-energy, 0) * 0.8)));
+  opacity: calc(0.52 + var(--hyper-text-energy, 0) * 0.48);
   white-space: nowrap;
 }
 
