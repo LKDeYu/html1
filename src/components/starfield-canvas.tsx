@@ -10,18 +10,15 @@ type Star = {
   x: number;
   y: number;
   z: number;
-  drift: number;
-  alpha: number;
-  size: number;
 };
 
-const density = 2.9;
-const maxInputVelocity = 52;
+const STAR_COLOR = "#fff";
+const STAR_SIZE = 3;
+const STAR_MIN_SCALE = 0.2;
+const OVERFLOW_THRESHOLD = 50;
 
 export function StarfieldCanvas({ className = "" }: StarfieldCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointer = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
-  const velocity = useRef({ x: 0, y: 0, tx: 0, ty: 0, z: 0.00052 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,157 +26,197 @@ export function StarfieldCanvas({ className = "" }: StarfieldCanvasProps) {
       return;
     }
 
-    const ctx = canvas.getContext("2d", { alpha: true });
-    if (!ctx) {
+    const context = canvas.getContext("2d");
+    if (!context) {
       return;
     }
 
+    let scale = window.devicePixelRatio || 1;
     let width = 0;
     let height = 0;
-    let animationFrame = 0;
+    let frame = 0;
+    let pointerX: number | null = null;
+    let pointerY: number | null = null;
+    let touchInput = false;
     let stars: Star[] = [];
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.00072 };
 
-    const random = (min: number, max: number) => Math.random() * (max - min) + min;
+    const starCount = () => Math.round((window.innerWidth + window.innerHeight) / 5.2);
 
     const placeStar = (star: Star) => {
-      star.x = random(-width * 0.12, width * 1.12);
-      star.y = random(-height * 0.12, height * 1.12);
-      star.z = random(0.2, 1);
-      star.drift = random(-0.42, 0.42);
-      star.alpha = random(0.22, 0.94);
-      star.size = random(0.7, 1.9);
+      star.x = Math.random() * width;
+      star.y = Math.random() * height;
+    };
+
+    const generate = () => {
+      stars = Array.from({ length: starCount() }, () => ({
+        x: 0,
+        y: 0,
+        z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE),
+      }));
+      stars.forEach(placeStar);
     };
 
     const recycleStar = (star: Star) => {
-      const velocityState = velocity.current;
+      let direction = "z";
+      const vx = Math.abs(velocity.x);
+      const vy = Math.abs(velocity.y);
 
-      if (star.x > width || star.x < 0 || star.y > height || star.y < 0) {
-        if (Math.abs(velocityState.x) > Math.abs(velocityState.y)) {
-          star.x = velocityState.x > 0 ? 0 : width;
-          star.y = random(0, height);
+      if (vx > 1 || vy > 1) {
+        let axis: "h" | "v";
+
+        if (vx > vy) {
+          axis = Math.random() < vx / (vx + vy) ? "h" : "v";
         } else {
-          star.x = random(0, width);
-          star.y = velocityState.y > 0 ? 0 : height;
+          axis = Math.random() < vy / (vx + vy) ? "v" : "h";
         }
 
-        star.z = random(0.2, 1);
+        if (axis === "h") {
+          direction = velocity.x > 0 ? "l" : "r";
+        } else {
+          direction = velocity.y > 0 ? "t" : "b";
+        }
+      }
+
+      star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
+
+      if (direction === "z") {
+        star.z = 0.1;
+        star.x = Math.random() * width;
+        star.y = Math.random() * height;
+      } else if (direction === "l") {
+        star.x = -OVERFLOW_THRESHOLD;
+        star.y = height * Math.random();
+      } else if (direction === "r") {
+        star.x = width + OVERFLOW_THRESHOLD;
+        star.y = height * Math.random();
+      } else if (direction === "t") {
+        star.x = width * Math.random();
+        star.y = -OVERFLOW_THRESHOLD;
+      } else if (direction === "b") {
+        star.x = width * Math.random();
+        star.y = height + OVERFLOW_THRESHOLD;
       }
     };
 
-    const populate = () => {
-      const count = Math.round((width + height) / density);
-      stars = Array.from({ length: count }, () => {
-        const star = { x: 0, y: 0, z: 0, drift: 0, alpha: 0, size: 1 };
-        placeStar(star);
-        return star;
+    const resize = () => {
+      scale = window.devicePixelRatio || 1;
+      width = window.innerWidth * scale;
+      height = window.innerHeight * scale;
+
+      canvas.width = width;
+      canvas.height = height;
+      generate();
+    };
+
+    const update = () => {
+      velocity.tx *= 0.96;
+      velocity.ty *= 0.96;
+      velocity.x += (velocity.tx - velocity.x) * 0.8;
+      velocity.y += (velocity.ty - velocity.y) * 0.8;
+
+      stars.forEach((star) => {
+        star.x += velocity.x * star.z;
+        star.y += velocity.y * star.z;
+
+        star.x += (star.x - width / 2) * velocity.z * star.z;
+        star.y += (star.y - height / 2) * velocity.z * star.z;
+        star.z += velocity.z;
+
+        if (
+          star.x < -OVERFLOW_THRESHOLD ||
+          star.x > width + OVERFLOW_THRESHOLD ||
+          star.y < -OVERFLOW_THRESHOLD ||
+          star.y > height + OVERFLOW_THRESHOLD
+        ) {
+          recycleStar(star);
+        }
       });
     };
 
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.lineCap = "round";
-      pointer.current.x = width / 2;
-      pointer.current.y = height / 2;
-      pointer.current.ox = pointer.current.x;
-      pointer.current.oy = pointer.current.y;
-      populate();
+    const render = () => {
+      stars.forEach((star) => {
+        context.beginPath();
+        context.lineCap = "round";
+        context.lineWidth = STAR_SIZE * star.z * scale;
+        context.globalAlpha = 0.5 + 0.5 * Math.random();
+        context.strokeStyle = STAR_COLOR;
+
+        context.moveTo(star.x, star.y);
+
+        let tailX = velocity.x * 2;
+        let tailY = velocity.y * 2;
+
+        if (Math.abs(tailX) < 0.1) {
+          tailX = 0.5;
+        }
+        if (Math.abs(tailY) < 0.1) {
+          tailY = 0.5;
+        }
+
+        context.lineTo(star.x + tailX, star.y + tailY);
+        context.stroke();
+      });
+      context.globalAlpha = 1;
     };
 
-    const moveInput = (x: number, y: number) => {
-      pointer.current.x = x;
-      pointer.current.y = y;
-      velocity.current.tx += (pointer.current.x - pointer.current.ox) * 0.06;
-      velocity.current.ty += (pointer.current.y - pointer.current.oy) * 0.06;
-      pointer.current.ox = pointer.current.x;
-      pointer.current.oy = pointer.current.y;
+    const step = () => {
+      context.clearRect(0, 0, width, height);
+      update();
+      render();
+      frame = requestAnimationFrame(step);
     };
 
-    const movePointer = (event: PointerEvent) => {
-      moveInput(event.clientX, event.clientY);
+    const movePointer = (x: number, y: number) => {
+      const scaledX = x * scale;
+      const scaledY = y * scale;
+
+      if (typeof pointerX === "number" && typeof pointerY === "number") {
+        const ox = scaledX - pointerX;
+        const oy = scaledY - pointerY;
+
+        velocity.tx += (ox / (8 * scale)) * (touchInput ? 1 : -1);
+        velocity.ty += (oy / (8 * scale)) * (touchInput ? 1 : -1);
+      }
+
+      pointerX = scaledX;
+      pointerY = scaledY;
     };
 
-    const moveTouch = (event: TouchEvent) => {
+    const onMouseMove = (event: PointerEvent) => {
+      touchInput = false;
+      movePointer(event.clientX, event.clientY);
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (!touch) {
         return;
       }
 
-      moveInput(touch.clientX, touch.clientY);
+      touchInput = true;
+      movePointer(touch.clientX, touch.clientY);
     };
 
-    const draw = () => {
-      animationFrame = requestAnimationFrame(draw);
-
-      const velocityState = velocity.current;
-
-      velocityState.tx *= 0.94;
-      velocityState.ty *= 0.94;
-      velocityState.x += (velocityState.tx - velocityState.x) * 0.18;
-      velocityState.y += (velocityState.ty - velocityState.y) * 0.18;
-      velocityState.x = Math.max(-maxInputVelocity, Math.min(maxInputVelocity, velocityState.x));
-      velocityState.y = Math.max(-maxInputVelocity, Math.min(maxInputVelocity, velocityState.y));
-
-      if (reducedMotion.matches) {
-        velocityState.x *= 0.08;
-        velocityState.y *= 0.08;
-      }
-
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "rgba(3, 7, 18, 0.2)";
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = "lighter";
-
-      for (const star of stars) {
-        star.x += velocityState.x * star.z;
-        star.y += velocityState.y * star.z;
-        star.x += star.drift * star.z;
-        star.y += Math.sin(star.x * 0.004 + star.drift) * 0.08;
-
-        star.x += (star.x - width / 2) * velocityState.z * star.z;
-        star.y += (star.y - height / 2) * velocityState.z * star.z;
-        star.z += velocityState.z;
-
-        recycleStar(star);
-
-        const tailX = velocityState.x * 2;
-        const tailY = velocityState.y * 2;
-        const tailZx = (star.x - width / 2) * velocityState.z * 26;
-        const tailZy = (star.y - height / 2) * velocityState.z * 26;
-        const z = Math.min(star.z, 1.8);
-        const alpha = Math.min(0.86, star.alpha * z * 0.78);
-        const hue = 192 + z * 34 + star.drift * 20;
-
-        ctx.beginPath();
-        ctx.lineWidth = Math.max(0.4, z * star.size);
-        ctx.strokeStyle = `hsla(${hue}, 96%, 80%, ${alpha})`;
-        ctx.moveTo(star.x, star.y);
-        ctx.lineTo(star.x + tailX + tailZx, star.y + tailY + tailZy);
-        ctx.stroke();
-      }
-
-      ctx.globalCompositeOperation = "source-over";
+    const onMouseLeave = () => {
+      pointerX = null;
+      pointerY = null;
     };
 
     resize();
+    frame = requestAnimationFrame(step);
 
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", movePointer, { passive: true });
-    window.addEventListener("touchmove", moveTouch, { passive: true });
-    animationFrame = requestAnimationFrame(draw);
+    window.addEventListener("pointermove", onMouseMove, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
       window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", movePointer);
-      window.removeEventListener("touchmove", moveTouch);
-      cancelAnimationFrame(animationFrame);
+      window.removeEventListener("pointermove", onMouseMove);
+      window.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("mouseleave", onMouseLeave);
+      cancelAnimationFrame(frame);
     };
   }, []);
 

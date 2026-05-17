@@ -68,11 +68,15 @@ export function PortfolioExperience() {
         top = document.querySelector<HTMLElement>(href)?.offsetTop ?? 0;
       } else {
         const index = sceneOrder.indexOf(href);
-        const shellTop = document.querySelector<HTMLElement>(".story-shell")?.offsetTop ?? 0;
-        const storyDistance = 4300;
-        const timelineDuration = sceneOrder.length * 1.1;
-        const sceneStart = index >= 0 ? (index * 1.05) / timelineDuration : 0;
-        top = shellTop + storyDistance * sceneStart + 6;
+        const storyTrigger = ScrollTrigger.getById("story-scroll");
+        if (index >= 0 && storyTrigger) {
+          const timelineDuration = sceneOrder.length * 1.1;
+          const sceneStart = index === 0 ? 0 : index * 1.05 + 0.74;
+          const progress = Math.min(sceneStart / timelineDuration, 0.98);
+          top = storyTrigger.start + (storyTrigger.end - storyTrigger.start) * progress + 4;
+        } else {
+          top = document.querySelector<HTMLElement>(href)?.offsetTop ?? 0;
+        }
       }
 
       window.scrollTo({ top, behavior: "smooth" });
@@ -195,6 +199,7 @@ export function PortfolioExperience() {
 
       const timeline = gsap.timeline({
         scrollTrigger: {
+          id: "story-scroll",
           trigger: ".story-shell",
           start: "top top",
           end: "+=4300",
@@ -305,6 +310,7 @@ export function PortfolioExperience() {
         aria-hidden="true"
         onPointerEnter={openMenu}
         onPointerLeave={scheduleMenuClose}
+        onClick={openMenu}
       />
       <Header
         menuOpen={menuOpen}
@@ -313,6 +319,7 @@ export function PortfolioExperience() {
       />
       <SpatialMenu
         open={menuOpen}
+        onNavigate={handleNavigate}
         onPointerEnter={openMenu}
         onPointerLeave={scheduleMenuClose}
       />
@@ -587,15 +594,15 @@ function Header({
 
 function SpatialMenu({
   open,
+  onNavigate,
   onPointerEnter,
   onPointerLeave,
 }: {
   open: boolean;
+  onNavigate: (href: string) => void;
   onPointerEnter: () => void;
   onPointerLeave: () => void;
 }) {
-  const railItems = navItems.filter((item) => item.href !== "#home" && item.href !== "#contact");
-
   return (
     <aside
       id="spatial-menu"
@@ -609,14 +616,16 @@ function SpatialMenu({
         <p>Scroll Index</p>
         <h2>Section Rail</h2>
         <nav className="fly-rail" aria-label="滚动章节提示">
-          {railItems.map((item, index) => (
-            <div
+          {navItems.map((item, index) => (
+            <button
               key={item.href}
+              type="button"
               style={{ "--i": index } as CSSProperties}
+              onClick={() => onNavigate(item.href)}
             >
               <span>0{index + 1}</span>
               {item.label}
-            </div>
+            </button>
           ))}
         </nav>
       </div>
