@@ -9,18 +9,33 @@ import {
   BookOpen,
   Cloud,
   Code2,
-  List,
   Mail,
   MessageCircle,
   Search,
   ShieldCheck,
-  Sparkles,
   Tags,
-  X,
 } from "lucide-react";
-import { blogPreview, navItems, projects, skillGroups } from "@/lib/content";
+import { blogPreview, navItems, projects } from "@/lib/content";
+import { CampusGallery } from "@/components/campus-gallery";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
 import { IntroWorkstation } from "@/components/intro-workstation";
+import { InterestCarousel } from "@/components/interest-carousel";
+import { ProjectHyperScroll } from "@/components/project-hyper-scroll";
+import { SkillCubeGallery } from "@/components/skill-cube-gallery";
+
+const STORY_SCROLL_DISTANCE = 9600;
+const STORY_SCENE_STEP = 1.42;
+const STORY_SCENE_FADE = 0.56;
+const STORY_SCENE_ORDER = [
+  "#about",
+  "#skills",
+  "#projects",
+  "#campus",
+  "#interests",
+  "#blog",
+  "#guestbook",
+  "#contact",
+];
 
 export function PortfolioExperience() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -47,31 +62,24 @@ export function PortfolioExperience() {
     }, 220);
   };
 
-  const toggleMenu = () => {
-    clearMenuCloseTimer();
-    setMenuOpen((value) => !value);
-  };
-
   const handleNavigate = (href: string) => {
     clearMenuCloseTimer();
     setMenuOpen(false);
 
     requestAnimationFrame(() => {
-      const sceneOrder = ["#about", "#skills", "#projects", "#blog", "#guestbook"];
       let top = 0;
 
       if (href === "#home") {
         top = 0;
-      } else if (href === "#contact") {
-        top = document.querySelector<HTMLElement>("#contact")?.offsetTop ?? 0;
       } else if (window.matchMedia("(max-width: 860px)").matches) {
         top = document.querySelector<HTMLElement>(href)?.offsetTop ?? 0;
       } else {
-        const index = sceneOrder.indexOf(href);
+        const index = STORY_SCENE_ORDER.indexOf(href);
         const storyTrigger = ScrollTrigger.getById("story-scroll");
+
         if (index >= 0 && storyTrigger) {
-          const timelineDuration = sceneOrder.length * 1.1;
-          const sceneStart = index === 0 ? 0 : index * 1.05 + 0.74;
+          const timelineDuration = STORY_SCENE_ORDER.length * STORY_SCENE_STEP;
+          const sceneStart = index === 0 ? 0 : index * STORY_SCENE_STEP + 0.82;
           const progress = Math.min(sceneStart / timelineDuration, 0.98);
           top = storyTrigger.start + (storyTrigger.end - storyTrigger.start) * progress + 4;
         } else {
@@ -106,7 +114,7 @@ export function PortfolioExperience() {
     const lenis = new Lenis({
       duration: reduceMotion ? 0.1 : 1.16,
       smoothWheel: !reduceMotion,
-      wheelMultiplier: 0.92,
+      wheelMultiplier: 0.82,
     });
 
     const raf = (time: number) => {
@@ -131,44 +139,6 @@ export function PortfolioExperience() {
         duration: 1.45,
         delay: 0.62,
         ease: "power3.out",
-      });
-
-      gsap.to(".liquid-glass", {
-        y: -18,
-        rotate: 4,
-        duration: 4.8,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        stagger: 0.24,
-      });
-
-      gsap.to(".ambient-ring", {
-        rotate: 360,
-        duration: 24,
-        repeat: -1,
-        ease: "none",
-      });
-
-      gsap.to(".hero-timefield span", {
-        xPercent: 18,
-        opacity: 0.82,
-        duration: 2.8,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        stagger: 0.16,
-      });
-
-      gsap.to(".hero-depth-cards span", {
-        y: -16,
-        rotateX: 8,
-        rotateY: -10,
-        duration: 5.2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        stagger: 0.28,
       });
 
       const scenes = gsap.utils.toArray<HTMLElement>(".story-scene");
@@ -202,7 +172,7 @@ export function PortfolioExperience() {
           id: "story-scroll",
           trigger: ".story-shell",
           start: "top top",
-          end: "+=4300",
+          end: `+=${STORY_SCROLL_DISTANCE}`,
           scrub: 1,
           pin: ".story-stage",
           anticipatePin: 1,
@@ -214,25 +184,13 @@ export function PortfolioExperience() {
         {
           height: "100%",
           ease: "none",
-          duration: scenes.length * 1.1,
-        },
-        0,
-      );
-
-      timeline.to(
-        ".stage-orb",
-        {
-          xPercent: 18,
-          yPercent: -12,
-          scale: 1.08,
-          ease: "sine.inOut",
-          duration: scenes.length * 1.1,
+          duration: scenes.length * STORY_SCENE_STEP,
         },
         0,
       );
 
       scenes.forEach((scene, index) => {
-        const at = index * 1.05;
+        const at = index * STORY_SCENE_STEP;
         timeline.to(
           `.timeline-dot-${index}`,
           {
@@ -254,7 +212,7 @@ export function PortfolioExperience() {
             y: -58,
             scale: 0.985,
             filter: "blur(7px)",
-            duration: 0.42,
+            duration: STORY_SCENE_FADE,
           },
           at,
         );
@@ -265,33 +223,10 @@ export function PortfolioExperience() {
             y: 0,
             scale: 1,
             filter: "blur(0px)",
-            duration: 0.54,
+            duration: STORY_SCENE_FADE,
           },
-          at + 0.12,
+          at + 0.14,
         );
-      });
-
-      gsap.to(".orbit-track", {
-        rotate: 360,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".story-shell",
-          start: "top top",
-          end: "bottom bottom",
-          scrub: true,
-        },
-      });
-
-      gsap.to(".project-card", {
-        xPercent: -12,
-        stagger: 0.08,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#projects",
-          start: "top 80%",
-          end: "bottom 20%",
-          scrub: true,
-        },
       });
     }, rootRef);
 
@@ -311,11 +246,6 @@ export function PortfolioExperience() {
         onPointerEnter={openMenu}
         onPointerLeave={scheduleMenuClose}
         onClick={openMenu}
-      />
-      <Header
-        menuOpen={menuOpen}
-        onNavigate={handleNavigate}
-        onToggleMenu={toggleMenu}
       />
       <SpatialMenu
         open={menuOpen}
@@ -343,16 +273,11 @@ export function PortfolioExperience() {
 
         <section className="story-shell" aria-label="滚动触发的作品集动画">
           <div className="story-stage">
-            <div className="stage-backdrop" aria-hidden="true">
-              <div className="stage-orb" />
-              <div className="stage-grid" />
-            </div>
-
             <aside className="timeline-rail" aria-hidden="true">
               <div className="timeline-track">
                 <span className="timeline-fill" />
               </div>
-              {["Intro", "Skills", "Projects", "Blog", "System"].map((label, index) => (
+              {["Intro", "Skills", "Projects", "Campus", "Interests", "Blog", "System", "Contact"].map((label, index) => (
                 <div className="timeline-node" key={label}>
                   <span className={`timeline-dot timeline-dot-${index}`} />
                   <em>{label}</em>
@@ -366,93 +291,47 @@ export function PortfolioExperience() {
                   <p className="section-kicker">About / 关于我</p>
                   <h2>一个面向 AI 学习与云端实践的个人网站。</h2>
                   <p>
-                    我是吴志宏，江南大学人工智能专业 24 级学生。当前关注 C/C++、
-                    Python、PyTorch、机器学习和深度学习，同时通过这个网站完成从前端动效、
-                    后端内容管理到阿里云 ECS 部署的完整实践。
+                    我是吴志宏，江南大学人工智能专业 24 级学生。当前关注 C/C++、Python、PyTorch、机器学习和深度学习，
+                    同时通过这个网站完成从前端动效、后端内容管理到阿里云 ECS 部署的完整实践。
                   </p>
                 </div>
                 <IntroWorkstation />
               </section>
 
-              <section id="skills" className="story-scene scene-skills">
+              <section id="skills" className="story-scene scene-skills immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Skill Galaxy / 技能星图</p>
-                  <h2>标签云、轨道和 Bento 卡片组合展示技能。</h2>
-                  <p>
-                    不用百分比描述熟练度，而是按编程、AI 模型、Web 与云部署三个方向组织。
-                  </p>
+                  <h2>立方体随时间轴翻转，展示学习中的技术栈。</h2>
+                  <p>不使用熟练度百分比，而是用一组可旋转的 3D 面来呈现编程、模型和云部署方向。</p>
                 </div>
-                <div className="skill-layout">
-                  <div className="orbit-card">
-                    <div className="orbit-track">
-                      {["Python", "PyTorch", "C++", "ML", "ECS", "Nginx"].map((item) => (
-                        <span key={item}>{item}</span>
-                      ))}
-                    </div>
-                    <div className="orbit-core">
-                      <Sparkles size={24} />
-                      <strong>AI</strong>
-                    </div>
-                  </div>
-                  <div className="skill-bento">
-                    {skillGroups.map((group) => (
-                      <article key={group.title} className="bento-tile">
-                        <h3>{group.title}</h3>
-                        <div>
-                          {group.items.map((item) => (
-                            <span key={item}>{item}</span>
-                          ))}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
+                <SkillCubeGallery />
               </section>
 
-              <section id="projects" className="story-scene scene-projects">
+              <section id="projects" className="story-scene scene-projects immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Projects / 学习项目</p>
-                  <h2>项目内容先写死，后续可按需要后台化。</h2>
-                  <p>每张卡片预留简介、技术栈、时间、难点与收获；缺少截图时使用玻璃占位。</p>
+                  <h2>项目经历改成高速穿梭的赛博空间。</h2>
+                  <p>卡片在深度空间中循环，配合滚动速度、HUD 和大字标题展示学习项目。</p>
                 </div>
-                <div className="project-strip">
-                  {projects.map((project, index) => (
-                    <article
-                      className="project-card flip-slide-card"
-                      key={project.name}
-                      tabIndex={0}
-                      aria-label={`${project.name} 项目卡片，悬停或聚焦查看收获`}
-                    >
-                      <div className="flip-slide-inner">
-                        <div className="flip-face flip-front">
-                          <div className="project-visual">
-                            <span>0{index + 1}</span>
-                          </div>
-                          <p>{project.type}</p>
-                          <h3>{project.name}</h3>
-                          <small>{project.time}</small>
-                          <p>{project.summary}</p>
-                          <div className="tag-row">
-                            {project.stack.map((item) => (
-                              <span key={item}>{item}</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flip-face flip-back">
-                          <p className="flip-label">难点 / 收获</p>
-                          <h3>{project.name}</h3>
-                          <strong>{project.takeaway}</strong>
-                          <div className="tag-row">
-                            {project.stack.map((item) => (
-                              <span key={item}>{item}</span>
-                            ))}
-                          </div>
-                          <small>Hover / Focus to flip back</small>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
+                <ProjectHyperScroll projects={projects} />
+              </section>
+
+              <section id="campus" className="story-scene scene-campus immersive-scene">
+                <div className="scene-copy">
+                  <p className="section-kicker">Campus Life / 校园生活</p>
+                  <h2>先用占位图片搭出滚动相册，后续替换成真实校园照片。</h2>
+                  <p>这一页用于承载江南大学校园、学习空间、生活片段和活动记录。</p>
                 </div>
+                <CampusGallery />
+              </section>
+
+              <section id="interests" className="story-scene scene-interests immersive-scene">
+                <div className="scene-copy">
+                  <p className="section-kicker">Interests / 兴趣</p>
+                  <h2>用旋转照片环先搭出兴趣页的视觉骨架。</h2>
+                  <p>图片后续可以替换成真实素材；现在先用占位图验证 3D 环形相册和 Rymd 的融合效果。</p>
+                </div>
+                <InterestCarousel />
               </section>
 
               <section id="blog" className="story-scene scene-blog">
@@ -460,8 +339,7 @@ export function PortfolioExperience() {
                   <p className="section-kicker">Blog CMS / 学习笔记</p>
                   <h2>博客要做成可长期维护的知识库。</h2>
                   <p>
-                    后台支持 Markdown、分类、标签、搜索、草稿、置顶和浏览量。默认栏目先放机器学习、
-                    深度学习、云计算和项目复盘。
+                    后台支持 Markdown、分类、标签、搜索、草稿、置顶和浏览量。默认栏目先放机器学习、深度学习、云计算和项目复盘。
                   </p>
                 </div>
                 <div className="blog-console">
@@ -478,11 +356,7 @@ export function PortfolioExperience() {
                   </div>
                   <ul className="papercut-list">
                     {blogPreview.map((post, index) => (
-                      <li
-                        key={post.title}
-                        style={{ "--i": index } as CSSProperties}
-                        tabIndex={0}
-                      >
+                      <li key={post.title} style={{ "--i": index } as CSSProperties} tabIndex={0}>
                         <BookOpen size={20} />
                         <small>{post.category}</small>
                         <h3>{post.title}</h3>
@@ -498,8 +372,8 @@ export function PortfolioExperience() {
                   <p className="section-kicker">Cloud System / 后端与部署</p>
                   <h2>留言审核、后台登录和阿里云部署作为完整闭环。</h2>
                   <p>
-                    留言默认进入待审核状态，后台账号为 LKDeYu。部署阶段会使用 Ubuntu ECS、
-                    Nginx、PM2、SQLite 和 HTTPS，并整理进最终实验报告。
+                    留言默认进入待审核状态，后台账号为 LKDeYu。部署阶段会使用 Ubuntu ECS、Nginx、PM2、SQLite 和 HTTPS，
+                    并整理进最终实验报告。
                   </p>
                 </div>
                 <div className="system-grid">
@@ -517,78 +391,33 @@ export function PortfolioExperience() {
                   </SystemTile>
                 </div>
               </section>
-            </div>
-          </div>
-        </section>
 
-        <section id="contact" className="contact-section">
-          <div className="contact-card">
-            <p className="section-kicker">Contact / 联系</p>
-            <h2>保持简洁，只公开必要联系方式。</h2>
-            <p>手机号不放到公网页面。当前公开 Gmail、GitHub 和 QQ。</p>
-            <div className="contact-links">
-              <a href="mailto:yuany257093418@gmail.com">
-                <Mail size={18} />
-                yuany257093418@gmail.com
-              </a>
-              <a href="https://github.com/LKDeYu" target="_blank" rel="noreferrer">
-                <Code2 size={18} />
-                github.com/LKDeYu
-              </a>
-              <a href="tencent://message/?uin=3292183027">
-                <MessageCircle size={18} />
-                QQ 3292183027
-              </a>
+              <section id="contact" className="story-scene scene-contact">
+                <div className="contact-card">
+                  <p className="section-kicker">Contact / 联系</p>
+                  <h2>保持简洁，只公开必要联系方式。</h2>
+                  <p>手机号不放到公网页面。当前公开 Gmail、GitHub 和 QQ。</p>
+                  <div className="contact-links">
+                    <a href="mailto:yuany257093418@gmail.com">
+                      <Mail size={18} />
+                      yuany257093418@gmail.com
+                    </a>
+                    <a href="https://github.com/LKDeYu" target="_blank" rel="noreferrer">
+                      <Code2 size={18} />
+                      github.com/LKDeYu
+                    </a>
+                    <a href="tencent://message/?uin=3292183027">
+                      <MessageCircle size={18} />
+                      QQ 3292183027
+                    </a>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </section>
       </main>
     </div>
-  );
-}
-
-function Header({
-  menuOpen,
-  onNavigate,
-  onToggleMenu,
-}: {
-  menuOpen: boolean;
-  onNavigate: (href: string) => void;
-  onToggleMenu: () => void;
-}) {
-  return (
-    <header className="site-header">
-      <a className="brand-pill" href="#home" aria-label="返回首页">
-        <span />
-        NAMRANTA
-      </a>
-      <nav aria-label="主导航">
-        {navItems.map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            onClick={(event) => {
-              event.preventDefault();
-              onNavigate(item.href);
-            }}
-          >
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <div className="header-actions">
-        <button
-          className="menu-button"
-          type="button"
-          onClick={onToggleMenu}
-          aria-expanded={menuOpen}
-          aria-controls="spatial-menu"
-        >
-          {menuOpen ? <X size={18} /> : <List size={18} />}
-          <span>{menuOpen ? "Close" : "Rail"}</span>
-        </button>
-      </div>
-    </header>
   );
 }
 

@@ -3,6 +3,8 @@ export const navItems = [
   { label: "关于我", href: "#about" },
   { label: "技能", href: "#skills" },
   { label: "项目", href: "#projects" },
+  { label: "校园", href: "#campus" },
+  { label: "兴趣", href: "#interests" },
   { label: "博客", href: "#blog" },
   { label: "留言", href: "#guestbook" },
   { label: "联系", href: "#contact" },

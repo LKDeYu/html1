@@ -268,9 +268,10 @@ export function IntroWorkstation() {
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: false,
+      alpha: true,
       powerPreference: "high-performance",
     });
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -280,7 +281,7 @@ export function IntroWorkstation() {
     root.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x101014);
+    scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
     camera.position.set(0, 1.2, 5.5);
@@ -299,9 +300,11 @@ export function IntroWorkstation() {
     });
 
     const floorKeyboardMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1a22,
-      roughness: 0.88,
-      metalness: 0.06,
+      color: 0x07080d,
+      roughness: 0.9,
+      metalness: 0.08,
+      transparent: true,
+      opacity: 0.74,
     });
 
     const screen = createScreen(screenGradientSource.texture);
