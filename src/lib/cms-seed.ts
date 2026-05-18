@@ -1,0 +1,141 @@
+import type { ProjectRecord, SkillRecord } from "@/lib/cms-types";
+
+const now = "2026-05-18T00:00:00.000Z";
+
+export const defaultProjects: ProjectRecord[] = [
+  {
+    id: "project-douban-top250",
+    slug: "douban-top250-crawler",
+    name: "豆瓣 Top250 爬虫",
+    type: "学习项目",
+    time: "待补充",
+    summary: "围绕豆瓣 Top250 电影数据进行采集、清洗与结构化整理，练习网络请求、HTML 解析和数据处理流程。",
+    bodyMarkdown:
+      "## 项目目标\n\n用 Python 完成一个电影数据采集与整理流程，把页面信息转成可分析的数据。\n\n## 当前内容\n\n- 请求与解析网页结构\n- 提取电影名称、评分、简介等字段\n- 清洗并保存结构化数据\n\n## 后续可补充\n\n这里后续可以放代码截图、结果图、遇到的问题和复盘。",
+    takeaway: "理解爬虫请求、解析、存储的基本链路，也意识到需要遵守网站规则与访问频率限制。",
+    stack: ["Python", "Web Scraping", "Data Processing"],
+    tags: ["Python", "爬虫", "数据处理"],
+    status: "published",
+    sortOrder: 10,
+    updatedAt: now,
+  },
+  {
+    id: "project-coyin",
+    slug: "coyin-reader-app",
+    name: "Coyin 知页软件开发",
+    type: "学习项目",
+    time: "待补充",
+    summary: "一款面向学习和论文阅读的桌面软件，包含论文检索、PDF 阅读器和计划安排等功能模块。",
+    bodyMarkdown:
+      "## 项目目标\n\n把论文阅读、资料检索和学习计划整合到同一个桌面软件中。\n\n## 功能方向\n\n- PDF 阅读与资料整理\n- 学习计划和任务拆分\n- 面向个人学习流程的界面设计\n\n## 后续可补充\n\n可以继续补充软件截图、功能模块图和开发过程记录。",
+    takeaway: "练习把多个学习场景整合进同一个软件界面，关注信息检索、阅读体验和任务管理之间的协同。",
+    stack: ["Desktop App", "PDF Reader", "Planning"],
+    tags: ["桌面应用", "PDF", "学习工具"],
+    status: "published",
+    sortOrder: 20,
+    updatedAt: now,
+  },
+  {
+    id: "project-ecg",
+    slug: "ecg-diagnosis-system",
+    name: "ECG 信号智能诊断系统",
+    type: "学习项目",
+    time: "待补充",
+    summary: "基于 ECG 相关数据和模型训练流程进行智能诊断实验，探索深度学习在医学信号分析中的应用。",
+    bodyMarkdown:
+      "## 项目目标\n\n围绕 ECG 信号数据构建一个智能诊断实验流程。\n\n## 技术重点\n\n- 医学信号数据预处理\n- PyTorch 模型训练与评估\n- 结果可视化与项目表达\n\n## 后续可补充\n\n可以补充数据来源、模型结构、训练指标和实验截图。",
+    takeaway: "重点练习数据预处理、模型训练、推理评估和医学 AI 项目表达的严谨性。",
+    stack: ["Python", "PyTorch", "Deep Learning"],
+    tags: ["PyTorch", "深度学习", "医学 AI"],
+    status: "published",
+    sortOrder: 30,
+    updatedAt: now,
+  },
+];
+
+export const defaultSkills: SkillRecord[] = [
+  {
+    id: "skill-c-cpp",
+    slug: "c-cpp",
+    name: "Programming",
+    title: "C / C++",
+    summary: "用底层语言训练算法思维，理解数据结构、内存和程序执行过程。",
+    bodyMarkdown:
+      "## 学习重点\n\n- 数据结构与算法\n- 指针、内存和程序执行模型\n- C/C++ 基础工程实践\n\n## 后续补充\n\n可以放课程笔记、刷题记录和项目片段。",
+    tags: ["C", "C++", "Algorithm"],
+    levelLabel: "Foundation",
+    status: "published",
+    sortOrder: 10,
+    updatedAt: now,
+  },
+  {
+    id: "skill-python",
+    slug: "python",
+    name: "Python",
+    title: "Python",
+    summary: "用于爬虫、数据处理、模型实验和自动化脚本，是当前学习实践的主力语言。",
+    bodyMarkdown:
+      "## 使用场景\n\n- 数据采集与处理\n- 机器学习实验脚本\n- 自动化工具\n\n## 后续补充\n\n可以放常用库、脚本片段和项目链接。",
+    tags: ["Python", "Automation", "Data"],
+    levelLabel: "Practical",
+    status: "published",
+    sortOrder: 20,
+    updatedAt: now,
+  },
+  {
+    id: "skill-pytorch",
+    slug: "pytorch",
+    name: "PyTorch",
+    title: "PyTorch",
+    summary: "围绕深度学习训练、推理和实验复盘，逐步建立 AI 项目实现能力。",
+    bodyMarkdown:
+      "## 学习重点\n\n- Tensor 与自动求导\n- 模型训练流程\n- 实验评估和可复现记录\n\n## 后续补充\n\n可以放模型结构、训练曲线和实验复盘。",
+    tags: ["PyTorch", "AI", "Training"],
+    levelLabel: "Learning",
+    status: "published",
+    sortOrder: 30,
+    updatedAt: now,
+  },
+  {
+    id: "skill-machine-learning",
+    slug: "machine-learning",
+    name: "Machine Learning",
+    title: "ML",
+    summary: "关注特征、模型、指标和实验流程，把算法知识落到可验证的结果中。",
+    bodyMarkdown:
+      "## 学习重点\n\n- 特征工程和数据划分\n- 常见模型与评估指标\n- 实验对比和复盘\n\n## 后续补充\n\n可以整理课程笔记和小实验。",
+    tags: ["Machine Learning", "Metrics", "Experiment"],
+    levelLabel: "Core",
+    status: "published",
+    sortOrder: 40,
+    updatedAt: now,
+  },
+  {
+    id: "skill-deep-learning",
+    slug: "deep-learning",
+    name: "Deep Learning",
+    title: "DL",
+    summary: "从神经网络、训练技巧到医学信号分析项目，持续扩展模型理解。",
+    bodyMarkdown:
+      "## 学习重点\n\n- 神经网络基础\n- 训练技巧和调参\n- 医学信号方向实验\n\n## 后续补充\n\n可以放论文阅读和模型复现记录。",
+    tags: ["Deep Learning", "Neural Network", "ECG"],
+    levelLabel: "Exploring",
+    status: "published",
+    sortOrder: 50,
+    updatedAt: now,
+  },
+  {
+    id: "skill-cloud-deploy",
+    slug: "cloud-deploy",
+    name: "Cloud Deploy",
+    title: "Cloud",
+    summary: "通过 Next.js、SQLite、Nginx 和阿里云 ECS 完成个人网站部署闭环。",
+    bodyMarkdown:
+      "## 学习重点\n\n- Next.js 应用部署\n- SQLite 内容管理\n- Nginx、PM2、HTTPS 和 ECS 运维\n\n## 后续补充\n\n可以放部署流程、服务器配置和问题记录。",
+    tags: ["Next.js", "SQLite", "ECS", "Nginx"],
+    levelLabel: "Deployment",
+    status: "published",
+    sortOrder: 60,
+    updatedAt: now,
+  },
+];

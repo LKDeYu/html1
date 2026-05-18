@@ -1,19 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-type Project = {
-  name: string;
-  type: string;
-  time: string;
-  stack: string[];
-  summary: string;
-  takeaway: string;
-};
+import type { ProjectRecord } from "@/lib/cms-types";
+import { ProjectDetailOverlay } from "@/components/project-detail-overlay";
 
 type ProjectHyperScrollProps = {
-  projects: Project[];
+  projects: ProjectRecord[];
 };
 
 type HyperItem = {
@@ -22,6 +15,7 @@ type HyperItem = {
   title: string;
   eyebrow: string;
   footer: string;
+  project?: ProjectRecord;
   x: number;
   y: number;
   z: number;
@@ -65,13 +59,14 @@ function getProjectProgress(fallbackEl: HTMLElement) {
   return clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height));
 }
 
-function buildItems(projects: Project[]) {
+function buildItems(projects: ProjectRecord[]) {
+  const sourceProjects = projects.length > 0 ? projects : [];
   return Array.from({ length: ITEM_COUNT }, (_, index): HyperItem => {
     const isText = index % 4 === 0;
     const angle = (index / ITEM_COUNT) * Math.PI * 6;
     const radiusX = 360 + seeded(index + 2) * 220;
     const radiusY = 220 + seeded(index + 7) * 160;
-    const project = projects[index % projects.length];
+    const project = sourceProjects[index % Math.max(1, sourceProjects.length)];
     const word = WORDS[index % WORDS.length];
 
     if (isText) {
@@ -91,9 +86,10 @@ function buildItems(projects: Project[]) {
     return {
       id: `card-${index}`,
       type: "card",
-      title: project.name,
+      title: project?.name ?? "Project",
       eyebrow: `ID-${String(index).padStart(3, "0")}`,
-      footer: project.stack.slice(0, 2).join(" / "),
+      footer: project?.stack.slice(0, 2).join(" / ") ?? "Portfolio",
+      project,
       x: round(Math.cos(angle) * radiusX),
       y: round(Math.sin(angle) * radiusY),
       z: -index * Z_GAP,
@@ -117,6 +113,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const velocityRef = useRef<HTMLElement>(null);
   const coordRef = useRef<HTMLElement>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectRecord | null>(null);
   const items = useMemo(() => buildItems(projects), [projects]);
   const stars = useMemo(() => buildStars(), []);
 
@@ -272,7 +269,15 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
               {item.type === "text" ? (
                 <span>{item.title}</span>
               ) : (
-                <article className="hyper-card">
+                <button
+                  className="hyper-card"
+                  type="button"
+                  onClick={() => {
+                    if (item.project) {
+                      setSelectedProject(item.project);
+                    }
+                  }}
+                >
                   <div className="hyper-card-header">
                     <span>{item.eyebrow}</span>
                     <b />
@@ -280,7 +285,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
                   <h3>{item.title}</h3>
                   <p>{item.footer}</p>
                   <em>{item.id.replace("card-", "").padStart(2, "0")}</em>
-                </article>
+                </button>
               )}
             </div>
           ))}
@@ -298,6 +303,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
           ))}
         </div>
       </div>
+      <ProjectDetailOverlay project={selectedProject} onClose={() => setSelectedProject(null)} />
     </div>
   );
 }

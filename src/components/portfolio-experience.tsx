@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Tags,
 } from "lucide-react";
-import { blogPreview, navItems, projects } from "@/lib/content";
+import { blogPreview, navItems } from "@/lib/content";
+import type { ProjectRecord, SkillRecord } from "@/lib/cms-types";
 import { CampusGallery } from "@/components/campus-gallery";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
 import { IntroWorkstation } from "@/components/intro-workstation";
@@ -37,7 +38,12 @@ const STORY_SCENE_ORDER = [
   "#contact",
 ];
 
-export function PortfolioExperience() {
+type PortfolioExperienceProps = {
+  projects: ProjectRecord[];
+  skills: SkillRecord[];
+};
+
+export function PortfolioExperience({ projects, skills }: PortfolioExperienceProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const menuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -304,7 +310,7 @@ export function PortfolioExperience() {
                   <h2>立方体随时间轴翻转，展示学习中的技术栈。</h2>
                   <p>不使用熟练度百分比，而是用一组可旋转的 3D 面来呈现编程、模型和云部署方向。</p>
                 </div>
-                <SkillCubeGallery />
+                <SkillCubeGallery skills={skills} />
               </section>
 
               <section id="projects" className="story-scene scene-projects immersive-scene">

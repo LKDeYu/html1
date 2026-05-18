@@ -1177,7 +1177,7 @@ html.dark .liquid-glass {
   inset: 0;
   display: grid;
   place-items: center;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .skill-cube {
@@ -1190,6 +1190,7 @@ html.dark .liquid-glass {
 }
 
 .skill-cube-face {
+  appearance: none;
   position: absolute;
   inset: 0;
   display: grid;
@@ -1214,6 +1215,10 @@ html.dark .liquid-glass {
     radial-gradient(circle at 50% 0%, rgba(255, 253, 135, 0.16), transparent 38%),
     #14100d;
   backface-visibility: hidden;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
   padding: 28px;
 }
 
@@ -1351,6 +1356,7 @@ html.dark .liquid-glass {
 }
 
 .skill-cube-card {
+  appearance: none;
   position: absolute;
   z-index: 3;
   right: 22px;
@@ -1358,6 +1364,10 @@ html.dark .liquid-glass {
   width: min(290px, calc(100% - 44px));
   border-left: 1px solid rgba(255, 253, 135, 0.25);
   background: rgba(28, 24, 20, 0.72);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
   backdrop-filter: blur(6px) saturate(1.2);
   padding: 22px 20px;
 }
@@ -1426,6 +1436,7 @@ html.dark .liquid-glass {
 }
 
 .hyper-card {
+  appearance: none;
   position: relative;
   display: flex;
   width: 300px;
@@ -1434,6 +1445,10 @@ html.dark .liquid-glass {
   justify-content: space-between;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(10, 10, 10, 0.48);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
     0 22px 54px rgba(0, 0, 0, 0.52);
@@ -2449,6 +2464,380 @@ html.dark .blog-grid article {
   font-size: 14px;
   overflow-wrap: anywhere;
   padding: 0 14px;
+}
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 54px);
+  animation: detailIn 220ms ease both;
+}
+
+.detail-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background:
+    radial-gradient(circle at 68% 42%, rgba(0, 243, 255, 0.16), transparent 34%),
+    rgba(0, 0, 0, 0.74);
+  cursor: zoom-out;
+}
+
+.detail-panel {
+  position: relative;
+  width: min(980px, 100%);
+  max-height: min(820px, calc(100svh - 48px));
+  overflow: auto;
+  border: 1px solid rgba(132, 225, 255, 0.2);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(11, 22, 30, 0.9), rgba(3, 5, 10, 0.88)),
+    radial-gradient(circle at 100% 0%, rgba(255, 253, 135, 0.08), transparent 36%);
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(1.25);
+  padding: clamp(24px, 4vw, 48px);
+}
+
+.detail-close {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  float: right;
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.detail-header {
+  max-width: 760px;
+}
+
+.detail-header h2 {
+  margin: 14px 0 0;
+  color: #fff;
+  font-size: clamp(38px, 7vw, 84px);
+  font-weight: 900;
+  line-height: 0.92;
+}
+
+.detail-header p {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.detail-meta,
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.detail-meta span,
+.detail-tags span {
+  border: 1px solid rgba(132, 225, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(132, 225, 255, 0.08);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.detail-hero-image {
+  width: 100%;
+  max-height: 360px;
+  margin: 28px 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.detail-takeaway {
+  margin-top: 28px;
+  border-left: 1px solid var(--accent-strong);
+  background: rgba(255, 253, 135, 0.06);
+  padding: 18px 20px;
+}
+
+.detail-takeaway strong {
+  color: var(--accent-strong);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.detail-takeaway p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.markdown-view {
+  margin-top: 30px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.85;
+}
+
+.markdown-view h1,
+.markdown-view h2,
+.markdown-view h3 {
+  margin: 1.35em 0 0.5em;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.markdown-view p,
+.markdown-view ul,
+.markdown-view ol {
+  margin: 0.8em 0;
+}
+
+.markdown-view a {
+  color: var(--accent-strong);
+}
+
+.markdown-view code {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.32);
+  padding: 2px 5px;
+}
+
+.markdown-view pre {
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.42);
+  padding: 16px;
+}
+
+.admin-shell {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 253, 135, 0.08), transparent 28%),
+    radial-gradient(circle at 90% 0%, rgba(0, 210, 255, 0.12), transparent 34%),
+    #030303;
+  color: var(--foreground);
+  padding: clamp(20px, 4vw, 56px);
+}
+
+.admin-login-shell {
+  display: grid;
+  place-items: center;
+}
+
+.admin-login-card,
+.admin-topbar,
+.admin-list,
+.admin-editor,
+.admin-preview {
+  border: 1px solid rgba(132, 225, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(8, 16, 24, 0.74);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(20px) saturate(1.2);
+}
+
+.admin-login-card {
+  width: min(460px, 100%);
+  padding: 32px;
+}
+
+.admin-login-card h1,
+.admin-topbar h1 {
+  margin: 10px 0 0;
+  color: #fff;
+  font-size: clamp(34px, 6vw, 64px);
+  line-height: 0.95;
+}
+
+.admin-login-card p {
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.admin-login-card code {
+  color: var(--accent-strong);
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+}
+
+.admin-actions,
+.admin-tabs,
+.admin-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-actions a,
+.admin-actions button,
+.admin-tabs button,
+.admin-editor-actions button,
+.admin-login-card button,
+.admin-new-button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 11px 13px;
+  text-decoration: none;
+}
+
+.admin-tabs {
+  margin: 22px 0;
+}
+
+.admin-tabs button.active,
+.admin-new-button,
+.admin-editor-actions button[type="submit"] {
+  border-color: rgba(255, 253, 135, 0.4);
+  background: rgba(255, 253, 135, 0.16);
+  color: var(--accent-strong);
+}
+
+.admin-message,
+.admin-error {
+  display: block;
+  margin: 14px 0;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(340px, 1fr) minmax(320px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.admin-list,
+.admin-editor,
+.admin-preview {
+  max-height: calc(100svh - 190px);
+  overflow: auto;
+  padding: 18px;
+}
+
+.admin-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-list > button:not(.admin-new-button) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 13px;
+  text-align: left;
+}
+
+.admin-list > button.active {
+  border-color: rgba(0, 210, 255, 0.36);
+  background: rgba(0, 210, 255, 0.1);
+}
+
+.admin-list strong,
+.admin-list span {
+  display: block;
+}
+
+.admin-list span {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-field {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-field span,
+.admin-login-card label span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-field select,
+.admin-login-card input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.34);
+  color: var(--foreground);
+  font: inherit;
+  padding: 11px 12px;
+}
+
+.admin-field textarea {
+  resize: vertical;
+}
+
+.admin-login-card label {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.admin-preview h2 {
+  margin: 10px 0 0;
+  color: #fff;
+  font-size: 34px;
+}
+
+@keyframes detailIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@media (width <= 1020px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-list,
+  .admin-editor,
+  .admin-preview {
+    max-height: none;
+  }
 }
 
 @media (max-width: 1100px) {

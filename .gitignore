@@ -34,6 +34,10 @@ dev-server.*.log
 # local visual QA
 /qa/
 
+# local CMS database
+/data/*.db
+/data/*.db-*
+
 # env files (can opt-in for committing if needed)
 .env*
 
