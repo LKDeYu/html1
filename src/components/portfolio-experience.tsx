@@ -1,22 +1,14 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import {
-  BookOpen,
-  Cloud,
-  Code2,
-  Mail,
-  MessageCircle,
-  Search,
-  ShieldCheck,
-  Tags,
-} from "lucide-react";
+import { BookOpen, Code2, Mail, MessageCircle, Search, Tags } from "lucide-react";
 import { blogPreview, navItems } from "@/lib/content";
-import type { ProjectRecord, SkillRecord } from "@/lib/cms-types";
+import type { BlogPostRecord, ProjectRecord, SkillRecord } from "@/lib/cms-types";
 import { CampusGallery } from "@/components/campus-gallery";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
 import { IntroWorkstation } from "@/components/intro-workstation";
@@ -27,26 +19,26 @@ import { SkillCubeGallery } from "@/components/skill-cube-gallery";
 const STORY_SCROLL_DISTANCE = 9600;
 const STORY_SCENE_STEP = 1.42;
 const STORY_SCENE_FADE = 0.56;
-const STORY_SCENE_ORDER = [
-  "#about",
-  "#skills",
-  "#projects",
-  "#campus",
-  "#interests",
-  "#blog",
-  "#guestbook",
-  "#contact",
-];
+const STORY_SCENE_ORDER = ["#about", "#skills", "#projects", "#campus", "#interests", "#blog", "#contact"];
 
 type PortfolioExperienceProps = {
   projects: ProjectRecord[];
   skills: SkillRecord[];
+  posts: BlogPostRecord[];
 };
 
-export function PortfolioExperience({ projects, skills }: PortfolioExperienceProps) {
+export function PortfolioExperience({ projects, skills, posts }: PortfolioExperienceProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const menuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const blogItems =
+    posts.length > 0
+      ? posts.slice(0, 4).map((post) => ({
+          title: post.title,
+          category: post.category || "学习笔记",
+          description: post.summary,
+        }))
+      : blogPreview;
 
   const clearMenuCloseTimer = () => {
     if (menuCloseTimerRef.current) {
@@ -120,7 +112,7 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
     const lenis = new Lenis({
       duration: reduceMotion ? 0.1 : 1.16,
       smoothWheel: !reduceMotion,
-      wheelMultiplier: 0.82,
+      wheelMultiplier: 0.74,
     });
 
     const raf = (time: number) => {
@@ -271,19 +263,17 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
               <span>NAMRANTA</span>
               <small>ZHIHONG WU</small>
             </h1>
-            <p className="hero-subtitle">
-              AI portfolio, learning notes, and a cloud-deployed personal website.
-            </p>
+            <p className="hero-subtitle">AI portfolio, learning notes, projects, and campus life.</p>
           </div>
         </section>
 
-        <section className="story-shell" aria-label="滚动触发的作品集动画">
+        <section className="story-shell" aria-label="滚动时间轴作品集">
           <div className="story-stage">
             <aside className="timeline-rail" aria-hidden="true">
               <div className="timeline-track">
                 <span className="timeline-fill" />
               </div>
-              {["Intro", "Skills", "Projects", "Campus", "Interests", "Blog", "System", "Contact"].map((label, index) => (
+              {["Intro", "Skills", "Projects", "Campus", "Interests", "Blog", "Contact"].map((label, index) => (
                 <div className="timeline-node" key={label}>
                   <span className={`timeline-dot timeline-dot-${index}`} />
                   <em>{label}</em>
@@ -295,10 +285,10 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
               <section id="about" className="story-scene scene-intro">
                 <div className="scene-copy">
                   <p className="section-kicker">About / 关于我</p>
-                  <h2>一个面向 AI 学习与云端实践的个人网站。</h2>
+                  <h2>一个记录 AI 学习、项目实践和校园生活的个人网站。</h2>
                   <p>
-                    我是吴志宏，江南大学人工智能专业 24 级学生。当前关注 C/C++、Python、PyTorch、机器学习和深度学习，
-                    同时通过这个网站完成从前端动效、后端内容管理到阿里云 ECS 部署的完整实践。
+                    我是吴志宏，江南大学人工智能专业 24 级学生。现在主要学习 C/C++、Python、机器学习、深度学习和云端部署，
+                    也会把课程练习、项目复盘、校园照片和日常兴趣整理在这里。
                   </p>
                 </div>
                 <IntroWorkstation />
@@ -306,18 +296,18 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
 
               <section id="skills" className="story-scene scene-skills immersive-scene">
                 <div className="scene-copy">
-                  <p className="section-kicker">Skill Galaxy / 技能星图</p>
-                  <h2>立方体随时间轴翻转，展示学习中的技术栈。</h2>
-                  <p>不使用熟练度百分比，而是用一组可旋转的 3D 面来呈现编程、模型和云部署方向。</p>
+                  <p className="section-kicker">Skills / 技能</p>
+                  <h2>围绕编程基础、AI 实验和工程部署持续积累。</h2>
+                  <p>我会把每项技能和具体课程、项目、笔记联系起来，而不是只列出工具名称。</p>
                 </div>
                 <SkillCubeGallery skills={skills} />
               </section>
 
               <section id="projects" className="story-scene scene-projects immersive-scene">
                 <div className="scene-copy">
-                  <p className="section-kicker">Projects / 学习项目</p>
-                  <h2>项目经历改成高速穿梭的赛博空间。</h2>
-                  <p>卡片在深度空间中循环，配合滚动速度、HUD 和大字标题展示学习项目。</p>
+                  <p className="section-kicker">Projects / 项目</p>
+                  <h2>把做过的练习和项目整理成长期档案。</h2>
+                  <p>每个项目会保留目标、技术栈、实现过程和复盘，方便之后继续补充截图、链接和实验结果。</p>
                 </div>
                 <ProjectHyperScroll projects={projects} />
               </section>
@@ -325,8 +315,8 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
               <section id="campus" className="story-scene scene-campus immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Campus Life / 校园生活</p>
-                  <h2>先用占位图片搭出滚动相册，后续替换成真实校园照片。</h2>
-                  <p>这一页用于承载江南大学校园、学习空间、生活片段和活动记录。</p>
+                  <h2>江南大学里的学习、风景和日常片段。</h2>
+                  <p>这里记录教室、自习、校园景色、美食和课余生活，让个人网站不只停留在技术简历。</p>
                 </div>
                 <CampusGallery />
               </section>
@@ -334,19 +324,17 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
               <section id="interests" className="story-scene scene-interests immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Interests / 兴趣</p>
-                  <h2>用旋转照片环先搭出兴趣页的视觉骨架。</h2>
-                  <p>图片后续可以替换成真实素材；现在先用占位图验证 3D 环形相册和 Rymd 的融合效果。</p>
+                  <h2>阅读、运动、音乐和棋类，让生活保持节奏。</h2>
+                  <p>这些兴趣会作为学习之外的记录，帮助我保留更完整的个人面貌。</p>
                 </div>
                 <InterestCarousel />
               </section>
 
               <section id="blog" className="story-scene scene-blog">
                 <div className="scene-copy">
-                  <p className="section-kicker">Blog CMS / 学习笔记</p>
-                  <h2>博客要做成可长期维护的知识库。</h2>
-                  <p>
-                    后台支持 Markdown、分类、标签、搜索、草稿、置顶和浏览量。默认栏目先放机器学习、深度学习、云计算和项目复盘。
-                  </p>
+                  <p className="section-kicker">Blog / 学习笔记</p>
+                  <h2>把学习中的问题、代码和复盘沉淀成文章。</h2>
+                  <p>文章会记录算法、Python、PyTorch、项目实践和工程部署中的关键细节，方便我之后回看和继续迭代。</p>
                 </div>
                 <div className="blog-console">
                   <div className="console-toolbar">
@@ -356,12 +344,12 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
                     </span>
                     <span>
                       <Tags size={15} />
-                      Categories
+                      Tags
                     </span>
-                    <span>Pinned</span>
+                    <Link href="/blog">All posts</Link>
                   </div>
                   <ul className="papercut-list">
-                    {blogPreview.map((post, index) => (
+                    {blogItems.map((post, index) => (
                       <li key={post.title} style={{ "--i": index } as CSSProperties} tabIndex={0}>
                         <BookOpen size={20} />
                         <small>{post.category}</small>
@@ -373,36 +361,11 @@ export function PortfolioExperience({ projects, skills }: PortfolioExperiencePro
                 </div>
               </section>
 
-              <section id="guestbook" className="story-scene scene-system">
-                <div className="scene-copy">
-                  <p className="section-kicker">Cloud System / 后端与部署</p>
-                  <h2>留言审核、后台登录和阿里云部署作为完整闭环。</h2>
-                  <p>
-                    留言默认进入待审核状态，后台账号为 LKDeYu。部署阶段会使用 Ubuntu ECS、Nginx、PM2、SQLite 和 HTTPS，
-                    并整理进最终实验报告。
-                  </p>
-                </div>
-                <div className="system-grid">
-                  <SystemTile icon={<ShieldCheck size={22} />} title="Admin">
-                    用户名 + 密码 + 验证码登录，管理博客和留言审核。
-                  </SystemTile>
-                  <SystemTile icon={<MessageCircle size={22} />} title="Guestbook">
-                    留言字段包含姓名、邮箱、内容、头像、时间和 IP 信息。
-                  </SystemTile>
-                  <SystemTile icon={<Cloud size={22} />} title="Alibaba Cloud">
-                    最终部署到 ECS，Nginx 只开放 80/443，Next 服务运行在内网端口。
-                  </SystemTile>
-                  <SystemTile icon={<Code2 size={22} />} title="SQLite">
-                    数据库文件随项目部署，适合课程项目和轻量内容管理。
-                  </SystemTile>
-                </div>
-              </section>
-
               <section id="contact" className="story-scene scene-contact">
                 <div className="contact-card">
                   <p className="section-kicker">Contact / 联系</p>
-                  <h2>保持简洁，只公开必要联系方式。</h2>
-                  <p>手机号不放到公网页面。当前公开 Gmail、GitHub 和 QQ。</p>
+                  <h2>欢迎交流学习、项目和技术问题。</h2>
+                  <p>目前公开 Gmail、GitHub 和 QQ，手机号不放在公开网页里。</p>
                   <div className="contact-links">
                     <a href="mailto:yuany257093418@gmail.com">
                       <Mail size={18} />
@@ -465,23 +428,5 @@ function SpatialMenu({
         </nav>
       </div>
     </aside>
-  );
-}
-
-function SystemTile({
-  icon,
-  title,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <article className="system-tile">
-      <div>{icon}</div>
-      <h3>{title}</h3>
-      <p>{children}</p>
-    </article>
   );
 }

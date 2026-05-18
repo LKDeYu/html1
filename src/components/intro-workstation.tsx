@@ -250,9 +250,13 @@ function createScreen(texture: THREE.Texture) {
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     toneMapped: false,
+    transparent: true,
+    opacity: 0.92,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 1.3), material);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.18, 1.23), material);
   mesh.position.set(0, 1.0, 0.5);
   return mesh;
 }
@@ -382,7 +386,11 @@ export function IntroWorkstation() {
       const rect = root.getBoundingClientRect();
       const width = Math.max(1, Math.floor(rect.width));
       const height = Math.max(1, Math.floor(rect.height));
+      const aspect = width / height;
       camera.aspect = width / height;
+      camera.fov = THREE.MathUtils.clamp(aspect > 1.35 ? 42 : 47, 40, 50);
+      camera.position.z = THREE.MathUtils.clamp(aspect > 1.35 ? 5.85 : 6.35, 5.5, 6.6);
+      camera.lookAt(0, 0.82, 0.1);
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(width, height, false);

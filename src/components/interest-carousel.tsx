@@ -6,22 +6,22 @@ import type { CSSProperties } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const INTEREST_IMAGES = [
-  "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1518770660439-4636190af475?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=560&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=560&auto=format&fit=crop&q=70",
+  { src: "/images/interests/reading.png", label: "阅读" },
+  { src: "/images/interests/running.png", label: "跑步" },
+  { src: "/images/interests/fitness.png", label: "健身" },
+  { src: "/images/interests/singing.png", label: "唱歌" },
+  { src: "/images/interests/sudoku.jpg", label: "数独" },
+  { src: "/images/interests/gomoku.jpg", label: "五子棋" },
+  { src: "/images/interests/reading.png", label: "阅读" },
+  { src: "/images/interests/running.png", label: "跑步" },
+  { src: "/images/interests/fitness.png", label: "健身" },
+  { src: "/images/interests/singing.png", label: "唱歌" },
+  { src: "/images/interests/sudoku.jpg", label: "数独" },
+  { src: "/images/interests/gomoku.jpg", label: "五子棋" },
 ];
 
 const SCENE_STEP = 1.42;
-const SCENE_COUNT = 8;
+const SCENE_COUNT = 7;
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 
 function getInterestProgress(fallbackEl: HTMLElement) {
@@ -82,7 +82,7 @@ export function InterestCarousel() {
 
         card.style.opacity = String(0.28 + depth * 0.72);
         card.style.zIndex = String(Math.round(depth * 100));
-        card.style.filter = `saturate(${0.75 + depth * 0.45}) brightness(${0.78 + depth * 0.24})`;
+        card.style.filter = `saturate(${0.78 + depth * 0.5}) brightness(${0.78 + depth * 0.24})`;
         card.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) rotateY(${rotateY}deg) scale(${scale})`;
       });
     };
@@ -105,19 +105,19 @@ export function InterestCarousel() {
         style={{ "--n": INTEREST_IMAGES.length } as CSSProperties}
         aria-hidden="true"
       >
-        {INTEREST_IMAGES.map((src, index) => (
+        {INTEREST_IMAGES.map((item, index) => (
           <img
             className="interest-card"
-            src={src}
+            src={item.src}
             alt=""
             style={{ "--i": index } as CSSProperties}
-            key={`${src}-${index}`}
+            key={`${item.src}-${index}`}
           />
         ))}
       </div>
       <div className="interest-caption" aria-hidden="true">
-        <span>12</span>
-        <strong>photo cards</strong>
+        <span>{INTEREST_IMAGES.length}</span>
+        <strong>life cards</strong>
       </div>
     </div>
   );

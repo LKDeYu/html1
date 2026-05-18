@@ -1,7 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { ProjectRecord } from "@/lib/cms-types";
 import { MarkdownView } from "@/components/markdown-view";
@@ -23,15 +25,21 @@ export function ProjectDetailOverlay({ project, onClose }: ProjectDetailOverlayP
       }
     };
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [onClose, project]);
 
-  if (!project) {
+  if (typeof document === "undefined" || !project) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="detail-overlay" role="dialog" aria-modal="true" aria-label={`${project.name} 项目详情`}>
       <button className="detail-backdrop" type="button" aria-label="关闭详情" onClick={onClose} />
       <article className="detail-panel project-detail-panel">
@@ -64,12 +72,16 @@ export function ProjectDetailOverlay({ project, onClose }: ProjectDetailOverlayP
           </aside>
         ) : null}
 
-        <footer className="detail-tags">
-          {project.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
+        <footer className="detail-actions">
+          <Link href={`/projects/${project.slug}`}>打开完整页面</Link>
+          <div className="detail-tags">
+            {project.tags.map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
+          </div>
         </footer>
       </article>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -11,19 +11,19 @@ type SkillCubeGalleryProps = {
   skills: SkillRecord[];
 };
 
-const FACE_SLOTS = ["top", "front", "right", "back", "left", "bottom"] as const;
+const FACE_SLOTS = ["front", "right", "back", "left", "top", "bottom"] as const;
 
 const STOPS = [
-  { rx: 90, ry: 0 },
   { rx: 0, ry: 0 },
   { rx: 0, ry: -90 },
   { rx: 0, ry: -180 },
   { rx: 0, ry: -270 },
+  { rx: 90, ry: -360 },
   { rx: -90, ry: -360 },
 ];
 
 const SCENE_STEP = 1.42;
-const SCENE_COUNT = 8;
+const SCENE_COUNT = 7;
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const easeIO = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 
@@ -58,7 +58,6 @@ function getStorySegmentProgress(startUnit: number, endUnit: number, fallbackEl:
 export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const cubeRef = useRef<HTMLDivElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedSkill, setSelectedSkill] = useState<SkillRecord | null>(null);
   const faces = useMemo(() => buildFaces(skills), [skills]);
@@ -66,8 +65,7 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
   useEffect(() => {
     const root = rootRef.current;
     const cube = cubeRef.current;
-    const progressFill = progressRef.current;
-    if (!root || !cube || !progressFill) {
+    if (!root || !cube) {
       return;
     }
 
@@ -95,7 +93,6 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
       const active = Math.min(faces.length - 1, Math.round(t));
 
       cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-      progressFill.style.width = `${Math.round(smooth * 100)}%`;
       root.style.setProperty("--cube-progress", `${smooth}`);
 
       if (active !== lastIndex) {
@@ -134,14 +131,6 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="skill-cube-hud">
-        <span>{String(Math.round((activeIndex / (faces.length - 1)) * 100)).padStart(3, "0")}%</span>
-        <div className="skill-cube-progress">
-          <div ref={progressRef} />
-        </div>
-        <strong>{activeFace.skill.name}</strong>
       </div>
 
       <div className="skill-scene-strip" aria-hidden="true">

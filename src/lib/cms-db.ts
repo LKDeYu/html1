@@ -2,8 +2,8 @@ import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { defaultProjects, defaultSkills } from "@/lib/cms-seed";
-import type { ProjectRecord, PublishStatus, SkillRecord } from "@/lib/cms-types";
+import { defaultBlogPosts, defaultProjects, defaultSkills } from "@/lib/cms-seed";
+import type { BlogPostRecord, ProjectRecord, PublishStatus, SkillRecord } from "@/lib/cms-types";
 
 type ProjectRow = Omit<ProjectRecord, "stack" | "tags"> & {
   stack: string;
@@ -14,8 +14,13 @@ type SkillRow = Omit<SkillRecord, "tags"> & {
   tags: string;
 };
 
+type BlogPostRow = Omit<BlogPostRecord, "tags"> & {
+  tags: string;
+};
+
 type ProjectInput = Partial<Omit<ProjectRecord, "id" | "updatedAt">>;
 type SkillInput = Partial<Omit<SkillRecord, "id" | "updatedAt">>;
+type BlogPostInput = Partial<Omit<BlogPostRecord, "id" | "updatedAt">>;
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "site.db");
@@ -75,6 +80,14 @@ function skillFromRow(row: SkillRow): SkillRecord {
   };
 }
 
+function blogPostFromRow(row: BlogPostRow): BlogPostRecord {
+  return {
+    ...row,
+    tags: parseArray(row.tags),
+    imageUrl: row.imageUrl || undefined,
+  };
+}
+
 function getDb() {
   if (db) {
     return db;
@@ -115,6 +128,21 @@ function getDb() {
       sortOrder INTEGER NOT NULL DEFAULT 0,
       updatedAt TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS posts (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      title TEXT NOT NULL,
+      date TEXT NOT NULL DEFAULT '',
+      summary TEXT NOT NULL DEFAULT '',
+      bodyMarkdown TEXT NOT NULL DEFAULT '',
+      tags TEXT NOT NULL DEFAULT '[]',
+      category TEXT NOT NULL DEFAULT '',
+      imageUrl TEXT,
+      status TEXT NOT NULL DEFAULT 'published',
+      sortOrder INTEGER NOT NULL DEFAULT 0,
+      updatedAt TEXT NOT NULL
+    );
   `);
   seedIfEmpty(db);
   return db;
@@ -123,6 +151,7 @@ function getDb() {
 function seedIfEmpty(database: Database.Database) {
   const projectCount = database.prepare("SELECT COUNT(*) as count FROM projects").get() as { count: number };
   const skillCount = database.prepare("SELECT COUNT(*) as count FROM skills").get() as { count: number };
+  const postCount = database.prepare("SELECT COUNT(*) as count FROM posts").get() as { count: number };
 
   if (projectCount.count === 0) {
     const insertProject = database.prepare(`
@@ -165,6 +194,28 @@ function seedIfEmpty(database: Database.Database) {
       });
     });
     seedSkills();
+  }
+
+  if (postCount.count === 0) {
+    const insertPost = database.prepare(`
+      INSERT INTO posts (
+        id, slug, title, date, summary, bodyMarkdown, tags, category,
+        imageUrl, status, sortOrder, updatedAt
+      ) VALUES (
+        @id, @slug, @title, @date, @summary, @bodyMarkdown, @tags, @category,
+        @imageUrl, @status, @sortOrder, @updatedAt
+      )
+    `);
+    const seedPosts = database.transaction(() => {
+      defaultBlogPosts.forEach((post) => {
+        insertPost.run({
+          ...post,
+          tags: jsonArray(post.tags),
+          imageUrl: post.imageUrl ?? null,
+        });
+      });
+    });
+    seedPosts();
   }
 }
 
@@ -376,5 +427,140 @@ export function updateSkill(id: string, input: SkillInput) {
 export function deleteSkill(id: string) {
   const database = getDb();
   const result = database.prepare("DELETE FROM skills WHERE id = ?").run(id);
+  return result.changes > 0;
+}
+
+export function listBlogPosts(options: { includeDrafts?: boolean; tag?: string } = {}) {
+  const database = getDb();
+  const rows = options.includeDrafts
+    ? (database.prepare("SELECT * FROM posts ORDER BY sortOrder ASC, date DESC, updatedAt DESC").all() as BlogPostRow[])
+    : (database
+        .prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY sortOrder ASC, date DESC, updatedAt DESC")
+        .all() as BlogPostRow[]);
+  const posts = rows.map(blogPostFromRow);
+
+  if (!options.tag) {
+    return posts;
+  }
+
+  const tag = options.tag.toLowerCase();
+  return posts.filter((post) => post.tags.some((item) => slugify(item).toLowerCase() === tag || item.toLowerCase() === tag));
+}
+
+export function listBlogTags(options: { includeDrafts?: boolean } = {}) {
+  const counts = new Map<string, { label: string; count: number; slug: string }>();
+
+  listBlogPosts({ includeDrafts: options.includeDrafts }).forEach((post) => {
+    post.tags.forEach((tag) => {
+      const label = tag.trim();
+      if (!label) {
+        return;
+      }
+      const tagSlug = slugify(label);
+      const current = counts.get(tagSlug);
+      counts.set(tagSlug, {
+        label: current?.label ?? label,
+        count: (current?.count ?? 0) + 1,
+        slug: tagSlug,
+      });
+    });
+  });
+
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+export function getBlogPostBySlug(slug: string, options: { includeDrafts?: boolean } = {}) {
+  const database = getDb();
+  const sql = options.includeDrafts
+    ? "SELECT * FROM posts WHERE slug = ?"
+    : "SELECT * FROM posts WHERE slug = ? AND status = 'published'";
+  const row = database.prepare(sql).get(slug) as BlogPostRow | undefined;
+  return row ? blogPostFromRow(row) : null;
+}
+
+export function createBlogPost(input: BlogPostInput) {
+  const database = getDb();
+  const now = new Date().toISOString();
+  const title = String(input.title ?? "Untitled Post").trim() || "Untitled Post";
+  const post: BlogPostRecord = {
+    id: randomUUID(),
+    slug: slugify(String(input.slug ?? title)),
+    title,
+    date: String(input.date ?? now.slice(0, 10)),
+    summary: String(input.summary ?? ""),
+    bodyMarkdown: String(input.bodyMarkdown ?? ""),
+    tags: Array.isArray(input.tags) ? input.tags.map(String).filter(Boolean) : [],
+    category: String(input.category ?? "学习笔记"),
+    imageUrl: input.imageUrl ? String(input.imageUrl) : undefined,
+    status: normalizeStatus(input.status),
+    sortOrder: Number(input.sortOrder ?? 100),
+    updatedAt: now,
+  };
+
+  database
+    .prepare(`
+      INSERT INTO posts (
+        id, slug, title, date, summary, bodyMarkdown, tags, category,
+        imageUrl, status, sortOrder, updatedAt
+      ) VALUES (
+        @id, @slug, @title, @date, @summary, @bodyMarkdown, @tags, @category,
+        @imageUrl, @status, @sortOrder, @updatedAt
+      )
+    `)
+    .run({
+      ...post,
+      tags: jsonArray(post.tags),
+      imageUrl: post.imageUrl ?? null,
+    });
+
+  return post;
+}
+
+export function updateBlogPost(id: string, input: BlogPostInput) {
+  const database = getDb();
+  const current = database.prepare("SELECT * FROM posts WHERE id = ?").get(id) as BlogPostRow | undefined;
+  if (!current) {
+    return null;
+  }
+
+  const updated: BlogPostRecord = {
+    ...blogPostFromRow(current),
+    ...input,
+    slug: slugify(String(input.slug ?? current.slug)),
+    tags: Array.isArray(input.tags) ? input.tags.map(String).filter(Boolean) : parseArray(current.tags),
+    imageUrl: input.imageUrl ? String(input.imageUrl) : undefined,
+    status: normalizeStatus(input.status ?? current.status),
+    sortOrder: Number(input.sortOrder ?? current.sortOrder),
+    updatedAt: new Date().toISOString(),
+  };
+
+  database
+    .prepare(`
+      UPDATE posts SET
+        slug = @slug,
+        title = @title,
+        date = @date,
+        summary = @summary,
+        bodyMarkdown = @bodyMarkdown,
+        tags = @tags,
+        category = @category,
+        imageUrl = @imageUrl,
+        status = @status,
+        sortOrder = @sortOrder,
+        updatedAt = @updatedAt
+      WHERE id = @id
+    `)
+    .run({
+      ...updated,
+      tags: jsonArray(updated.tags),
+      imageUrl: updated.imageUrl ?? null,
+    });
+
+  return updated;
+}
+
+export function deleteBlogPost(id: string) {
+  const database = getDb();
+  const result = database.prepare("DELETE FROM posts WHERE id = ?").run(id);
   return result.changes > 0;
 }

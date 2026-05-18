@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NAMRANTA | Zhihong Wu",
-  description: "吴志宏的 AI 学习、项目作品集与云计算部署个人网站。",
+  description: "吴志宏的 AI 学习、项目作品集、博客笔记与校园生活记录。",
 };
 
 export default function RootLayout({

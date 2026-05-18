@@ -6,7 +6,6 @@ export const navItems = [
   { label: "校园", href: "#campus" },
   { label: "兴趣", href: "#interests" },
   { label: "博客", href: "#blog" },
-  { label: "留言", href: "#guestbook" },
   { label: "联系", href: "#contact" },
 ];
 
@@ -60,23 +59,23 @@ export const projects = [
 
 export const blogPreview = [
   {
-    title: "机器学习笔记",
-    category: "机器学习",
-    description: "记录模型、特征、评估指标和训练流程中的关键概念。",
+    title: "我的学习地图",
+    category: "学习笔记",
+    description: "整理编程基础、AI 实验、项目实践和云部署之间的学习脉络。",
   },
   {
-    title: "深度学习与 PyTorch",
-    category: "深度学习",
-    description: "整理神经网络、训练技巧、实验复盘和代码片段。",
-  },
-  {
-    title: "云计算部署日志",
-    category: "云计算",
-    description: "记录 ECS、Nginx、域名、HTTPS、PM2 与上线流程。",
-  },
-  {
-    title: "项目复盘",
+    title: "Python 爬虫练习记录",
     category: "项目复盘",
-    description: "沉淀项目目标、技术选型、问题处理和后续优化计划。",
+    description: "从网页请求、HTML 解析到数据清洗，记录一次基础爬虫练习。",
+  },
+  {
+    title: "PyTorch 训练循环笔记",
+    category: "AI 笔记",
+    description: "整理 Dataset、DataLoader、训练循环和评估逻辑的基础结构。",
+  },
+  {
+    title: "个人网站的云端运行笔记",
+    category: "工程记录",
+    description: "记录首页展示、后台内容管理和服务器运行之间的连接关系。",
   },
 ];

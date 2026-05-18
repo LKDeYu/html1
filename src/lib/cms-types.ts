@@ -31,7 +31,23 @@ export type SkillRecord = {
   updatedAt: string;
 };
 
+export type BlogPostRecord = {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  summary: string;
+  bodyMarkdown: string;
+  tags: string[];
+  category: string;
+  imageUrl?: string;
+  status: PublishStatus;
+  sortOrder: number;
+  updatedAt: string;
+};
+
 export type CmsContent = {
   projects: ProjectRecord[];
   skills: SkillRecord[];
+  posts: BlogPostRecord[];
 };

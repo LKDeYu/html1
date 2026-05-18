@@ -5,21 +5,21 @@ import { useEffect, useRef } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const CAMPUS_IMAGES = [
-  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=70",
-  "https://images.unsplash.com/photo-1562774053-701939374585?w=900&auto=format&fit=crop&q=80",
+  "/images/campus/scenery-1.jpg",
+  "/images/campus/food-1.jpg",
+  "/images/campus/study-1.jpg",
+  "/images/campus/game-1.jpg",
+  "/images/campus/scenery-2.jpg",
+  "/images/campus/food-2.jpg",
+  "/images/campus/study-2.jpg",
+  "/images/campus/game-2.jpg",
+  "/images/campus/scenery-3.jpg",
+  "/images/campus/food-3.jpg",
+  "/images/campus/study-3.jpg",
+  "/images/campus/game-3.jpg",
+  "/images/campus/study-4.jpeg",
+  "/images/campus/game-4.jpg",
+  "/images/campus/game-5.jpg",
 ];
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -29,7 +29,7 @@ function getCampusProgress(fallbackEl: HTMLElement) {
 
   if (trigger) {
     const sceneStep = 1.42;
-    const totalUnits = 8 * sceneStep;
+    const totalUnits = 7 * sceneStep;
     const storyProgress = (window.scrollY - trigger.start) / (trigger.end - trigger.start);
     const start = (3 * sceneStep) / totalUnits;
     const end = (4 * sceneStep) / totalUnits;
@@ -90,7 +90,7 @@ export function CampusGallery() {
           ))}
         </div>
         <div className="campus-scaler">
-          <img src={CAMPUS_IMAGES[14]} alt="校园生活占位图" />
+          <img src={CAMPUS_IMAGES[14]} alt="校园生活照片" />
         </div>
       </div>
     </div>

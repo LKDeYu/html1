@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { SkillRecord } from "@/lib/cms-types";
 import { MarkdownView } from "@/components/markdown-view";
@@ -22,15 +24,21 @@ export function SkillDetailOverlay({ skill, onClose }: SkillDetailOverlayProps) 
       }
     };
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [onClose, skill]);
 
-  if (!skill) {
+  if (typeof document === "undefined" || !skill) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="detail-overlay" role="dialog" aria-modal="true" aria-label={`${skill.title} 技能详情`}>
       <button className="detail-backdrop" type="button" aria-label="关闭详情" onClick={onClose} />
       <article className="detail-panel skill-detail-panel">
@@ -51,7 +59,12 @@ export function SkillDetailOverlay({ skill, onClose }: SkillDetailOverlayProps) 
         </header>
 
         <MarkdownView>{skill.bodyMarkdown}</MarkdownView>
+
+        <footer className="detail-actions">
+          <Link href={`/skills/${skill.slug}`}>打开完整页面</Link>
+        </footer>
       </article>
-    </div>
+    </div>,
+    document.body,
   );
 }

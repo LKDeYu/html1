@@ -1,14 +1,17 @@
 "use client";
 
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { useMemo, useState } from "react";
-import type { ProjectRecord, PublishStatus, SkillRecord } from "@/lib/cms-types";
+import type { BlogPostRecord, ProjectRecord, PublishStatus, SkillRecord } from "@/lib/cms-types";
 import { MarkdownView } from "@/components/markdown-view";
 
 type AdminCmsClientProps = {
   initialProjects: ProjectRecord[];
   initialSkills: SkillRecord[];
+  initialPosts: BlogPostRecord[];
 };
+
+type AdminTab = "projects" | "skills" | "posts";
 
 type ProjectForm = Omit<ProjectRecord, "stack" | "tags"> & {
   stackText: string;
@@ -16,6 +19,10 @@ type ProjectForm = Omit<ProjectRecord, "stack" | "tags"> & {
 };
 
 type SkillForm = Omit<SkillRecord, "tags"> & {
+  tagsText: string;
+};
+
+type BlogPostForm = Omit<BlogPostRecord, "tags"> & {
   tagsText: string;
 };
 
@@ -36,6 +43,11 @@ const skillToForm = (skill: SkillRecord): SkillForm => ({
   tagsText: skill.tags.join(", "),
 });
 
+const postToForm = (post: BlogPostRecord): BlogPostForm => ({
+  ...post,
+  tagsText: post.tags.join(", "),
+});
+
 const emptyProject = (): ProjectForm => ({
   id: "",
   slug: "",
@@ -43,7 +55,7 @@ const emptyProject = (): ProjectForm => ({
   type: "学习项目",
   time: "待补充",
   summary: "",
-  bodyMarkdown: "## 项目说明\n\n在这里写项目详情。",
+  bodyMarkdown: "## 项目说明\n\n在这里写项目目标、实现过程、技术栈和复盘。",
   takeaway: "",
   stackText: "",
   tagsText: "",
@@ -59,7 +71,7 @@ const emptySkill = (): SkillForm => ({
   name: "Skill Group",
   title: "New Skill",
   summary: "",
-  bodyMarkdown: "## 技能说明\n\n在这里写技能详情。",
+  bodyMarkdown: "## 技能说明\n\n在这里写学习重点、使用场景和相关项目。",
   tagsText: "",
   levelLabel: "",
   status: "draft",
@@ -67,17 +79,35 @@ const emptySkill = (): SkillForm => ({
   updatedAt: "",
 });
 
-export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClientProps) {
-  const [tab, setTab] = useState<"projects" | "skills">("projects");
+const emptyPost = (): BlogPostForm => ({
+  id: "",
+  slug: "",
+  title: "新文章",
+  date: new Date().toISOString().slice(0, 10),
+  summary: "",
+  bodyMarkdown: "## 标题\n\n在这里写博客正文。",
+  tagsText: "",
+  category: "学习笔记",
+  imageUrl: "",
+  status: "draft",
+  sortOrder: 100,
+  updatedAt: "",
+});
+
+export function AdminCmsClient({ initialProjects, initialSkills, initialPosts }: AdminCmsClientProps) {
+  const [tab, setTab] = useState<AdminTab>("projects");
   const [projects, setProjects] = useState(initialProjects);
   const [skills, setSkills] = useState(initialSkills);
+  const [posts, setPosts] = useState(initialPosts);
   const [projectForm, setProjectForm] = useState<ProjectForm>(() => projectToForm(initialProjects[0] ?? emptyProject()));
   const [skillForm, setSkillForm] = useState<SkillForm>(() => skillToForm(initialSkills[0] ?? emptySkill()));
+  const [postForm, setPostForm] = useState<BlogPostForm>(() => postToForm(initialPosts[0] ?? emptyPost()));
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   const sortedProjects = useMemo(() => [...projects].sort((a, b) => a.sortOrder - b.sortOrder), [projects]);
   const sortedSkills = useMemo(() => [...skills].sort((a, b) => a.sortOrder - b.sortOrder), [skills]);
+  const sortedPosts = useMemo(() => [...posts].sort((a, b) => a.sortOrder - b.sortOrder), [posts]);
 
   const saveProject = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -120,23 +150,6 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
     setMessage("项目已保存。");
   };
 
-  const deleteCurrentProject = async () => {
-    if (!projectForm.id || !window.confirm("确定删除这个项目吗？")) {
-      return;
-    }
-
-    const response = await fetch(`/api/admin/projects/${projectForm.id}`, { method: "DELETE" });
-    if (!response.ok) {
-      setMessage("删除项目失败");
-      return;
-    }
-
-    const next = projects.filter((project) => project.id !== projectForm.id);
-    setProjects(next);
-    setProjectForm(next[0] ? projectToForm(next[0]) : emptyProject());
-    setMessage("项目已删除。");
-  };
-
   const saveSkill = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
@@ -175,6 +188,62 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
     setMessage("技能已保存。");
   };
 
+  const savePost = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    const payload = {
+      slug: postForm.slug,
+      title: postForm.title,
+      date: postForm.date,
+      summary: postForm.summary,
+      bodyMarkdown: postForm.bodyMarkdown,
+      tags: splitList(postForm.tagsText),
+      category: postForm.category,
+      imageUrl: postForm.imageUrl || undefined,
+      status: postForm.status,
+      sortOrder: Number(postForm.sortOrder),
+    };
+    const isUpdate = Boolean(postForm.id);
+    const response = await fetch(isUpdate ? `/api/admin/posts/${postForm.id}` : "/api/admin/posts", {
+      method: isUpdate ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = (await response.json().catch(() => null)) as { post?: BlogPostRecord; error?: string } | null;
+    setSaving(false);
+
+    if (!response.ok || !data?.post) {
+      setMessage(data?.error ?? "保存文章失败");
+      return;
+    }
+
+    setPosts((current) => {
+      const next = isUpdate ? current.map((item) => (item.id === data.post?.id ? data.post : item)) : [...current, data.post!];
+      return next.filter(Boolean);
+    });
+    setPostForm(postToForm(data.post));
+    setMessage("文章已保存。");
+  };
+
+  const deleteCurrentProject = async () => {
+    if (!projectForm.id || !window.confirm("确定删除这个项目吗？")) {
+      return;
+    }
+
+    const response = await fetch(`/api/admin/projects/${projectForm.id}`, { method: "DELETE" });
+    if (!response.ok) {
+      setMessage("删除项目失败");
+      return;
+    }
+
+    const next = projects.filter((project) => project.id !== projectForm.id);
+    setProjects(next);
+    setProjectForm(next[0] ? projectToForm(next[0]) : emptyProject());
+    setMessage("项目已删除。");
+  };
+
   const deleteCurrentSkill = async () => {
     if (!skillForm.id || !window.confirm("确定删除这个技能吗？")) {
       return;
@@ -192,6 +261,23 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
     setMessage("技能已删除。");
   };
 
+  const deleteCurrentPost = async () => {
+    if (!postForm.id || !window.confirm("确定删除这篇文章吗？")) {
+      return;
+    }
+
+    const response = await fetch(`/api/admin/posts/${postForm.id}`, { method: "DELETE" });
+    if (!response.ok) {
+      setMessage("删除文章失败");
+      return;
+    }
+
+    const next = posts.filter((post) => post.id !== postForm.id);
+    setPosts(next);
+    setPostForm(next[0] ? postToForm(next[0]) : emptyPost());
+    setMessage("文章已删除。");
+  };
+
   const logout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin/login";
@@ -202,21 +288,19 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
       <header className="admin-topbar">
         <div>
           <p className="section-kicker">Namranta CMS</p>
-          <h1>Projects / Skills</h1>
+          <h1>Content Studio</h1>
         </div>
         <div className="admin-actions">
           <a href="/" target="_blank" rel="noreferrer">查看网站</a>
+          <a href="/blog" target="_blank" rel="noreferrer">查看博客</a>
           <button type="button" onClick={logout}>退出</button>
         </div>
       </header>
 
       <nav className="admin-tabs" aria-label="内容类型">
-        <button className={tab === "projects" ? "active" : ""} type="button" onClick={() => setTab("projects")}>
-          Projects
-        </button>
-        <button className={tab === "skills" ? "active" : ""} type="button" onClick={() => setTab("skills")}>
-          Skills
-        </button>
+        <TabButton active={tab === "projects"} onClick={() => setTab("projects")}>Projects</TabButton>
+        <TabButton active={tab === "skills"} onClick={() => setTab("skills")}>Skills</TabButton>
+        <TabButton active={tab === "posts"} onClick={() => setTab("posts")}>Blog</TabButton>
       </nav>
 
       {message ? <p className="admin-message">{message}</p> : null}
@@ -242,7 +326,9 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
           </form>
           <Preview title={projectForm.name} markdown={projectForm.bodyMarkdown} tags={splitList(projectForm.tagsText)} />
         </section>
-      ) : (
+      ) : null}
+
+      {tab === "skills" ? (
         <section className="admin-grid">
           <ContentList
             items={sortedSkills.map((skill) => ({
@@ -263,8 +349,39 @@ export function AdminCmsClient({ initialProjects, initialSkills }: AdminCmsClien
           </form>
           <Preview title={skillForm.title} markdown={skillForm.bodyMarkdown} tags={splitList(skillForm.tagsText)} />
         </section>
-      )}
+      ) : null}
+
+      {tab === "posts" ? (
+        <section className="admin-grid">
+          <ContentList
+            items={sortedPosts.map((post) => ({
+              id: post.id,
+              title: post.title,
+              meta: `${post.status} / ${post.date || "no date"} / ${post.tags.join(", ") || "no tags"}`,
+            }))}
+            activeId={postForm.id}
+            onNew={() => setPostForm(emptyPost())}
+            onSelect={(id) => {
+              const post = posts.find((item) => item.id === id);
+              if (post) setPostForm(postToForm(post));
+            }}
+          />
+          <form className="admin-editor" onSubmit={savePost}>
+            <BlogPostFields form={postForm} setForm={setPostForm} />
+            <EditorActions saving={saving} canDelete={Boolean(postForm.id)} onDelete={deleteCurrentPost} />
+          </form>
+          <Preview title={postForm.title} markdown={postForm.bodyMarkdown} tags={splitList(postForm.tagsText)} />
+        </section>
+      ) : null}
     </main>
+  );
+}
+
+function TabButton({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) {
+  return (
+    <button className={active ? "active" : ""} type="button" onClick={onClick}>
+      {children}
+    </button>
   );
 }
 
@@ -299,8 +416,8 @@ function ProjectFields({ form, setForm }: { form: ProjectForm; setForm: (form: P
       <Field label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} placeholder="留空会自动生成" />
       <Field label="类型" value={form.type} onChange={(type) => setForm({ ...form, type })} />
       <Field label="时间" value={form.time} onChange={(time) => setForm({ ...form, time })} />
-      <Field label="技术栈（逗号分隔）" value={form.stackText} onChange={(stackText) => setForm({ ...form, stackText })} />
-      <Field label="标签（逗号分隔）" value={form.tagsText} onChange={(tagsText) => setForm({ ...form, tagsText })} />
+      <Field label="技术栈，逗号分隔" value={form.stackText} onChange={(stackText) => setForm({ ...form, stackText })} />
+      <Field label="标签，逗号分隔" value={form.tagsText} onChange={(tagsText) => setForm({ ...form, tagsText })} />
       <Field label="图片 URL" value={form.imageUrl ?? ""} onChange={(imageUrl) => setForm({ ...form, imageUrl })} />
       <Field label="排序" type="number" value={String(form.sortOrder)} onChange={(sortOrder) => setForm({ ...form, sortOrder: Number(sortOrder) })} />
       <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
@@ -318,11 +435,28 @@ function SkillFields({ form, setForm }: { form: SkillForm; setForm: (form: Skill
       <Field label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} placeholder="留空会自动生成" />
       <Field label="分组/名称" value={form.name} onChange={(name) => setForm({ ...form, name })} />
       <Field label="水平标签" value={form.levelLabel ?? ""} onChange={(levelLabel) => setForm({ ...form, levelLabel })} />
-      <Field label="标签（逗号分隔）" value={form.tagsText} onChange={(tagsText) => setForm({ ...form, tagsText })} />
+      <Field label="标签，逗号分隔" value={form.tagsText} onChange={(tagsText) => setForm({ ...form, tagsText })} />
       <Field label="排序" type="number" value={String(form.sortOrder)} onChange={(sortOrder) => setForm({ ...form, sortOrder: Number(sortOrder) })} />
       <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
       <TextArea label="摘要" value={form.summary} onChange={(summary) => setForm({ ...form, summary })} rows={3} />
       <TextArea label="Markdown 正文" value={form.bodyMarkdown} onChange={(bodyMarkdown) => setForm({ ...form, bodyMarkdown })} rows={16} />
+    </>
+  );
+}
+
+function BlogPostFields({ form, setForm }: { form: BlogPostForm; setForm: (form: BlogPostForm) => void }) {
+  return (
+    <>
+      <Field label="文章标题" value={form.title} onChange={(title) => setForm({ ...form, title })} />
+      <Field label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} placeholder="留空会自动生成" />
+      <Field label="日期" type="date" value={form.date} onChange={(date) => setForm({ ...form, date })} />
+      <Field label="分类" value={form.category} onChange={(category) => setForm({ ...form, category })} />
+      <Field label="标签，逗号分隔" value={form.tagsText} onChange={(tagsText) => setForm({ ...form, tagsText })} />
+      <Field label="封面图片 URL" value={form.imageUrl ?? ""} onChange={(imageUrl) => setForm({ ...form, imageUrl })} />
+      <Field label="排序" type="number" value={String(form.sortOrder)} onChange={(sortOrder) => setForm({ ...form, sortOrder: Number(sortOrder) })} />
+      <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
+      <TextArea label="摘要" value={form.summary} onChange={(summary) => setForm({ ...form, summary })} rows={3} />
+      <TextArea label="Markdown 正文" value={form.bodyMarkdown} onChange={(bodyMarkdown) => setForm({ ...form, bodyMarkdown })} rows={18} />
     </>
   );
 }

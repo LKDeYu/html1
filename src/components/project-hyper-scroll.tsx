@@ -29,13 +29,13 @@ type HyperStar = {
   z: number;
 };
 
-const WORDS = ["IMPACT", "COYIN", "ECG", "SCRAPER", "MODEL", "CLOUD", "NOTES", "SYSTEM"];
+const WORDS = ["IMPACT", "COYIN", "ECG", "SCRAPER", "MODEL", "CLOUD", "NOTES", "BUILD"];
 const ITEM_COUNT = 16;
 const STAR_COUNT = 120;
 const Z_GAP = 640;
 const LOOP_SIZE = ITEM_COUNT * Z_GAP;
 const SCENE_STEP = 1.42;
-const SCENE_COUNT = 8;
+const SCENE_COUNT = 7;
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const seeded = (seed: number) => {
@@ -163,7 +163,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
       const tiltX = pointer.y * 5 - smoothVelocity * 0.26;
       const tiltY = pointer.x * 6;
       const fov = 980 - Math.min(Math.abs(smoothVelocity) * 42, 520);
-      const cameraZ = progress * LOOP_SIZE * 1.18;
+      const cameraZ = progress * LOOP_SIZE * 0.72;
 
       viewport.style.perspective = `${fov}px`;
       world.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
@@ -210,7 +210,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
           el.style.setProperty("--hyper-text-shift", `${offset.toFixed(2)}px`);
           el.style.setProperty(
             "--hyper-text-stroke",
-            colorEnergy > 0.04 ? `rgba(255, 0, 60, ${0.26 + colorEnergy * 0.42})` : "rgba(255, 255, 255, 0.16)",
+            colorEnergy > 0.04 ? `rgba(255, 0, 60, ${0.26 + colorEnergy * 0.42})` : "rgba(255, 255, 255, 0.28)",
           );
           el.style.textShadow =
             colorEnergy > 0.04
@@ -270,7 +270,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
                 <span>{item.title}</span>
               ) : (
                 <button
-                  className="hyper-card"
+                  className={`hyper-card ${selectedProject?.slug === item.project?.slug ? "active" : ""}`}
                   type="button"
                   onClick={() => {
                     if (item.project) {
