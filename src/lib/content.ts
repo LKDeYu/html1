@@ -76,6 +76,6 @@ export const blogPreview = [
   {
     title: "个人网站的云端运行笔记",
     category: "工程记录",
-    description: "记录首页展示、后台内容管理和服务器运行之间的连接关系。",
+    description: "记录内容组织、数据维护和服务器运行之间的连接关系。",
   },
 ];

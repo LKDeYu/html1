@@ -1,9 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
 import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { getBlogPostBySlug, listBlogPosts, slugify } from "@/lib/cms-db";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +13,37 @@ export const dynamic = "force-dynamic";
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPostBySlug(slug);
+
+  if (!post) {
+    return {
+      title: "文章不存在 | NAMRANTA",
+    };
+  }
+
+  const url = absoluteUrl(`/blog/${post.slug}`);
+
+  return {
+    title: `${post.title} | NAMRANTA`,
+    description: post.summary || siteConfig.description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.summary || siteConfig.description,
+      type: "article",
+      url,
+      publishedTime: post.date,
+      authors: [siteConfig.author],
+      tags: post.tags,
+      images: post.imageUrl ? [post.imageUrl] : undefined,
+    },
+  };
+}
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;

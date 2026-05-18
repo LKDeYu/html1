@@ -61,7 +61,7 @@ export const defaultSkills: SkillRecord[] = [
     title: "C / C++",
     summary: "用底层语言训练算法思维，理解数据结构、内存和程序执行过程。",
     bodyMarkdown:
-      "## 学习重点\n\n- 数据结构与算法\n- 指针、内存和程序执行模型\n- C/C++ 基础工程实践\n\n## 目前使用场景\n\n我主要用 C/C++ 训练基础能力，包括刷题、理解底层执行过程，以及为后续系统和高性能方向打基础。",
+      "## 学习重点\n\n- 数据结构与算法\n- 指针、内存和程序执行模型\n- C/C++ 基础工程实践\n\n## 目前使用场景\n\n我主要用 C/C++ 训练基础能力，包括刷题、理解底层执行过程，以及为系统和性能方向打基础。",
     tags: ["C", "C++", "Algorithm"],
     levelLabel: "Foundation",
     status: "published",
@@ -131,7 +131,7 @@ export const defaultSkills: SkillRecord[] = [
     title: "Cloud",
     summary: "通过 Next.js、SQLite、Nginx 和云服务器理解一个个人网站从开发到上线的完整路径。",
     bodyMarkdown:
-      "## 学习重点\n\n- Next.js 应用结构\n- SQLite 内容管理\n- Linux、Nginx 和进程管理\n- 域名、HTTPS 和服务稳定性\n\n## 项目联系\n\n这个网站本身就是我的云端部署练习：前端展示、后台内容管理和服务器运行都会沉淀成可复查的经验。",
+      "## 学习重点\n\n- Next.js 应用结构\n- 内容组织和数据保存\n- Linux、Nginx 和进程管理\n- 域名、HTTPS 和服务稳定性\n\n## 项目联系\n\n这个网站本身也是我的云端运行练习：内容展示、数据维护和服务稳定性都会沉淀成可复查的经验。",
     tags: ["Next.js", "SQLite", "ECS", "Nginx"],
     levelLabel: "Deployment",
     status: "published",
@@ -188,9 +188,9 @@ export const defaultBlogPosts: BlogPostRecord[] = [
     slug: "cloud-site-notes",
     title: "个人网站的云端运行笔记",
     date: "2026-05-18",
-    summary: "记录个人网站从前端页面、内容管理到服务器运行之间的连接关系。",
+    summary: "记录个人网站从内容组织、数据维护到服务器运行之间的连接关系。",
     bodyMarkdown:
-      "## 这个网站在解决什么\n\n我希望它不只是展示页面，而是一个可以长期维护的学习档案：项目、技能、文章和生活记录都能持续更新。\n\n## 当前结构\n\n- 首页：沉浸式时间轴展示主要内容\n- 后台：管理项目、技能和博客文章\n- 数据库：保存可以编辑的正文、标签和发布状态\n- 独立页面：让博客和项目可以被单独阅读、分享和收藏\n\n## 思考\n\n个人网站最重要的不是一次做得很炫，而是内容能够不断积累，并且每次更新都不痛苦。",
+      "## 这个网站在解决什么\n\n我希望它不只是展示页面，而是一个可以长期维护的学习档案：项目、技能、文章和生活记录都能持续更新。\n\n## 当前结构\n\n- 首页：集中呈现主要内容\n- 内容：整理项目、技能和博客文章\n- 数据：保存正文、标签和发布状态\n- 独立页面：让博客和项目可以被单独阅读、分享和收藏\n\n## 思考\n\n个人网站最重要的不是一次做得很炫，而是内容能够不断积累，并且每次更新都不痛苦。",
     tags: ["Next.js", "SQLite", "云部署"],
     category: "工程记录",
     status: "published",

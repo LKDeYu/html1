@@ -16,7 +16,7 @@ export default function ProjectsPage() {
           <Link className="content-back-link" href="/">返回首页</Link>
           <p className="section-kicker">Projects / 项目</p>
           <h1>把项目过程整理成可复查的档案。</h1>
-          <p>每个项目都可以记录目标、技术栈、实现过程、问题处理和复盘。以后你只需要在后台更新内容。</p>
+          <p>每个项目都记录目标、技术栈、实现过程、问题处理和复盘，方便之后回看关键选择和结果。</p>
         </header>
 
         <section className="post-list tag-post-list">

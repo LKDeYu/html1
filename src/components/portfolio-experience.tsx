@@ -334,7 +334,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                 <div className="scene-copy">
                   <p className="section-kicker">Blog / 学习笔记</p>
                   <h2>把学习中的问题、代码和复盘沉淀成文章。</h2>
-                  <p>文章会记录算法、Python、PyTorch、项目实践和工程部署中的关键细节，方便我之后回看和继续迭代。</p>
+                  <p>文章记录算法、Python、PyTorch、项目实践和工程运行中的关键细节，方便我之后回看和继续迭代。</p>
                 </div>
                 <div className="blog-console">
                   <div className="console-toolbar">

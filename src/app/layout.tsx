@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NAMRANTA | Zhihong Wu",
-  description: "吴志宏的 AI 学习、项目作品集、博客笔记与校园生活记录。",
+  metadataBase: new URL(siteConfig.url),
+  title: siteConfig.title,
+  description: siteConfig.description,
+  alternates: {
+    types: {
+      "application/rss+xml": "/rss.xml",
+    },
+  },
 };
 
 export default function RootLayout({
