@@ -244,7 +244,6 @@ export function HomingArticlePage({
               </dd>
             </dl>
             <h1>{post.title}</h1>
-            {post.summary ? <p>{post.summary}</p> : null}
           </header>
 
           <div className="homing-article-grid">

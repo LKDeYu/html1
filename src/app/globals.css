@@ -3509,10 +3509,15 @@ html.dark .blog-grid article {
   display: flex;
   max-width: 520px;
   flex-wrap: wrap;
+  gap: 10px 20px;
 }
 
 .homing-tags-cloud > div {
-  margin: 8px 20px 8px 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .homing-tags-cloud a {
@@ -3523,7 +3528,7 @@ html.dark .blog-grid article {
 }
 
 .homing-tags-cloud .homing-tag-count {
-  margin-left: -8px;
+  margin-left: 0;
   color: #4b5563;
   font-weight: 700;
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_SC, Space_Grotesk } from "next/font/google";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
+import { RouteStarfield } from "@/components/route-starfield";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className={`h-full scroll-smooth ${notoSansSc.variable} ${spaceGrotesk.variable}`}>
       <body>
-        <StarfieldCanvas />
+        <RouteStarfield />
         {children}
       </body>
     </html>
