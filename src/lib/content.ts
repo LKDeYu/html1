@@ -20,7 +20,7 @@ export const skillGroups = [
   },
   {
     title: "Web & Cloud",
-    items: ["Next.js", "SQLite", "Alibaba Cloud ECS", "Nginx"],
+    items: ["Next.js", "MDX", "Alibaba Cloud ECS", "Nginx"],
   },
 ];
 

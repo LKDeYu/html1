@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
-import { getSkillBySlug } from "@/lib/cms-db";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { getSkillBySlug } from "@/lib/portfolio-data";
 
 type SkillPageProps = {
   params: Promise<{ slug: string }>;

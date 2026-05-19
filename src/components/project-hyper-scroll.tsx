@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import type { ProjectRecord } from "@/lib/cms-types";
+import type { ProjectRecord } from "@/lib/portfolio-types";
 import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 type ProjectHyperScrollProps = {

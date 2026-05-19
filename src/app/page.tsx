@@ -1,9 +1,6 @@
 import { PortfolioExperience } from "@/components/portfolio-experience";
-import { listProjects, listSkills } from "@/lib/cms-db";
+import { listProjects, listSkills } from "@/lib/portfolio-data";
 import { listWriting } from "@/lib/writing";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 export default function Home() {
   const projects = listProjects();

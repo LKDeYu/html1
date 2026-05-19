@@ -2,10 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
-import { getProjectBySlug } from "@/lib/cms-db";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { getProjectBySlug } from "@/lib/portfolio-data";
 
 type ProjectPageProps = {
   params: Promise<{ slug: string }>;

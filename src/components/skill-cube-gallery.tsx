@@ -4,8 +4,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import type { SkillRecord } from "@/lib/cms-types";
-import { defaultSkills } from "@/lib/cms-seed";
+import type { SkillRecord } from "@/lib/portfolio-types";
+import { defaultSkills } from "@/lib/portfolio-seed";
 import { SkillDetailOverlay } from "@/components/skill-detail-overlay";
 import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 

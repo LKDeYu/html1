@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { listProjects } from "@/lib/cms-db";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { listProjects } from "@/lib/portfolio-data";
 
 export default function ProjectsPage() {
   const projects = listProjects();

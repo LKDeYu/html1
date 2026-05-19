@@ -38,7 +38,7 @@ prod-server.*.log
 # local source photo library
 /pictures/
 
-# local CMS database
+# legacy local database files
 /data/*.db
 /data/*.db-*
 

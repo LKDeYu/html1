@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import type { ProjectRecord } from "@/lib/cms-types";
+import type { ProjectRecord } from "@/lib/portfolio-types";
 import { MarkdownView } from "@/components/markdown-view";
 
 type ProjectDetailOverlayProps = {

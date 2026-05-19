@@ -9,7 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { BookOpen, Code2, Mail, MessageCircle, Tags } from "lucide-react";
 import { blogPreview, navItems } from "@/lib/content";
-import type { ProjectRecord, SkillRecord } from "@/lib/cms-types";
+import type { ProjectRecord, SkillRecord } from "@/lib/portfolio-types";
 import { CampusGallery } from "@/components/campus-gallery";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
 import { IntroWorkstation } from "@/components/intro-workstation";
