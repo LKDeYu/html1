@@ -1,0 +1,28 @@
+---
+title: "PyTorch 训练循环笔记"
+date: "2026-05-18"
+summary: "记录一次从 Dataset、DataLoader 到训练评估循环的 PyTorch 基础整理。"
+tags: ["PyTorch", "深度学习", "实验"]
+---
+
+## 基础结构
+
+一个清晰的 PyTorch 实验至少需要把数据、模型、损失函数、优化器、训练循环和评估逻辑拆开。
+
+```python
+for epoch in range(epochs):
+    model.train()
+    for x, y in train_loader:
+        optimizer.zero_grad()
+        pred = model(x)
+        loss = criterion(pred, y)
+        loss.backward()
+        optimizer.step()
+```
+
+## 我需要特别注意的地方
+
+- 训练和评估模式要分开
+- 指标要和任务目标匹配
+- 每次实验保留参数、随机种子和结果
+- 失败样本通常比平均指标更能说明问题

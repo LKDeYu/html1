@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { listBlogPosts, listBlogTags, slugify } from "@/lib/cms-db";
 
 export const runtime = "nodejs";
@@ -21,8 +20,6 @@ export default async function TagPage({ params }: TagPageProps) {
   const posts = listBlogPosts({ tag });
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page blog-page">
         <header className="content-hero">
           <Link className="content-back-link" href="/tags">全部标签</Link>
@@ -51,6 +48,5 @@ export default async function TagPage({ params }: TagPageProps) {
           ))}
         </section>
       </main>
-    </>
   );
 }

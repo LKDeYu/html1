@@ -15,9 +15,8 @@ import { IntroWorkstation } from "@/components/intro-workstation";
 import { InterestCarousel } from "@/components/interest-carousel";
 import { ProjectHyperScroll } from "@/components/project-hyper-scroll";
 import { SkillCubeGallery } from "@/components/skill-cube-gallery";
+import { STORY_SCROLL_DISTANCE, STORY_TOTAL_UNITS, getStorySceneStart } from "@/components/story-scene-timing";
 
-const STORY_SCROLL_DISTANCE = 9600;
-const STORY_SCENE_STEP = 1.42;
 const STORY_SCENE_FADE = 0.56;
 const STORY_SCENE_ORDER = ["#about", "#skills", "#projects", "#campus", "#interests", "#blog", "#contact"];
 
@@ -76,9 +75,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
         const storyTrigger = ScrollTrigger.getById("story-scroll");
 
         if (index >= 0 && storyTrigger) {
-          const timelineDuration = STORY_SCENE_ORDER.length * STORY_SCENE_STEP;
-          const sceneStart = index === 0 ? 0 : index * STORY_SCENE_STEP + 0.82;
-          const progress = Math.min(sceneStart / timelineDuration, 0.98);
+          const sceneStart = index === 0 ? 0 : getStorySceneStart(index) + 0.18;
+          const progress = Math.min(sceneStart / STORY_TOTAL_UNITS, 0.98);
           top = storyTrigger.start + (storyTrigger.end - storyTrigger.start) * progress + 4;
         } else {
           top = document.querySelector<HTMLElement>(href)?.offsetTop ?? 0;
@@ -124,6 +122,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
     gsap.ticker.lagSmoothing(0);
 
     const ctx = gsap.context(() => {
+      document.documentElement.style.setProperty("--story-scroll-distance", `${STORY_SCROLL_DISTANCE}px`);
+
       gsap.set(".hero-wordmark", {
         autoAlpha: 0,
         y: 34,
@@ -182,13 +182,13 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
         {
           height: "100%",
           ease: "none",
-          duration: scenes.length * STORY_SCENE_STEP,
+          duration: STORY_TOTAL_UNITS,
         },
         0,
       );
 
       scenes.forEach((scene, index) => {
-        const at = index * STORY_SCENE_STEP;
+        const at = getStorySceneStart(index);
         timeline.to(
           `.timeline-dot-${index}`,
           {
@@ -229,6 +229,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
     }, rootRef);
 
     return () => {
+      document.documentElement.style.removeProperty("--story-scroll-distance");
       ctx.revert();
       gsap.ticker.remove(raf);
       lenis.destroy();
@@ -346,7 +347,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                       <Tags size={15} />
                       Tags
                     </span>
-                    <Link href="/blog">All posts</Link>
+                    <Link href="/writing">All posts</Link>
                   </div>
                   <ul className="papercut-list">
                     {blogItems.map((post, index) => (

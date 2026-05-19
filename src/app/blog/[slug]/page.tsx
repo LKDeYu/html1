@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { getBlogPostBySlug, listBlogPosts, slugify } from "@/lib/cms-db";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
@@ -59,8 +58,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const next = posts[index - 1];
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page article-page">
         <article className="article-shell">
           <aside className="article-aside">
@@ -97,6 +94,5 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </article>
       </main>
-    </>
   );
 }

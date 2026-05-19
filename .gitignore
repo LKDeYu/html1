@@ -30,9 +30,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 dev-server.*.log
+prod-server.*.log
 
 # local visual QA
 /qa/
+
+# local source photo library
+/pictures/
 
 # local CMS database
 /data/*.db

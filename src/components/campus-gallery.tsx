@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 const CAMPUS_IMAGES = [
   "/images/campus/scenery-1.jpg",
@@ -14,31 +14,15 @@ const CAMPUS_IMAGES = [
   "/images/campus/study-2.jpg",
   "/images/campus/game-2.jpg",
   "/images/campus/scenery-3.jpg",
-  "/images/campus/food-3.jpg",
+  "/images/campus/food-3-lite.jpg",
   "/images/campus/study-3.jpg",
   "/images/campus/game-3.jpg",
-  "/images/campus/study-4.jpeg",
+  "/images/campus/study-4-lite.jpg",
   "/images/campus/game-4.jpg",
   "/images/campus/game-5.jpg",
 ];
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
-
-function getCampusProgress(fallbackEl: HTMLElement) {
-  const trigger = ScrollTrigger.getById("story-scroll");
-
-  if (trigger) {
-    const sceneStep = 1.42;
-    const totalUnits = 7 * sceneStep;
-    const storyProgress = (window.scrollY - trigger.start) / (trigger.end - trigger.start);
-    const start = (3 * sceneStep) / totalUnits;
-    const end = (4 * sceneStep) / totalUnits;
-    return clamp((storyProgress - start) / (end - start));
-  }
-
-  const rect = fallbackEl.getBoundingClientRect();
-  return clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height));
-}
 
 export function CampusGallery() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -50,19 +34,40 @@ export function CampusGallery() {
     }
 
     let frame = 0;
+    let idleTimer = 0;
 
-    const draw = () => {
+    const schedule = (delay = 0) => {
+      if (delay > 0) {
+        idleTimer = window.setTimeout(() => {
+          idleTimer = 0;
+          frame = requestAnimationFrame(draw);
+        }, delay);
+        return;
+      }
+
       frame = requestAnimationFrame(draw);
-      const progress = getCampusProgress(root);
-      root.style.setProperty("--gallery-progress", progress.toFixed(4));
-      root.style.setProperty("--gallery-center-scale", String(4.2 - progress * 3.2));
-      root.style.setProperty("--gallery-layer-alpha", String(clamp((progress - 0.36) / 0.42)));
-      root.style.setProperty("--gallery-layer-scale", String(clamp((progress - 0.24) / 0.58)));
     };
 
-    draw();
+    const draw = () => {
+      if (document.hidden || !isStorySceneActive(3, root, 0.35)) {
+        schedule(document.hidden ? 500 : 180);
+        return;
+      }
 
-    return () => cancelAnimationFrame(frame);
+      const progress = getStorySceneProgress(3, root, 0.02, 0.56);
+      root.style.setProperty("--gallery-progress", progress.toFixed(4));
+      root.style.setProperty("--gallery-center-scale", String(2.5 - progress * 1.25));
+      root.style.setProperty("--gallery-layer-alpha", String(clamp((progress - 0.04) / 0.18)));
+      root.style.setProperty("--gallery-layer-scale", String(clamp((progress - 0.02) / 0.24)));
+      schedule();
+    };
+
+    schedule();
+
+    return () => {
+      window.clearTimeout(idleTimer);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
@@ -71,26 +76,32 @@ export function CampusGallery() {
         <div className="campus-layer campus-layer-outer">
           {CAMPUS_IMAGES.slice(0, 6).map((src) => (
             <div key={src}>
-              <img src={src} alt="" />
+              <img src={src} alt="" loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
         <div className="campus-layer campus-layer-inner">
           {CAMPUS_IMAGES.slice(6, 12).map((src) => (
             <div key={src}>
-              <img src={src} alt="" />
+              <img src={src} alt="" loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
         <div className="campus-layer campus-layer-center">
           {CAMPUS_IMAGES.slice(12, 14).map((src) => (
             <div key={src}>
-              <img src={src} alt="" />
+              <img src={src} alt="" loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
         <div className="campus-scaler">
-          <img src={CAMPUS_IMAGES[14]} alt="校园生活照片" />
+          <img
+            src={CAMPUS_IMAGES[14]}
+            alt="campus life photo"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+          />
         </div>
       </div>
     </div>

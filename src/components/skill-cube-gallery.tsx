@@ -2,57 +2,48 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SkillRecord } from "@/lib/cms-types";
 import { defaultSkills } from "@/lib/cms-seed";
 import { SkillDetailOverlay } from "@/components/skill-detail-overlay";
+import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 type SkillCubeGalleryProps = {
   skills: SkillRecord[];
 };
 
-const FACE_SLOTS = ["front", "right", "back", "left", "top", "bottom"] as const;
+const FACE_SLOTS = ["top", "front", "right", "back", "left", "bottom"] as const;
+const FACE_IMAGES = [
+  "https://assets.codepen.io/573855/demo-raw-01.webp",
+  "https://assets.codepen.io/573855/demo-raw-02.webp",
+  "https://assets.codepen.io/573855/demo-raw-03.webp",
+  "https://assets.codepen.io/573855/demo-raw-04.webp",
+  "https://assets.codepen.io/573855/demo-raw-05.webp",
+  "https://assets.codepen.io/573855/demo-raw-06.webp",
+];
 
 const STOPS = [
+  { rx: 90, ry: 0 },
   { rx: 0, ry: 0 },
   { rx: 0, ry: -90 },
   { rx: 0, ry: -180 },
   { rx: 0, ry: -270 },
-  { rx: 90, ry: -360 },
   { rx: -90, ry: -360 },
 ];
 
-const SCENE_STEP = 1.42;
-const SCENE_COUNT = 7;
-const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const easeIO = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 
 function buildFaces(skills: SkillRecord[]) {
-  const source = skills.length > 0 ? skills : defaultSkills;
+  const source = [...(skills.length > 0 ? skills : defaultSkills)].sort((a, b) => a.sortOrder - b.sortOrder);
   return FACE_SLOTS.map((face, index) => {
     const skill = source[index % source.length];
     return {
       face,
+      image: FACE_IMAGES[index],
       label: String(index + 1).padStart(2, "0"),
       skill,
     };
   });
-}
-
-function getStorySegmentProgress(startUnit: number, endUnit: number, fallbackEl: HTMLElement) {
-  const trigger = ScrollTrigger.getById("story-scroll");
-
-  if (trigger) {
-    const totalUnits = SCENE_COUNT * SCENE_STEP;
-    const scroll = window.scrollY;
-    const storyProgress = (scroll - trigger.start) / (trigger.end - trigger.start);
-    const start = startUnit / totalUnits;
-    const end = endUnit / totalUnits;
-    return clamp((storyProgress - start) / (end - start));
-  }
-
-  const rect = fallbackEl.getBoundingClientRect();
-  return clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height));
 }
 
 export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
@@ -70,27 +61,39 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
     }
 
     let frame = 0;
+    let idleTimer = 0;
     let lastIndex = -1;
-    const pointer = { x: 0, y: 0 };
 
-    const onPointerMove = (event: PointerEvent) => {
-      const rect = root.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-      pointer.y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    const schedule = (delay = 0) => {
+      if (delay > 0) {
+        idleTimer = window.setTimeout(() => {
+          idleTimer = 0;
+          frame = requestAnimationFrame(draw);
+        }, delay);
+        return;
+      }
+
+      frame = requestAnimationFrame(draw);
     };
 
     const draw = () => {
-      frame = requestAnimationFrame(draw);
+      if (document.hidden || !isStorySceneActive(1, root, 0.4)) {
+        schedule(document.hidden ? 500 : 180);
+        return;
+      }
 
-      const smooth = getStorySegmentProgress(SCENE_STEP, SCENE_STEP * 2, root);
-      const t = smooth * (faces.length - 1);
-      const index = Math.min(Math.floor(t), faces.length - 2);
+      const sceneProgress = getStorySceneProgress(1, root, 0, 1);
+      const hold = 0.18;
+      const travel = clamp((sceneProgress - hold) / 0.74);
+      const smooth = easeIO(travel);
+      const t = smooth * (STOPS.length - 1);
+      const index = Math.min(Math.floor(t), STOPS.length - 2);
       const f = easeIO(t - index);
       const a = STOPS[index];
       const b = STOPS[index + 1];
-      const rx = a.rx + (b.rx - a.rx) * f + pointer.y * -4;
-      const ry = a.ry + (b.ry - a.ry) * f + pointer.x * 7;
-      const active = Math.min(faces.length - 1, Math.round(t));
+      const rx = a.rx + (b.rx - a.rx) * f;
+      const ry = a.ry + (b.ry - a.ry) * f;
+      const active = Math.min(faces.length - 1, Math.round(Math.max(0, smooth) * (faces.length - 1)));
 
       cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
       root.style.setProperty("--cube-progress", `${smooth}`);
@@ -99,13 +102,14 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
         lastIndex = active;
         setActiveIndex(active);
       }
+
+      schedule();
     };
 
-    root.addEventListener("pointermove", onPointerMove);
-    draw();
+    schedule();
 
     return () => {
-      root.removeEventListener("pointermove", onPointerMove);
+      window.clearTimeout(idleTimer);
       cancelAnimationFrame(frame);
     };
   }, [faces.length]);
@@ -125,6 +129,9 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
               style={{ "--i": index } as CSSProperties}
               key={face.face}
             >
+              <span className="skill-face-fallback" aria-hidden="true" />
+              <img className="skill-face-image" src={face.image} alt="" loading="eager" decoding="async" />
+              <span className="skill-face-frame" aria-hidden="true" />
               <span className="skill-face-label">{face.label}</span>
               <strong>{face.skill.title}</strong>
               <p>{face.skill.name}</p>
@@ -140,7 +147,9 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
       </div>
 
       <button className="skill-cube-card" type="button" onClick={() => setSelectedSkill(activeFace.skill)}>
-        <small>{activeFace.label} / {activeFace.skill.name}</small>
+        <small>
+          {activeFace.label} / {activeFace.skill.name}
+        </small>
         <h3>{activeFace.skill.title}</h3>
         <p>{activeFace.skill.summary}</p>
       </button>

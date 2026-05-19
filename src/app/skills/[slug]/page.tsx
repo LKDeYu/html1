@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { getSkillBySlug } from "@/lib/cms-db";
 
 export const runtime = "nodejs";
@@ -20,8 +19,6 @@ export default async function SkillPage({ params }: SkillPageProps) {
   }
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page article-page">
         <article className="article-shell">
           <aside className="article-aside">
@@ -53,6 +50,5 @@ export default async function SkillPage({ params }: SkillPageProps) {
           </div>
         </article>
       </main>
-    </>
   );
 }

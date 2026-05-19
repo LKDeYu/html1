@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { listBlogPosts, listBlogTags, slugify } from "@/lib/cms-db";
 
 export const runtime = "nodejs";
@@ -71,8 +70,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const hasFilters = Boolean(query || selectedCategory || selectedYear);
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page blog-page">
         <header className="content-hero">
           <Link className="content-back-link" href="/">返回首页</Link>
@@ -180,6 +177,5 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </div>
         </section>
       </main>
-    </>
   );
 }

@@ -73,7 +73,7 @@ export function ProjectDetailOverlay({ project, onClose }: ProjectDetailOverlayP
         ) : null}
 
         <footer className="detail-actions">
-          <Link href={`/projects/${project.slug}`}>打开完整页面</Link>
+          <Link href={`/writing/${project.slug}`}>打开完整页面</Link>
           <div className="detail-tags">
             {project.tags.map((tag) => (
               <span key={tag}>{tag}</span>

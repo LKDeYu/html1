@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { listBlogTags } from "@/lib/cms-db";
 
 export const runtime = "nodejs";
@@ -9,8 +8,6 @@ export default function TagsPage() {
   const tags = listBlogTags();
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page tags-page">
         <header className="content-hero">
           <Link className="content-back-link" href="/blog">返回博客</Link>
@@ -28,6 +25,5 @@ export default function TagsPage() {
           ))}
         </section>
       </main>
-    </>
   );
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { listProjects } from "@/lib/cms-db";
 
 export const runtime = "nodejs";
@@ -9,8 +8,6 @@ export default function ProjectsPage() {
   const projects = listProjects();
 
   return (
-    <>
-      <StarfieldCanvas />
       <main className="content-page blog-page">
         <header className="content-hero">
           <Link className="content-back-link" href="/">返回首页</Link>
@@ -39,6 +36,5 @@ export default function ProjectsPage() {
           ))}
         </section>
       </main>
-    </>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { ProjectRecord } from "@/lib/cms-types";
-import { ProjectDetailOverlay } from "@/components/project-detail-overlay";
+import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 type ProjectHyperScrollProps = {
   projects: ProjectRecord[];
@@ -31,33 +32,16 @@ type HyperStar = {
 
 const WORDS = ["IMPACT", "COYIN", "ECG", "SCRAPER", "MODEL", "CLOUD", "NOTES", "BUILD"];
 const ITEM_COUNT = 16;
-const STAR_COUNT = 120;
-const Z_GAP = 640;
+const STAR_COUNT = 90;
+const Z_GAP = 760;
 const LOOP_SIZE = ITEM_COUNT * Z_GAP;
-const SCENE_STEP = 1.42;
-const SCENE_COUNT = 7;
 
-const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const seeded = (seed: number) => {
   const x = Math.sin(seed * 997.13) * 10000;
   return x - Math.floor(x);
 };
+
 const round = (value: number) => Number(value.toFixed(3));
-
-function getProjectProgress(fallbackEl: HTMLElement) {
-  const trigger = ScrollTrigger.getById("story-scroll");
-
-  if (trigger) {
-    const storyProgress = (window.scrollY - trigger.start) / (trigger.end - trigger.start);
-    const totalUnits = SCENE_COUNT * SCENE_STEP;
-    const start = (SCENE_STEP * 2) / totalUnits;
-    const end = (SCENE_STEP * 3) / totalUnits;
-    return clamp((storyProgress - start) / (end - start));
-  }
-
-  const rect = fallbackEl.getBoundingClientRect();
-  return clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height));
-}
 
 function buildItems(projects: ProjectRecord[]) {
   const sourceProjects = projects.length > 0 ? projects : [];
@@ -113,7 +97,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const velocityRef = useRef<HTMLElement>(null);
   const coordRef = useRef<HTMLElement>(null);
-  const [selectedProject, setSelectedProject] = useState<ProjectRecord | null>(null);
+  const [featuredItemId, setFeaturedItemId] = useState<string | null>(null);
   const items = useMemo(() => buildItems(projects), [projects]);
   const stars = useMemo(() => buildStars(), []);
 
@@ -129,10 +113,24 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
 
     const elements = Array.from(world.querySelectorAll<HTMLElement>(".project-hyper-item"));
     let frame = 0;
-    let last = getProjectProgress(root);
+    let idleTimer = 0;
+    let last = getStorySceneProgress(2, root, 0.02, 0.98);
     let smoothVelocity = 0;
     let motionEnergy = 0;
+    let lastFeaturedItemId: string | null = null;
     const pointer = { x: 0, y: 0 };
+
+    const schedule = (delay = 0) => {
+      if (delay > 0) {
+        idleTimer = window.setTimeout(() => {
+          idleTimer = 0;
+          frame = requestAnimationFrame(render);
+        }, delay);
+        return;
+      }
+
+      frame = requestAnimationFrame(render);
+    };
 
     const onPointerMove = (event: PointerEvent) => {
       const rect = root.getBoundingClientRect();
@@ -141,29 +139,35 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
     };
 
     const render = () => {
-      frame = requestAnimationFrame(render);
-      const progress = getProjectProgress(root);
-      const progressVelocity = (progress - last) * 520;
+      if (document.hidden || !isStorySceneActive(2, root, 0.45)) {
+        schedule(document.hidden ? 500 : 180);
+        return;
+      }
+
+      const progress = getStorySceneProgress(2, root, 0.02, 0.98);
+      const progressVelocity = (progress - last) * 150;
       last = progress;
-      const storyVelocity = (ScrollTrigger.getById("story-scroll")?.getVelocity() ?? 0) / 420;
+      const storyVelocity = (ScrollTrigger.getById("story-scroll")?.getVelocity() ?? 0) / 960;
       const targetVelocity =
         Math.abs(storyVelocity) > 0.05
           ? storyVelocity
           : Math.abs(progressVelocity) > 0.1
             ? progressVelocity
             : 0;
-      smoothVelocity += (targetVelocity - smoothVelocity) * 0.16;
-      const targetEnergy = Math.abs(progressVelocity) > 0.08 ? Math.min(1, Math.abs(progressVelocity) / 1.5) : 0;
-      motionEnergy = targetEnergy > 0 ? Math.max(motionEnergy * 0.78, targetEnergy) : motionEnergy * 0.82;
+      smoothVelocity += (targetVelocity - smoothVelocity) * 0.08;
+      const targetEnergy = Math.abs(progressVelocity) > 0.06 ? Math.min(1, Math.abs(progressVelocity) / 2.6) : 0;
+      motionEnergy = targetEnergy > 0 ? Math.max(motionEnergy * 0.9, targetEnergy) : motionEnergy * 0.94;
       if (motionEnergy < 0.025) {
         motionEnergy = 0;
       }
-      const colorEnergy = motionEnergy;
 
+      const colorEnergy = motionEnergy;
       const tiltX = pointer.y * 5 - smoothVelocity * 0.26;
       const tiltY = pointer.x * 6;
-      const fov = 980 - Math.min(Math.abs(smoothVelocity) * 42, 520);
-      const cameraZ = progress * LOOP_SIZE * 0.72;
+      const fov = 1060 - Math.min(Math.abs(smoothVelocity) * 14, 220);
+      const cameraZ = progress * LOOP_SIZE * 1.06;
+      let bestItemId: string | null = null;
+      let bestDistance = Number.POSITIVE_INFINITY;
 
       viewport.style.perspective = `${fov}px`;
       world.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
@@ -188,48 +192,59 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
         } else if (vizZ < -2300) {
           alpha = (vizZ + 3300) / 1000;
         }
-        if (vizZ > 120 && type !== "star") {
-          alpha = 1 - (vizZ - 120) / 460;
+        if (vizZ > 180 && type !== "star") {
+          alpha = 1 - (vizZ - 180) / 560;
         }
         alpha = Math.max(0, alpha);
         el.style.opacity = String(alpha);
 
         if (alpha <= 0) {
+          el.classList.remove("featured");
           return;
         }
 
         let transform = `translate3d(${x}px, ${y}px, ${vizZ}px)`;
 
         if (type === "star") {
-          const stretch = Math.max(1, Math.min(1 + Math.abs(smoothVelocity) * 0.8, 9));
+          const stretch = Math.max(1, Math.min(1 + Math.abs(smoothVelocity) * 0.55, 7));
           transform += ` scale3d(1, 1, ${stretch})`;
         } else if (type === "text") {
           transform += ` rotateZ(${rot}deg)`;
-          const offset = Math.max(2, Math.min(18, Math.abs(smoothVelocity) * 3.4 + colorEnergy * 7));
-          el.style.setProperty("--hyper-text-energy", colorEnergy.toFixed(3));
-          el.style.setProperty("--hyper-text-shift", `${offset.toFixed(2)}px`);
-          el.style.setProperty(
-            "--hyper-text-stroke",
-            colorEnergy > 0.04 ? `rgba(255, 0, 60, ${0.26 + colorEnergy * 0.42})` : "rgba(255, 255, 255, 0.28)",
-          );
+          const offset = Math.max(2, Math.min(10, Math.abs(smoothVelocity) * 2 + colorEnergy * 3));
           el.style.textShadow =
-            colorEnergy > 0.04
-              ? `${offset}px 0 #ff003c, ${-offset}px 0 #00f3ff, 0 0 ${18 + colorEnergy * 34}px rgba(0, 243, 255, ${0.22 + colorEnergy * 0.28})`
+            colorEnergy > 0.08
+              ? `${offset}px 0 #ff003c, ${-offset}px 0 #00f3ff`
               : "none";
         } else {
-          const float = Math.sin(performance.now() * 0.001 + x * 0.01) * 10;
+          const float = Math.sin(performance.now() * 0.0007 + x * 0.01) * 6;
           transform += ` rotateZ(${rot}deg) rotateY(${float}deg)`;
+          const distance = Math.abs(vizZ + 260) + Math.abs(x) * 0.12 + Math.abs(y) * 0.08;
+          if (alpha > 0.42 && distance < bestDistance) {
+            bestDistance = distance;
+            bestItemId = el.dataset.itemId || null;
+          }
         }
 
         el.style.transform = transform;
       });
+
+      elements.forEach((el) => {
+        el.classList.toggle("featured", Boolean(bestItemId && el.dataset.itemId === bestItemId));
+      });
+      if (bestItemId !== lastFeaturedItemId) {
+        lastFeaturedItemId = bestItemId;
+        setFeaturedItemId(bestItemId);
+      }
+
+      schedule();
     };
 
     root.addEventListener("pointermove", onPointerMove);
-    render();
+    schedule();
 
     return () => {
       root.removeEventListener("pointermove", onPointerMove);
+      window.clearTimeout(idleTimer);
       cancelAnimationFrame(frame);
     };
   }, []);
@@ -244,11 +259,17 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
         <div>
           <span>PROJECTS.READY</span>
           <i />
-          <span>FPS: <strong>60</strong></span>
+          <span>
+            FPS: <strong>60</strong>
+          </span>
         </div>
-        <p>SCROLL VELOCITY // <strong ref={velocityRef}>0.00</strong></p>
+        <p>
+          SCROLL VELOCITY // <strong ref={velocityRef}>0.00</strong>
+        </p>
         <div>
-          <span>COORD: <strong ref={coordRef}>000000</strong></span>
+          <span>
+            COORD: <strong ref={coordRef}>000000</strong>
+          </span>
           <i />
           <span>VER 0.2</span>
         </div>
@@ -264,19 +285,17 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
               data-y={item.y}
               data-z={item.z}
               data-rot={item.rot}
+              data-item-id={item.id}
+              data-slug={item.project?.slug ?? ""}
               key={item.id}
             >
               {item.type === "text" ? (
                 <span>{item.title}</span>
               ) : (
-                <button
-                  className={`hyper-card ${selectedProject?.slug === item.project?.slug ? "active" : ""}`}
-                  type="button"
-                  onClick={() => {
-                    if (item.project) {
-                      setSelectedProject(item.project);
-                    }
-                  }}
+                <Link
+                  className={`hyper-card ${featuredItemId === item.id ? "active" : ""}`}
+                  href={item.project ? `/writing/${item.project.slug}` : "/writing"}
+                  onPointerDown={(event) => event.stopPropagation()}
                 >
                   <div className="hyper-card-header">
                     <span>{item.eyebrow}</span>
@@ -285,7 +304,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
                   <h3>{item.title}</h3>
                   <p>{item.footer}</p>
                   <em>{item.id.replace("card-", "").padStart(2, "0")}</em>
-                </button>
+                </Link>
               )}
             </div>
           ))}
@@ -303,7 +322,6 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
           ))}
         </div>
       </div>
-      <ProjectDetailOverlay project={selectedProject} onClose={() => setSelectedProject(null)} />
     </div>
   );
 }

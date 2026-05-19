@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" className="h-full scroll-smooth">
-      <body>{children}</body>
+      <body>
+        <StarfieldCanvas />
+        {children}
+      </body>
     </html>
   );
 }

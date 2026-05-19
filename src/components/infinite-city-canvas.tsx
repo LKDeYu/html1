@@ -15,6 +15,9 @@ void main() {
 }
 `;
 
+const HERO_FRAME_INTERVAL_MS = 1000 / 30;
+const HERO_IDLE_POLL_MS = 260;
+
 const fragmentShaderSource = `#version 300 es
 precision highp float;
 out vec4 O;
@@ -57,7 +60,7 @@ float map(vec3 p, bool g) {
     glow += 0.05 / (0.05 + d * d * 80.0);
   }
 
-  p.z -= T * 3.5 + 0.2 * (wheel.y / 80.0);
+  p.z -= T * 2.65 + 0.14 * (wheel.y / 120.0);
   p = fract(p) - 0.5;
 
   vec4 k = vec4(1.0, 0.05, 0.03, 0.1);
@@ -84,7 +87,7 @@ vec3 norm(vec3 p) {
 }
 
 bool march(inout vec3 p, vec3 rd, out float dd, out float at) {
-  for (float i = 0.0; i++ < 400.0;) {
+  for (float i = 0.0; i++ < 176.0;) {
     float d = map(p, true);
     if (abs(d) < 1e-3) {
       return true;
@@ -157,7 +160,7 @@ float shadow(vec3 p, vec3 lp) {
 float calcAO(vec3 p, vec3 n) {
   float occ = 0.0;
   float sca = 1.0;
-  for (float i = 0.0; i < 5.0; i++) {
+  for (float i = 0.0; i < 3.0; i++) {
     float h = 0.01 + i * 0.09;
     float d = map(p + h * n, false);
     occ += (h - d) * sca;
@@ -187,7 +190,7 @@ vec3 render(vec2 uv) {
     float ld = distance(lp, p);
     float atten = 1.0 / (1.0 + ld * 0.25 + ld * ld * 0.125);
     float ao = calcAO(p, n);
-    float shd = shadow(p + n * 5e-2, lp - n * 5e-1);
+    float shd = mix(0.72, 1.0, clamp(dot(l, n) * 0.5 + 0.5, 0.0, 1.0));
     col += shd * atten * vec3(0.1, 0.095, 0.09) + clamp(dot(l, n), 0.0, 1.0) * atten * ao * shd;
     col += pow(max(0.0, dot(r, e)), 8.0) * atten * ao * shd;
     col += clamp(dot(-rd, l), 0.0, 1.0) * ao * atten * 1.2;
@@ -288,11 +291,35 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
     );
 
     let frame = 0;
+    let timer = 0;
     const start = performance.now();
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const isCanvasVisible = () => {
+      const rect = canvas.getBoundingClientRect();
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom >= -window.innerHeight * 0.1 &&
+        rect.top <= window.innerHeight * 1.1
+      );
+    };
+
+    const schedule = (delay = 0) => {
+      if (delay > 0) {
+        timer = window.setTimeout(() => {
+          timer = 0;
+          frame = requestAnimationFrame(render);
+        }, delay);
+        return;
+      }
+
+      frame = requestAnimationFrame(render);
+    };
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 1.2) * 0.82);
+      const dpr = Math.max(0.62, Math.min(window.devicePixelRatio || 1, 1.1) * 0.68);
       canvas.width = Math.max(1, Math.floor(rect.width * dpr));
       canvas.height = Math.max(1, Math.floor(rect.height * dpr));
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -316,7 +343,11 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
     };
 
     const render = () => {
-      frame = requestAnimationFrame(render);
+      if (document.hidden || !isCanvasVisible()) {
+        schedule(HERO_IDLE_POLL_MS);
+        return;
+      }
+
       pointerRef.current.x += (pointerRef.current.tx - pointerRef.current.x) * 0.04;
       pointerRef.current.y += (pointerRef.current.ty - pointerRef.current.y) * 0.04;
 
@@ -329,18 +360,23 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
       gl.uniform2f(moveLocation, pointerRef.current.x, pointerRef.current.y);
       gl.uniform2f(wheelLocation, wheelRef.current.x, wheelRef.current.y);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      if (!reduceMotion.matches) {
+        schedule(HERO_FRAME_INTERVAL_MS);
+      }
     };
 
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", movePointer, { passive: true });
     window.addEventListener("wheel", handleWheel, { passive: true });
-    frame = requestAnimationFrame(render);
+    schedule();
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", movePointer);
       window.removeEventListener("wheel", handleWheel);
+      window.clearTimeout(timer);
       cancelAnimationFrame(frame);
       gl.deleteProgram(program);
       gl.deleteShader(vertexShader);
