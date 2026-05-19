@@ -1,52 +1,66 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { listBlogPosts, listBlogTags, slugify } from "@/lib/cms-db";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { HomingListPage } from "@/components/homing-content";
+import { listWriting, listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 type TagPageProps = {
   params: Promise<{ tag: string }>;
 };
 
+function getTagInfo(slug: string) {
+  return listWritingTags().find((tag) => slugifyWritingTag(tag.label) === slug) ?? null;
+}
+
+export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
+  const { tag } = await params;
+  const tagInfo = getTagInfo(decodeURIComponent(tag));
+
+  if (!tagInfo) {
+    return {
+      title: "标签不存在 | NAMRANTA",
+    };
+  }
+
+  return {
+    title: `${tagInfo.label} | NAMRANTA`,
+    description: `${tagInfo.count} 篇与 ${tagInfo.label} 相关的内容。`,
+  };
+}
+
+export function generateStaticParams() {
+  return listWritingTags().map((tag) => ({ tag: slugifyWritingTag(tag.label) }));
+}
+
 export default async function TagPage({ params }: TagPageProps) {
   const { tag } = await params;
-  const tagInfo = listBlogTags().find((item) => item.slug === tag);
+  const tagSlug = decodeURIComponent(tag);
+  const tagInfo = getTagInfo(tagSlug);
 
   if (!tagInfo) {
     notFound();
   }
 
-  const posts = listBlogPosts({ tag });
+  const posts = listWriting({ tag: tagSlug });
+  const tags = listWritingTags();
 
   return (
-      <main className="content-page blog-page">
-        <header className="content-hero">
-          <Link className="content-back-link" href="/tags">全部标签</Link>
-          <p className="section-kicker">Tag / {tagInfo.label}</p>
-          <h1>{tagInfo.label}</h1>
-          <p>共 {tagInfo.count} 篇文章。</p>
-        </header>
-
-        <section className="post-list tag-post-list">
-          {posts.map((post) => (
-            <article className="post-list-card" key={post.id}>
-              <div className="post-list-meta">
-                <span>{post.category || "学习笔记"}</span>
-                <time dateTime={post.date}>{post.date}</time>
-              </div>
-              <h2>
-                <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-              </h2>
-              <p>{post.summary}</p>
-              <div className="post-tags">
-                {post.tags.map((item) => (
-                  <Link href={`/tags/${slugify(item)}`} key={item}>{item}</Link>
-                ))}
-              </div>
-            </article>
-          ))}
-        </section>
-      </main>
+    <HomingListPage
+      posts={posts.map((post) => ({
+        slug: post.slug,
+        title: post.title,
+        date: post.date,
+        summary: post.summary,
+        tags: post.tags,
+        href: `/blog/${post.slug}`,
+      }))}
+      tags={tags.map((item) => ({
+        label: item.label,
+        count: item.count,
+        href: `/tags/${slugifyWritingTag(item.label)}`,
+      }))}
+      activeTag={tagInfo.label}
+      title={tagInfo.label[0]?.toUpperCase() + tagInfo.label.split(" ").join("-").slice(1)}
+      subtitle={`${tagInfo.count} 篇文章`}
+    />
   );
 }

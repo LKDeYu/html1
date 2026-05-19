@@ -1,4 +1,4 @@
-import { listBlogPosts } from "@/lib/cms-db";
+import { listWriting } from "@/lib/writing";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ function toRssDate(value: string) {
 }
 
 export function GET() {
-  const posts = listBlogPosts();
+  const posts = listWriting();
   const latestDate = posts[0]?.date ? toRssDate(posts[0].date) : new Date().toUTCString();
   const items = posts
     .map((post) => {

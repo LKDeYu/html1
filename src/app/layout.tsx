@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_SC } from "next/font/google";
+import { Noto_Sans_SC, Space_Grotesk } from "next/font/google";
 import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
@@ -9,6 +9,12 @@ const notoSansSc = Noto_Sans_SC({
   weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
   variable: "--font-sans-sc",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className={`h-full scroll-smooth ${notoSansSc.variable}`}>
+    <html lang="zh-CN" className={`h-full scroll-smooth ${notoSansSc.variable} ${spaceGrotesk.variable}`}>
       <body>
         <StarfieldCanvas />
         {children}

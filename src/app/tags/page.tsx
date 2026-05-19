@@ -1,29 +1,22 @@
-import Link from "next/link";
-import { listBlogTags } from "@/lib/cms-db";
+import type { Metadata } from "next";
+import { HomingTagsPage } from "@/components/homing-content";
+import { listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Tags | NAMRANTA",
+  description: "按标签浏览吴志宏的项目、学习笔记和工程复盘。",
+};
 
 export default function TagsPage() {
-  const tags = listBlogTags();
+  const tags = listWritingTags();
 
   return (
-      <main className="content-page tags-page">
-        <header className="content-hero">
-          <Link className="content-back-link" href="/blog">返回博客</Link>
-          <p className="section-kicker">Tags / 标签</p>
-          <h1>按主题回看文章。</h1>
-          <p>标签会根据已发布文章自动聚合，适合把算法、AI、项目和工程记录分开阅读。</p>
-        </header>
-
-        <section className="tag-index">
-          {tags.map((tag) => (
-            <Link href={`/tags/${tag.slug}`} key={tag.slug}>
-              <strong>{tag.label}</strong>
-              <span>{tag.count} 篇</span>
-            </Link>
-          ))}
-        </section>
-      </main>
+    <HomingTagsPage
+      tags={tags.map((tag) => ({
+        label: tag.label,
+        count: tag.count,
+        href: `/tags/${slugifyWritingTag(tag.label)}`,
+      }))}
+    />
   );
 }

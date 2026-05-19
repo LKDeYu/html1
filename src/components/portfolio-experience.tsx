@@ -6,9 +6,9 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { BookOpen, Code2, Mail, MessageCircle, Search, Tags } from "lucide-react";
+import { BookOpen, Code2, Mail, MessageCircle, Tags } from "lucide-react";
 import { blogPreview, navItems } from "@/lib/content";
-import type { BlogPostRecord, ProjectRecord, SkillRecord } from "@/lib/cms-types";
+import type { ProjectRecord, SkillRecord } from "@/lib/cms-types";
 import { CampusGallery } from "@/components/campus-gallery";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
 import { IntroWorkstation } from "@/components/intro-workstation";
@@ -23,7 +23,15 @@ const STORY_SCENE_ORDER = ["#about", "#skills", "#projects", "#campus", "#intere
 type PortfolioExperienceProps = {
   projects: ProjectRecord[];
   skills: SkillRecord[];
-  posts: BlogPostRecord[];
+  posts: PortfolioPostPreview[];
+};
+
+type PortfolioPostPreview = {
+  slug: string;
+  title: string;
+  date: string;
+  summary: string;
+  tags: string[];
 };
 
 export function PortfolioExperience({ projects, skills, posts }: PortfolioExperienceProps) {
@@ -34,7 +42,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
     posts.length > 0
       ? posts.slice(0, 4).map((post) => ({
           title: post.title,
-          category: post.category || "学习笔记",
+          category: post.tags[0] || "学习笔记",
           description: post.summary,
         }))
       : blogPreview;
@@ -339,10 +347,6 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                 </div>
                 <div className="blog-console">
                   <div className="console-toolbar">
-                    <Link href="/blog">
-                      <Search size={15} />
-                      Search notes
-                    </Link>
                     <Link href="/tags">
                       <Tags size={15} />
                       Tags

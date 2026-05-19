@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function WritingPage() {
+export default function WritePage() {
   redirect("/blog");
 }

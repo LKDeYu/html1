@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { listBlogTags } from "@/lib/cms-db";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 export function GET() {
-  return NextResponse.json({ tags: listBlogTags() });
+  return NextResponse.json({
+    tags: listWritingTags().map((tag) => ({
+      ...tag,
+      slug: slugifyWritingTag(tag.label),
+    })),
+  });
 }

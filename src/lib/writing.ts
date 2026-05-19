@@ -12,6 +12,16 @@ export type WritingRecord = {
 
 const WRITING_DIR = path.join(process.cwd(), "content", "writing");
 
+export function slugifyWritingTag(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^\p{L}\p{N}-]+/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function parseArray(value: string | undefined) {
   if (!value) {
     return [];
@@ -62,12 +72,12 @@ function parseMdx(raw: string, slug: string): WritingRecord {
   };
 }
 
-export function listWriting() {
+export function listWriting(options: { tag?: string } = {}) {
   if (!fs.existsSync(WRITING_DIR)) {
     return [];
   }
 
-  return fs
+  const posts = fs
     .readdirSync(WRITING_DIR)
     .filter((file) => file.endsWith(".mdx"))
     .map((file) => {
@@ -76,6 +86,12 @@ export function listWriting() {
       return parseMdx(raw, slug);
     })
     .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title, "zh-CN"));
+
+  if (!options.tag) {
+    return posts;
+  }
+
+  return posts.filter((post) => post.tags.some((tag) => slugifyWritingTag(tag) === options.tag));
 }
 
 export function getWritingBySlug(slug: string) {
