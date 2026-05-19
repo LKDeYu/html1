@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -61,7 +60,7 @@ export function SkillDetailOverlay({ skill, onClose }: SkillDetailOverlayProps) 
         <MarkdownView>{skill.bodyMarkdown}</MarkdownView>
 
         <footer className="detail-actions">
-          <Link href={`/skills/${skill.slug}`}>打开完整页面</Link>
+          <button type="button" onClick={onClose}>返回当前状态</button>
         </footer>
       </article>
     </div>,

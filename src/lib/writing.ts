@@ -81,3 +81,17 @@ export function listWriting() {
 export function getWritingBySlug(slug: string) {
   return listWriting().find((post) => post.slug === slug) ?? null;
 }
+
+export function listWritingTags() {
+  const counts = new Map<string, number>();
+
+  listWriting().forEach((post) => {
+    post.tags.forEach((tag) => {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    });
+  });
+
+  return [...counts.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "zh-CN"));
+}

@@ -56,6 +56,7 @@ export default async function WritingPostPage({ params }: WritingPostPageProps) 
 
         <div className="writing-article-main">
           <header>
+            <time dateTime={post.date}>{post.date}</time>
             <h1>{post.title}</h1>
             <p>{post.summary}</p>
           </header>

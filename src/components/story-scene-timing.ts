@@ -2,8 +2,8 @@
 
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export const STORY_SCROLL_DISTANCE = 21200;
-export const STORY_SCENE_DURATIONS = [1.55, 2.35, 2.55, 1.45, 1.3, 1.2, 1.05] as const;
+export const STORY_SCROLL_DISTANCE = 20400;
+export const STORY_SCENE_DURATIONS = [1.18, 2.35, 2.55, 1.45, 1.3, 1.2, 1.05] as const;
 export const STORY_SCENE_COUNT = STORY_SCENE_DURATIONS.length;
 export const STORY_TOTAL_UNITS = STORY_SCENE_DURATIONS.reduce((sum, duration) => sum + duration, 0);
 

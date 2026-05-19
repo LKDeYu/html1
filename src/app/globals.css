@@ -845,7 +845,7 @@ html.dark .liquid-glass {
 
 .story-shell {
   position: relative;
-  height: calc(100svh + var(--story-scroll-distance, 21200px));
+  height: calc(100svh + var(--story-scroll-distance, 20400px));
   background: transparent;
 }
 
@@ -1790,10 +1790,9 @@ html.dark .liquid-glass {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 68% 50%, rgba(255, 111, 183, 0.12), transparent 28%),
-    radial-gradient(circle at 54% 38%, rgba(255, 53, 155, 0.12), transparent 34%),
-    radial-gradient(circle at 72% 72%, rgba(0, 210, 255, 0.12), transparent 36%);
-  opacity: 0.7;
+    radial-gradient(circle at 62% 54%, rgba(0, 210, 255, 0.055), transparent 34%),
+    radial-gradient(circle at 42% 42%, rgba(124, 246, 255, 0.035), transparent 42%);
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -2684,43 +2683,105 @@ html.dark .blog-grid article {
   position: relative;
   z-index: 1;
   min-height: 100svh;
-  background: #050505;
-  color: #e5e7eb;
+  background: #fff;
+  color: #111827;
   font-family: var(--font-body);
-  padding: clamp(28px, 6vw, 76px) 20px;
+  padding: 0 20px clamp(38px, 6vw, 76px);
 }
 
-.writing-container,
-.writing-article {
-  width: min(960px, 100%);
+.writing-container {
+  width: min(1060px, 100%);
   margin: 0 auto;
 }
 
 .writing-header {
-  padding-bottom: 32px;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.18);
+  display: flex;
+  min-height: 104px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 
-.writing-header > a,
-.writing-article aside > a {
-  color: #9ca3af;
-  font-size: 13px;
+.writing-header > a {
+  color: #111827;
+  font-size: 24px;
   font-weight: 700;
 }
 
-.writing-header h1 {
-  margin: 20px 0 0;
-  color: #f9fafb;
-  font-size: clamp(42px, 8vw, 78px);
-  line-height: 0.95;
+.writing-header nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.writing-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: clamp(32px, 7vw, 96px);
+}
+
+.writing-sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  max-height: calc(100svh - 48px);
+  overflow: auto;
+  border-radius: 4px;
+  background: #f9fafb;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+}
+
+.writing-sidebar h1 {
+  margin: 0 0 24px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.writing-sidebar strong {
+  display: block;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.writing-sidebar ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.writing-sidebar li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.writing-sidebar em {
+  color: #9ca3af;
+  font-style: normal;
 }
 
 .writing-header p,
 .writing-list p,
 .writing-article header p {
   max-width: 720px;
-  color: #9ca3af;
-  line-height: 1.8;
+  color: #6b7280;
+  line-height: 1.7;
 }
 
 .writing-list {
@@ -2730,14 +2791,14 @@ html.dark .blog-grid article {
 }
 
 .writing-list li {
-  border-bottom: 1px solid rgba(229, 231, 235, 0.14);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .writing-list article {
-  display: grid;
-  grid-template-columns: 170px minmax(0, 1fr);
-  gap: clamp(18px, 4vw, 42px);
-  padding: 26px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 28px 0;
 }
 
 .writing-list time,
@@ -2749,16 +2810,16 @@ html.dark .blog-grid article {
 
 .writing-list h2 {
   margin: 0;
-  color: #f9fafb;
-  font-size: clamp(24px, 4vw, 34px);
+  color: #111827;
+  font-size: clamp(24px, 4vw, 32px);
   line-height: 1.18;
 }
 
 .writing-list h2 a:hover,
 .writing-header > a:hover,
-.writing-article aside > a:hover,
+.writing-header nav a:hover,
 .writing-nav a:hover {
-  color: #f59e0b;
+  color: #2563eb;
 }
 
 .writing-tags {
@@ -2769,19 +2830,23 @@ html.dark .blog-grid article {
 }
 
 .writing-tags span {
-  color: #d1d5db;
+  color: #6b7280;
   font-size: 12px;
+  font-weight: 600;
 }
 
 .writing-tags span::before {
   content: "#";
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .writing-article {
   display: grid;
+  width: min(1060px, 100%);
   grid-template-columns: 190px minmax(0, 1fr);
   gap: clamp(24px, 6vw, 72px);
+  margin: 0 auto;
+  padding-top: 72px;
 }
 
 .writing-article aside {
@@ -2792,30 +2857,50 @@ html.dark .blog-grid article {
   gap: 22px;
 }
 
+.writing-article aside > a {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .writing-article header {
   padding-bottom: 28px;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.16);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.writing-article header time {
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .writing-article h1 {
-  margin: 0;
-  color: #f9fafb;
-  font-size: clamp(42px, 8vw, 76px);
-  line-height: 0.98;
+  margin: 10px 0 0;
+  color: #111827;
+  font-size: clamp(38px, 7vw, 64px);
+  line-height: 1.02;
 }
 
 .writing-article .markdown-view {
-  color: #d1d5db;
+  color: #374151;
 }
 
 .writing-article .markdown-view h1,
 .writing-article .markdown-view h2,
 .writing-article .markdown-view h3 {
-  color: #f9fafb;
+  color: #111827;
 }
 
 .writing-article .markdown-view code {
-  background: #111827;
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.writing-article .markdown-view pre {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
 }
 
 .writing-nav {
@@ -2824,11 +2909,11 @@ html.dark .blog-grid article {
   gap: 14px;
   margin-top: 46px;
   padding-top: 24px;
-  border-top: 1px solid rgba(229, 231, 235, 0.16);
+  border-top: 1px solid #e5e7eb;
 }
 
 .writing-nav a {
-  color: #d1d5db;
+  color: #2563eb;
   font-size: 14px;
   font-weight: 700;
 }
@@ -3377,11 +3462,13 @@ html.dark .blog-grid article {
   margin-top: 28px;
 }
 
-.detail-actions > a {
+.detail-actions > a,
+.detail-actions > button {
   border: 1px solid rgba(255, 111, 183, 0.34);
   border-radius: 999px;
   background: rgba(255, 111, 183, 0.12);
   color: var(--accent-strong);
+  cursor: pointer;
   font-size: 13px;
   font-weight: 900;
   padding: 10px 14px;
@@ -3407,14 +3494,19 @@ html.dark .blog-grid article {
 
   .content-layout,
   .article-shell,
-  .tag-index {
+  .tag-index,
+  .writing-layout,
+  .writing-article {
     grid-template-columns: 1fr;
   }
 
   .content-sidebar,
-  .article-aside {
+  .article-aside,
+  .writing-sidebar,
+  .writing-article aside {
     position: relative;
     top: auto;
+    max-height: none;
   }
 
   .article-nav {
@@ -3639,14 +3731,20 @@ html.dark .blog-grid article {
   .blog-grid,
   .papercut-list,
   .system-grid,
-  .writing-list article,
-  .writing-article,
   .writing-nav {
     grid-template-columns: 1fr;
   }
 
-  .writing-article aside {
-    position: static;
+  .writing-header {
+    min-height: 82px;
+  }
+
+  .writing-sidebar {
+    display: none;
+  }
+
+  .writing-article {
+    padding-top: 38px;
   }
 
   .flip-slide-inner,

@@ -54,7 +54,7 @@ export function CampusGallery() {
         return;
       }
 
-      const progress = getStorySceneProgress(3, root, 0.02, 0.56);
+      const progress = getStorySceneProgress(3, root, 0.3, 0.92);
       root.style.setProperty("--gallery-progress", progress.toFixed(4));
       root.style.setProperty("--gallery-center-scale", String(2.5 - progress * 1.25));
       root.style.setProperty("--gallery-layer-alpha", String(clamp((progress - 0.04) / 0.18)));

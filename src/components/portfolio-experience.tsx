@@ -75,7 +75,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
         const storyTrigger = ScrollTrigger.getById("story-scroll");
 
         if (index >= 0 && storyTrigger) {
-          const sceneStart = index === 0 ? 0 : getStorySceneStart(index) + 0.18;
+          const sceneStart = index === 0 ? 0 : getStorySceneStart(index) + 0.42;
           const progress = Math.min(sceneStart / STORY_TOTAL_UNITS, 0.98);
           top = storyTrigger.start + (storyTrigger.end - storyTrigger.start) * progress + 4;
         } else {

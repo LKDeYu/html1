@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -73,7 +72,7 @@ export function ProjectDetailOverlay({ project, onClose }: ProjectDetailOverlayP
         ) : null}
 
         <footer className="detail-actions">
-          <Link href={`/writing/${project.slug}`}>打开完整页面</Link>
+          <button type="button" onClick={onClose}>返回当前状态</button>
           <div className="detail-tags">
             {project.tags.map((tag) => (
               <span key={tag}>{tag}</span>

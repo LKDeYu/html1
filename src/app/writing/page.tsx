@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { listWriting } from "@/lib/writing";
+import { listWriting, listWritingTags } from "@/lib/writing";
 
 export const metadata: Metadata = {
   title: "Writing | NAMRANTA",
@@ -9,36 +9,56 @@ export const metadata: Metadata = {
 
 export default function WritingPage() {
   const posts = listWriting();
+  const tags = listWritingTags();
 
   return (
     <main className="writing-page">
       <section className="writing-container">
         <header className="writing-header">
-          <Link href="/">NAMRANTA</Link>
-          <h1>All Posts</h1>
-          <p>项目、学习笔记和工程复盘放在同一种格式里，作为视觉首页之外的文字内容站。</p>
+          <Link href="/">Namranta</Link>
+          <nav aria-label="内容导航">
+            <Link href="/writing">Blog</Link>
+            <Link href="/">Visual</Link>
+          </nav>
         </header>
 
-        <ul className="writing-list">
-          {posts.map((post) => (
-            <li key={post.slug}>
-              <article>
-                <time dateTime={post.date}>{post.date}</time>
-                <div>
-                  <h2>
-                    <Link href={`/writing/${post.slug}`}>{post.title}</Link>
-                  </h2>
-                  <p>{post.summary}</p>
-                  <div className="writing-tags">
-                    {post.tags.map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
+        <div className="writing-layout">
+          <aside className="writing-sidebar" aria-label="Tags">
+            <h1>All Posts</h1>
+            <div>
+              <strong>Tags</strong>
+              <ul>
+                {tags.map((tag) => (
+                  <li key={tag.label}>
+                    <span>{tag.label}</span>
+                    <em>{tag.count}</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          <ul className="writing-list">
+            {posts.map((post) => (
+              <li key={post.slug}>
+                <article>
+                  <time dateTime={post.date}>{post.date}</time>
+                  <div>
+                    <h2>
+                      <Link href={`/writing/${post.slug}`}>{post.title}</Link>
+                    </h2>
+                    <div className="writing-tags">
+                      {post.tags.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                    <p>{post.summary}</p>
                   </div>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
     </main>
   );
