@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { Noto_Sans_SC } from "next/font/google";
 import { StarfieldCanvas } from "@/components/starfield-canvas";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
+
+const notoSansSc = Noto_Sans_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+  variable: "--font-sans-sc",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -20,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className="h-full scroll-smooth">
+    <html lang="zh-CN" className={`h-full scroll-smooth ${notoSansSc.variable}`}>
       <body>
         <StarfieldCanvas />
         {children}

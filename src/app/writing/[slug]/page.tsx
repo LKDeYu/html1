@@ -1,7 +1,6 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MarkdownView } from "@/components/markdown-view";
+import { HomingArticlePage } from "@/components/homing-content";
 import { getWritingBySlug, listWriting } from "@/lib/writing";
 
 type WritingPostPageProps = {
@@ -42,33 +41,17 @@ export default async function WritingPostPage({ params }: WritingPostPageProps) 
   const next = posts[index - 1];
 
   return (
-    <main className="writing-page">
-      <article className="writing-article">
-        <aside>
-          <Link href="/writing">Back to posts</Link>
-          <time dateTime={post.date}>{post.date}</time>
-          <div className="writing-tags">
-            {post.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
-          </div>
-        </aside>
-
-        <div className="writing-article-main">
-          <header>
-            <time dateTime={post.date}>{post.date}</time>
-            <h1>{post.title}</h1>
-            <p>{post.summary}</p>
-          </header>
-
-          <MarkdownView>{post.body}</MarkdownView>
-
-          <nav className="writing-nav" aria-label="文章导航">
-            {prev ? <Link href={`/writing/${prev.slug}`}>Previous: {prev.title}</Link> : <span />}
-            {next ? <Link href={`/writing/${next.slug}`}>Next: {next.title}</Link> : <span />}
-          </nav>
-        </div>
-      </article>
-    </main>
+    <HomingArticlePage
+      post={{
+        title: post.title,
+        date: post.date,
+        summary: post.summary,
+        tags: post.tags,
+        body: post.body,
+      }}
+      backHref="/writing"
+      prev={prev ? { title: prev.title, href: `/writing/${prev.slug}` } : undefined}
+      next={next ? { title: next.title, href: `/writing/${next.slug}` } : undefined}
+    />
   );
 }

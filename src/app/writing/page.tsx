@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { HomingListPage } from "@/components/homing-content";
 import { listWriting, listWritingTags } from "@/lib/writing";
 
 export const metadata: Metadata = {
@@ -12,54 +12,18 @@ export default function WritingPage() {
   const tags = listWritingTags();
 
   return (
-    <main className="writing-page">
-      <section className="writing-container">
-        <header className="writing-header">
-          <Link href="/">Namranta</Link>
-          <nav aria-label="内容导航">
-            <Link href="/writing">Blog</Link>
-            <Link href="/">Visual</Link>
-          </nav>
-        </header>
-
-        <div className="writing-layout">
-          <aside className="writing-sidebar" aria-label="Tags">
-            <h1>All Posts</h1>
-            <div>
-              <strong>Tags</strong>
-              <ul>
-                {tags.map((tag) => (
-                  <li key={tag.label}>
-                    <span>{tag.label}</span>
-                    <em>{tag.count}</em>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </aside>
-
-          <ul className="writing-list">
-            {posts.map((post) => (
-              <li key={post.slug}>
-                <article>
-                  <time dateTime={post.date}>{post.date}</time>
-                  <div>
-                    <h2>
-                      <Link href={`/writing/${post.slug}`}>{post.title}</Link>
-                    </h2>
-                    <div className="writing-tags">
-                      {post.tags.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                    <p>{post.summary}</p>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </main>
+    <HomingListPage
+      posts={posts.map((post) => ({
+        slug: post.slug,
+        title: post.title,
+        date: post.date,
+        summary: post.summary,
+        tags: post.tags,
+        href: `/writing/${post.slug}`,
+      }))}
+      tags={tags.map((tag) => ({ label: tag.label, count: tag.count }))}
+      title="All Posts"
+      subtitle="项目、学习笔记和工程复盘放在同一种格式里。"
+    />
   );
 }

@@ -339,22 +339,24 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                 </div>
                 <div className="blog-console">
                   <div className="console-toolbar">
-                    <span>
+                    <Link href="/blog">
                       <Search size={15} />
                       Search notes
-                    </span>
-                    <span>
+                    </Link>
+                    <Link href="/tags">
                       <Tags size={15} />
                       Tags
-                    </span>
-                    <Link href="/writing">All posts</Link>
+                    </Link>
+                    <Link href="/blog">All posts</Link>
                   </div>
                   <ul className="papercut-list">
                     {blogItems.map((post, index) => (
                       <li key={post.title} style={{ "--i": index } as CSSProperties} tabIndex={0}>
                         <BookOpen size={20} />
                         <small>{post.category}</small>
-                        <h3>{post.title}</h3>
+                        <h3>
+                          {posts[index]?.slug ? <Link href={`/blog/${posts[index].slug}`}>{post.title}</Link> : post.title}
+                        </h3>
                         <p>{post.description}</p>
                       </li>
                     ))}
