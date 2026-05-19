@@ -64,6 +64,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         tags: post.tags,
         category: post.tags[0] || "学习笔记",
         body: post.body,
+        imageUrl: post.imageUrl,
       }}
       backHref="/blog"
       prev={prev ? { title: prev.title, href: `/blog/${prev.slug}` } : undefined}

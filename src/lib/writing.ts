@@ -7,6 +7,7 @@ export type WritingRecord = {
   date: string;
   summary: string;
   tags: string[];
+  imageUrl?: string;
   body: string;
 };
 
@@ -68,6 +69,7 @@ function parseMdx(raw: string, slug: string): WritingRecord {
     date: stripQuotes(meta.get("date")) || "2026-05-18",
     summary: stripQuotes(meta.get("summary")),
     tags: parseArray(meta.get("tags")),
+    imageUrl: stripQuotes(meta.get("imageUrl")) || undefined,
     body,
   };
 }

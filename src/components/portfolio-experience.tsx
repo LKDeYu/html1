@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -293,6 +294,10 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
             <div className="story-scenes">
               <section id="about" className="story-scene scene-intro">
                 <div className="scene-copy">
+                  <div className="intro-profile-mark">
+                    <Image src="/avatar.png" width={58} height={58} alt="吴志宏头像" priority />
+                    <span>Zhihong Wu</span>
+                  </div>
                   <p className="section-kicker">About / 关于我</p>
                   <h2>一个记录 AI 学习、项目实践和校园生活的个人网站。</h2>
                   <p>

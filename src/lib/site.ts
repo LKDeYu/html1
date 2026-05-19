@@ -4,6 +4,10 @@ export const siteConfig = {
   author: "Zhihong Wu",
   description: "吴志宏的 AI 学习、项目作品集、博客笔记与校园生活记录。",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://127.0.0.1:3001",
+  email: "yuany257093418@gmail.com",
+  github: "https://github.com/LKDeYu",
+  siteRepo: "https://github.com/LKDeYu/website_draft",
+  avatar: "/avatar.png",
 };
 
 export function absoluteUrl(path = "/") {
