@@ -3088,7 +3088,7 @@ html.dark .blog-grid article {
 .homing-all-posts a {
   display: inline-flex;
   margin-top: 18px;
-  color: #ec4899;
+  color: #be185d;
   font-size: 15px;
   font-weight: 500;
 }
@@ -3162,7 +3162,7 @@ html.dark .blog-grid article {
 .homing-sidebar-all {
   display: inline-block;
   margin: 0;
-  color: #ec4899;
+  color: #be185d;
   font-size: 16px;
   font-weight: 800;
   text-transform: uppercase;
@@ -3194,7 +3194,7 @@ html.dark .blog-grid article {
 .homing-article-side a:hover,
 .homing-tags a:hover,
 .homing-tags-cloud a:hover {
-  color: #db2777;
+  color: #9d174d;
 }
 
 .homing-sidebar em {
@@ -3250,7 +3250,7 @@ html.dark .blog-grid article {
 
 .homing-tags a {
   margin-right: 12px;
-  color: #ec4899;
+  color: #be185d;
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
@@ -3357,7 +3357,7 @@ html.dark .blog-grid article {
 
 .homing-article-side a,
 .homing-back {
-  color: #ec4899;
+  color: #be185d;
   font-size: 14px;
   font-weight: 500;
 }
@@ -3414,7 +3414,7 @@ html.dark .blog-grid article {
 }
 
 .homing-article-actions a:hover {
-  color: #db2777;
+  color: #9d174d;
 }
 
 .homing-pagination {
@@ -3428,7 +3428,7 @@ html.dark .blog-grid article {
 }
 
 .homing-pagination a {
-  color: #ec4899;
+  color: #be185d;
   font-weight: 500;
 }
 
@@ -3521,7 +3521,7 @@ html.dark .blog-grid article {
 }
 
 .homing-tags-cloud a {
-  color: #ec4899;
+  color: #be185d;
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;

@@ -4,9 +4,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import dynamic from "next/dynamic";
 import type { SkillRecord } from "@/lib/portfolio-types";
 import { defaultSkills } from "@/lib/portfolio-seed";
-import { SkillDetailOverlay } from "@/components/skill-detail-overlay";
 import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 type SkillCubeGalleryProps = {
@@ -15,13 +15,18 @@ type SkillCubeGalleryProps = {
 
 const FACE_SLOTS = ["top", "front", "right", "back", "left", "bottom"] as const;
 const FACE_IMAGES = [
-  "https://assets.codepen.io/573855/demo-raw-01.webp",
-  "https://assets.codepen.io/573855/demo-raw-02.webp",
-  "https://assets.codepen.io/573855/demo-raw-03.webp",
-  "https://assets.codepen.io/573855/demo-raw-04.webp",
-  "https://assets.codepen.io/573855/demo-raw-05.webp",
-  "https://assets.codepen.io/573855/demo-raw-06.webp",
+  "/images/skills/cube-01-720.webp",
+  "/images/skills/cube-02-720.webp",
+  "/images/skills/cube-03-720.webp",
+  "/images/skills/cube-04-720.webp",
+  "/images/skills/cube-05-720.webp",
+  "/images/skills/cube-06-720.webp",
 ];
+
+const SkillDetailOverlay = dynamic(
+  () => import("@/components/skill-detail-overlay").then((mod) => mod.SkillDetailOverlay),
+  { ssr: false },
+);
 
 const STOPS = [
   { rx: 90, ry: 0 },
@@ -132,7 +137,14 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
               key={face.face}
             >
               <span className="skill-face-fallback" aria-hidden="true" />
-              <img className="skill-face-image" src={face.image} alt="" loading="eager" decoding="async" />
+              <img
+                className="skill-face-image"
+                src={face.image}
+                alt=""
+                loading={index < 2 ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={index < 2 ? "high" : "low"}
+              />
               <span className="skill-face-frame" aria-hidden="true" />
               <span className="skill-face-label">{face.label}</span>
               <strong>{face.skill.title}</strong>

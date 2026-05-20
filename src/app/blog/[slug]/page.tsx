@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { HomingArticlePage } from "@/components/homing-content";
+import { HomingArticlePage } from "@/components/homing-article-page";
 import { getWritingBySlug, listWriting } from "@/lib/writing";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 

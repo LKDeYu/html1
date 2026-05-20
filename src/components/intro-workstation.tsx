@@ -485,5 +485,5 @@ export function IntroWorkstation() {
     };
   }, []);
 
-  return <div ref={rootRef} className="intro-workstation" aria-label="电脑与桌面反光视觉场景" />;
+  return <div ref={rootRef} className="intro-workstation" role="img" aria-label="Computer workstation visual scene" />;
 }

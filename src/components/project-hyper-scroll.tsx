@@ -295,6 +295,7 @@ export function ProjectHyperScroll({ projects }: ProjectHyperScrollProps) {
                 <Link
                   className={`hyper-card ${featuredItemId === item.id ? "active" : ""}`}
                   href={item.project ? `/blog/${item.project.slug}` : "/blog"}
+                  prefetch={false}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   <div className="hyper-card-header">

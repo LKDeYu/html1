@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import Link from "next/link";
 import { GitBranch, Mail } from "lucide-react";
-import { MarkdownView } from "@/components/markdown-view";
 import { siteConfig } from "@/lib/site";
 
 type HomingPostItem = {
@@ -18,16 +17,6 @@ type HomingTagItem = {
   label: string;
   count: number;
   href?: string;
-};
-
-type HomingArticle = {
-  title: string;
-  date: string;
-  summary: string;
-  tags: string[];
-  category?: string;
-  body: string;
-  imageUrl?: string;
 };
 
 type HomingPagination = {
@@ -54,7 +43,7 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
               experiments that are worth keeping.
             </p>
           </div>
-          <img className="homing-avatar" src={siteConfig.avatar} alt="Zhihong Wu" />
+          <Image className="homing-avatar" src={siteConfig.avatar} alt="Zhihong Wu" width={190} height={190} priority />
         </section>
 
         <section className="homing-latest">
@@ -71,7 +60,9 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
                   <time dateTime={post.date}>{formatDate(post.date)}</time>
                   <div>
                     <h2>
-                      <Link href={post.href}>{post.title}</Link>
+                      <Link href={post.href} prefetch={false}>
+                        {post.title}
+                      </Link>
                     </h2>
                     <div className="homing-tags">
                       {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
@@ -81,7 +72,7 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
                       ))}
                     </div>
                     <p>{post.summary}</p>
-                    <Link className="homing-read-more" href={post.href}>
+                    <Link className="homing-read-more" href={post.href} prefetch={false}>
                       Read more -&gt;
                     </Link>
                   </div>
@@ -164,7 +155,9 @@ export function HomingListPage({
                   <time dateTime={post.date}>{formatDate(post.date)}</time>
                   <div>
                     <h2>
-                      <Link href={post.href}>{post.title}</Link>
+                      <Link href={post.href} prefetch={false}>
+                        {post.title}
+                      </Link>
                     </h2>
                     <div className="homing-tags">
                       {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
@@ -220,92 +213,6 @@ export function HomingTagsPage({ tags }: { tags: HomingTagItem[] }) {
   );
 }
 
-export function HomingArticlePage({
-  post,
-  backHref,
-  prev,
-  next,
-}: {
-  post: HomingArticle;
-  backHref: string;
-  prev?: { title: string; href: string };
-  next?: { title: string; href: string };
-}) {
-  return (
-    <main className="homing-page">
-      <section className="homing-container">
-        <HomingHeader />
-        <article className="homing-article">
-          <header className="homing-article-header">
-            <dl>
-              <dt>Published on</dt>
-              <dd>
-                <time dateTime={post.date}>{formatDate(post.date)}</time>
-              </dd>
-            </dl>
-            <h1>{post.title}</h1>
-          </header>
-
-          <div className="homing-article-grid">
-            <aside className="homing-article-side">
-              <div className="homing-author">
-                <img src={siteConfig.avatar} alt="Zhihong Wu" />
-                <dl>
-                  <dt>Author</dt>
-                  <dd>{siteConfig.author}</dd>
-                  <dd>Student of Artificial Intelligence</dd>
-                </dl>
-              </div>
-
-              <dl>
-                <dt>Tags</dt>
-                <dd className="homing-tags">
-                  {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
-                    <Link href={`/tags/${slugifyTag(tag)}`} key={tag}>
-                      {tag}
-                    </Link>
-                  ))}
-                </dd>
-              </dl>
-
-              {(prev || next) && (
-                <nav aria-label="文章导航">
-                  {prev ? (
-                    <div>
-                      <h2>Previous Article</h2>
-                      <Link href={prev.href}>{prev.title}</Link>
-                    </div>
-                  ) : null}
-                  {next ? (
-                    <div>
-                      <h2>Next Article</h2>
-                      <Link href={next.href}>{next.title}</Link>
-                    </div>
-                  ) : null}
-                </nav>
-              )}
-
-              <Link className="homing-back" href={backHref} aria-label="Back to the blog">
-                Back to the blog
-              </Link>
-            </aside>
-
-            <div className="homing-article-main">
-              {post.imageUrl ? <img className="homing-cover" src={post.imageUrl} alt="" /> : null}
-              <MarkdownView>{post.body}</MarkdownView>
-              <div className="homing-article-actions">
-                <Link href={`mailto:${siteConfig.email}?subject=${encodeURIComponent(post.title)}`}>Discuss by Email</Link>
-                <span>·</span>
-                <Link href={`${siteConfig.siteRepo}/tree/main/content/writing`}>View on GitHub</Link>
-              </div>
-            </div>
-          </div>
-        </article>
-        <HomingFooter />
-      </section>
-    </main>
-  );
-}
 
 function HomingHeader({ compact = false }: { compact?: boolean }) {
   return (
@@ -363,7 +270,7 @@ function formatDate(date: string) {
   }).format(new Date(date));
 }
 
-function slugifyTag(value: string) {
+export function slugifyTag(value: string) {
   return value
     .trim()
     .toLowerCase()

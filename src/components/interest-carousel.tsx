@@ -4,18 +4,18 @@
 import type { CSSProperties } from "react";
 
 const INTEREST_IMAGES = [
-  { src: "/images/interests/reading.png", label: "阅读" },
-  { src: "/images/interests/running.png", label: "跑步" },
-  { src: "/images/interests/fitness.png", label: "健身" },
-  { src: "/images/interests/singing.png", label: "唱歌" },
-  { src: "/images/interests/sudoku.jpg", label: "数独" },
-  { src: "/images/interests/gomoku.jpg", label: "五子棋" },
-  { src: "/images/interests/reading.png", label: "阅读" },
-  { src: "/images/interests/running.png", label: "跑步" },
-  { src: "/images/interests/fitness.png", label: "健身" },
-  { src: "/images/interests/singing.png", label: "唱歌" },
-  { src: "/images/interests/sudoku.jpg", label: "数独" },
-  { src: "/images/interests/gomoku.jpg", label: "五子棋" },
+  { src: "/images/interests/cards/reading.webp", label: "Reading" },
+  { src: "/images/interests/cards/running.webp", label: "Running" },
+  { src: "/images/interests/cards/fitness.webp", label: "Fitness" },
+  { src: "/images/interests/cards/singing.webp", label: "Singing" },
+  { src: "/images/interests/cards/sudoku.webp", label: "Sudoku" },
+  { src: "/images/interests/cards/gomoku.webp", label: "Gomoku" },
+  { src: "/images/interests/cards/reading.webp", label: "Reading" },
+  { src: "/images/interests/cards/running.webp", label: "Running" },
+  { src: "/images/interests/cards/fitness.webp", label: "Fitness" },
+  { src: "/images/interests/cards/singing.webp", label: "Singing" },
+  { src: "/images/interests/cards/sudoku.webp", label: "Sudoku" },
+  { src: "/images/interests/cards/gomoku.webp", label: "Gomoku" },
 ];
 
 export function InterestCarousel() {

@@ -5,21 +5,21 @@ import { useEffect, useRef } from "react";
 import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
 
 const CAMPUS_IMAGES = [
-  "/images/campus/scenery-1.jpg",
-  "/images/campus/food-1.jpg",
-  "/images/campus/study-1.jpg",
-  "/images/campus/game-1.jpg",
-  "/images/campus/scenery-2.jpg",
-  "/images/campus/food-2.jpg",
-  "/images/campus/study-2.jpg",
-  "/images/campus/game-2.jpg",
-  "/images/campus/scenery-3.jpg",
-  "/images/campus/food-3-lite.jpg",
-  "/images/campus/study-3.jpg",
-  "/images/campus/game-3.jpg",
-  "/images/campus/study-4-lite.jpg",
-  "/images/campus/game-4.jpg",
-  "/images/campus/game-5.jpg",
+  "/images/campus/gallery/scenery-1.webp",
+  "/images/campus/gallery/food-1.webp",
+  "/images/campus/gallery/study-1.webp",
+  "/images/campus/gallery/game-1.webp",
+  "/images/campus/gallery/scenery-2.webp",
+  "/images/campus/gallery/food-2.webp",
+  "/images/campus/gallery/study-2.webp",
+  "/images/campus/gallery/game-2.webp",
+  "/images/campus/gallery/scenery-3.webp",
+  "/images/campus/gallery/food-3-lite.webp",
+  "/images/campus/gallery/study-3.webp",
+  "/images/campus/gallery/game-3.webp",
+  "/images/campus/gallery/study-4-lite.webp",
+  "/images/campus/gallery/game-4.webp",
+  "/images/campus/gallery/game-5.webp",
 ];
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));

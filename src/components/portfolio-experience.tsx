@@ -360,7 +360,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                   </div>
                   <ul className="papercut-list">
                     {blogItems.map((post, index) => (
-                      <li key={post.title} style={{ "--i": index } as CSSProperties} tabIndex={0}>
+                      <li key={post.title} style={{ "--i": index } as CSSProperties}>
                         <BookOpen size={20} />
                         <small>{post.category}</small>
                         <h3>
@@ -417,7 +417,7 @@ function SpatialMenu({
     <aside
       id="spatial-menu"
       className="spatial-menu"
-      aria-hidden={!open}
+      inert={!open ? true : undefined}
       aria-label="空间导航菜单"
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
@@ -431,6 +431,7 @@ function SpatialMenu({
               key={item.href}
               type="button"
               style={{ "--i": index } as CSSProperties}
+              tabIndex={open ? 0 : -1}
               onClick={() => onNavigate(item.href)}
             >
               <span>0{index + 1}</span>
