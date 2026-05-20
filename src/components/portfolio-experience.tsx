@@ -150,21 +150,6 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
     const ctx = gsap.context(() => {
       document.documentElement.style.setProperty("--story-scroll-distance", `${STORY_SCROLL_DISTANCE}px`);
 
-      gsap.set(".hero-wordmark", {
-        autoAlpha: 0,
-        y: 34,
-        filter: "blur(18px)",
-      });
-
-      gsap.to(".hero-wordmark", {
-        autoAlpha: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 1.45,
-        delay: 0.62,
-        ease: "power3.out",
-      });
-
       const scenes = gsap.utils.toArray<HTMLElement>(".story-scene");
       gsap.set(scenes, {
         autoAlpha: 0,
@@ -285,12 +270,12 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
           <div className="hero-noise" aria-hidden="true" />
 
           <div className="hero-wordmark">
-            <p className="hero-eyebrow">Cloud Garden</p>
+            <p className="hero-eyebrow">Coordinate Zero</p>
             <h1>
-              <span>NAMRANTA</span>
-              <small>ZHIHONG WU</small>
+              <span>INFINITY</span>
+              <small>NAMRANTA</small>
             </h1>
-            <p className="hero-subtitle">AI portfolio, learning notes, projects, and campus life.</p>
+            <p className="hero-subtitle">A exploration of the digital cloud garden.</p>
           </div>
         </section>
 
@@ -300,7 +285,7 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <div className="timeline-track">
                 <span className="timeline-fill" />
               </div>
-              {["Intro", "Skills", "Projects", "Campus", "Interests", "Blog", "Contact"].map((label, index) => (
+              {["Intro", "Skills", "Projects", "Life", "Interests", "Blog", "Contact"].map((label, index) => (
                 <div className="timeline-node" key={label}>
                   <span className={`timeline-dot timeline-dot-${index}`} />
                   <em>{label}</em>
@@ -312,14 +297,13 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <section id="about" className="story-scene scene-intro">
                 <div className="scene-copy">
                   <div className="intro-profile-mark">
-                    <Image src="/avatar.png" width={58} height={58} alt="吴志宏头像" priority />
-                    <span>Zhihong Wu</span>
+                    <Image src="/avatar.png" width={58} height={58} alt="Namranta头像" priority />
+                    <span>Namranta</span>
                   </div>
                   <p className="section-kicker">About / 关于我</p>
-                  <h2>一个记录 AI 学习、项目实践和校园生活的个人网站。</h2>
+                  <h2>一个记录学习、工作和生活的个人网站</h2>
                   <p>
-                    我是吴志宏，江南大学人工智能专业 24 级学生。现在主要学习 C/C++、Python、机器学习、深度学习和云端部署，
-                    也会把课程练习、项目复盘、校园照片和日常兴趣整理在这里。
+                    我是吴志宏，江南大学人工智能专业 24 级学生。我会把想分享的事情整理在这里
                   </p>
                 </div>
                 <DeferredStoryVisual sceneIndex={0} fallbackClassName="intro-workstation-placeholder">
@@ -330,8 +314,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <section id="skills" className="story-scene scene-skills immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Skills / 技能</p>
-                  <h2>围绕编程基础、AI 实验和工程部署持续积累。</h2>
-                  <p>我会把每项技能和具体课程、项目、笔记联系起来，而不是只列出工具名称。</p>
+                  <h2>围绕编程的持续积累</h2>
+                  <p>期待技能立方体的不断更新</p>
                 </div>
                 <DeferredStoryVisual sceneIndex={1} fallbackClassName="story-visual-placeholder warm">
                   <SkillCubeGallery skills={skills} />
@@ -341,8 +325,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <section id="projects" className="story-scene scene-projects immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Projects / 项目</p>
-                  <h2>把做过的练习和项目整理成长期档案。</h2>
-                  <p>每个项目会保留目标、技术栈、实现过程和复盘，方便之后继续补充截图、链接和实验结果。</p>
+                  <h2>整理做过的练习和项目</h2>
+                  <p>记录我参与或独立完成的各类项目，包括技术实现、问题解决和经验总结</p>
                 </div>
                 <DeferredStoryVisual sceneIndex={2}>
                   <ProjectHyperScroll projects={projects} />
@@ -351,9 +335,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
 
               <section id="campus" className="story-scene scene-campus immersive-scene">
                 <div className="scene-copy">
-                  <p className="section-kicker">Campus Life / 校园生活</p>
-                  <h2>江南大学里的学习、风景和日常片段。</h2>
-                  <p>这里记录教室、自习、校园景色、美食和课余生活，让个人网站不只停留在技术简历。</p>
+                  <p className="section-kicker">Life / 生活</p>
+                  <h2>我的日常</h2>
+                  <p>这里记录生活片段</p>
                 </div>
                 <DeferredStoryVisual sceneIndex={3}>
                   <CampusGallery />
@@ -363,8 +347,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <section id="interests" className="story-scene scene-interests immersive-scene">
                 <div className="scene-copy">
                   <p className="section-kicker">Interests / 兴趣</p>
-                  <h2>阅读、运动、音乐和棋类，让生活保持节奏。</h2>
-                  <p>这些兴趣会作为学习之外的记录，帮助我保留更完整的个人面貌。</p>
+                  <h2>阅读、运动、音乐和游戏，让生活保持节奏</h2>
+                  <p>保留完整充实的个人面貌</p>
                 </div>
                 <DeferredStoryVisual sceneIndex={4}>
                   <InterestCarousel />
@@ -373,9 +357,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
 
               <section id="blog" className="story-scene scene-blog">
                 <div className="scene-copy">
-                  <p className="section-kicker">Blog / 学习笔记</p>
-                  <h2>把学习中的问题、代码和复盘沉淀成文章。</h2>
-                  <p>文章记录算法、Python、PyTorch、项目实践和工程运行中的关键细节，方便我之后回看和继续迭代。</p>
+                  <p className="section-kicker">Blog / 博客</p>
+                  <h2>把想分享的事情沉淀成文章</h2>
+                  <p>做一个记录</p>
                 </div>
                 <div className="blog-console">
                   <div className="console-toolbar">
@@ -403,8 +387,8 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
               <section id="contact" className="story-scene scene-contact">
                 <div className="contact-card">
                   <p className="section-kicker">Contact / 联系</p>
-                  <h2>欢迎交流学习、项目和技术问题。</h2>
-                  <p>目前公开 Gmail、GitHub 和 QQ，手机号不放在公开网页里。</p>
+                  <h2>欢迎交流各种问题</h2>
+                  <p>目前公开 Gmail、GitHub 和 QQ</p>
                   <div className="contact-links">
                     <a href="mailto:yuany257093418@gmail.com">
                       <Mail size={18} />
@@ -450,8 +434,8 @@ function SpatialMenu({
       onPointerLeave={onPointerLeave}
     >
       <div className="spatial-menu-inner">
-        <p>Scroll Index</p>
-        <h2>Section Rail</h2>
+        <p>Dimensions</p>
+        <h2>Menu</h2>
         <nav className="fly-rail" aria-label="滚动章节提示">
           {navItems.map((item, index) => (
             <button

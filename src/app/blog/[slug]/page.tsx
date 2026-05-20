@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HomingArticlePage } from "@/components/homing-article-page";
 import { getWritingBySlug, listWriting } from "@/lib/writing";
-import { absoluteUrl, siteConfig } from "@/lib/site";
+import { absoluteUrl, blogConfig, siteConfig } from "@/lib/site";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -14,14 +14,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   if (!post) {
     return {
-      title: "文章不存在 | NAMRANTA",
+      title: `文章不存在 | ${blogConfig.name}`,
     };
   }
 
   const url = absoluteUrl(`/blog/${post.slug}`);
 
   return {
-    title: `${post.title} | NAMRANTA`,
+    title: `${post.title} | ${blogConfig.name}`,
     description: post.summary || siteConfig.description,
     alternates: {
       canonical: url,

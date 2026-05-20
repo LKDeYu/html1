@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HomingListPage } from "@/components/homing-content";
+import { blogConfig } from "@/lib/site";
 import { listWriting, listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 const POSTS_PER_PAGE = 5;
@@ -10,8 +11,8 @@ type BlogPagedPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "Blog | NAMRANTA",
-  description: "分页浏览吴志宏的项目、学习笔记和工程复盘。",
+  title: `Blog | ${blogConfig.name}`,
+  description: blogConfig.description,
 };
 
 export function generateStaticParams() {

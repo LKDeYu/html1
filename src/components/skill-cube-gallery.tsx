@@ -4,7 +4,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import dynamic from "next/dynamic";
 import type { SkillRecord } from "@/lib/portfolio-types";
 import { defaultSkills } from "@/lib/portfolio-seed";
 import { getStorySceneProgress, isStorySceneActive } from "@/components/story-scene-timing";
@@ -22,11 +21,6 @@ const FACE_IMAGES = [
   "/images/skills/cube-05-720.webp",
   "/images/skills/cube-06-720.webp",
 ];
-
-const SkillDetailOverlay = dynamic(
-  () => import("@/components/skill-detail-overlay").then((mod) => mod.SkillDetailOverlay),
-  { ssr: false },
-);
 
 const STOPS = [
   { rx: 90, ry: 0 },
@@ -57,7 +51,6 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const cubeRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [selectedSkill, setSelectedSkill] = useState<SkillRecord | null>(null);
   const faces = useMemo(() => buildFaces(skills), [skills]);
 
   useEffect(() => {
@@ -128,11 +121,9 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
       <div className="skill-cube-scene">
         <div ref={cubeRef} className="skill-cube">
           {faces.map((face, index) => (
-            <button
+            <div
               className="skill-cube-face"
               data-face={face.face}
-              type="button"
-              onClick={() => setSelectedSkill(face.skill)}
               style={{ "--i": index } as CSSProperties}
               key={face.face}
             >
@@ -149,7 +140,7 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
               <span className="skill-face-label">{face.label}</span>
               <strong>{face.skill.title}</strong>
               <p>{face.skill.name}</p>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -160,20 +151,10 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
         ))}
       </div>
 
-      <button className="skill-cube-card" type="button" onClick={() => setSelectedSkill(activeFace.skill)}>
-        <small>
-          {activeFace.label} / {activeFace.skill.name}
-        </small>
-        <h3>{activeFace.skill.title}</h3>
-        <p>{activeFace.skill.summary}</p>
-      </button>
-
       <div className="skill-face-caption" aria-hidden="true">
         <span>{activeFace.label}</span>
         <strong>{activeFace.skill.name}</strong>
       </div>
-
-      <SkillDetailOverlay skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
     </div>
   );
 }

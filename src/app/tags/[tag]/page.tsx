@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HomingListPage } from "@/components/homing-content";
+import { blogConfig } from "@/lib/site";
 import { listWriting, listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 type TagPageProps = {
@@ -17,12 +18,12 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
 
   if (!tagInfo) {
     return {
-      title: "标签不存在 | NAMRANTA",
+      title: `标签不存在 | ${blogConfig.name}`,
     };
   }
 
   return {
-    title: `${tagInfo.label} | NAMRANTA`,
+    title: `${tagInfo.label} | ${blogConfig.name}`,
     description: `${tagInfo.count} 篇与 ${tagInfo.label} 相关的内容。`,
   };
 }

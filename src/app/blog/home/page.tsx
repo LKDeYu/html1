@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { HomingHomePage } from "@/components/homing-content";
+import { blogConfig } from "@/lib/site";
 import { listWriting } from "@/lib/writing";
 
 export const metadata: Metadata = {
-  title: "Namranta | Blog Home",
-  description: "吴志宏的内容主页，汇总最近的项目、学习笔记和生活记录。",
+  title: `${blogConfig.name} | Blog Home`,
+  description: blogConfig.description,
 };
 
 export default function BlogHomePage() {

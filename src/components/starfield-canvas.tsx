@@ -39,7 +39,7 @@ export function StarfieldCanvas() {
     let stars: Star[] = [];
     const velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.00042 };
 
-    const getStarCount = () => Math.round(Math.min(480, Math.max(190, (window.innerWidth + window.innerHeight) / 7.2)));
+    const getStarCount = () => Math.round(Math.min(520, Math.max(215, (window.innerWidth + window.innerHeight) / 6.8)));
 
     const placeStar = (star: Star) => {
       star.x = Math.random() * width;
@@ -51,7 +51,7 @@ export function StarfieldCanvas() {
         x: 0,
         y: 0,
         z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE),
-        alpha: 0.32 + Math.random() * 0.42,
+        alpha: 0.38 + Math.random() * 0.46,
       }));
       stars.forEach(placeStar);
     };
@@ -67,7 +67,7 @@ export function StarfieldCanvas() {
       }
 
       star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
-      star.alpha = 0.32 + Math.random() * 0.42;
+      star.alpha = 0.38 + Math.random() * 0.46;
 
       if (direction === "z") {
         star.z = 0.1;
@@ -132,9 +132,9 @@ export function StarfieldCanvas() {
         context.globalAlpha = star.alpha;
         context.moveTo(star.x, star.y);
 
-        const tailLimit = 14 * scale;
-        let tailX = velocity.x * 0.68;
-        let tailY = velocity.y * 0.68;
+        const tailLimit = 17 * scale;
+        let tailX = velocity.x * 0.78;
+        let tailY = velocity.y * 0.78;
         const tailLength = Math.hypot(tailX, tailY);
         if (tailLength > tailLimit) {
           tailX = (tailX / tailLength) * tailLimit;

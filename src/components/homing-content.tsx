@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { GitBranch, Mail } from "lucide-react";
-import { siteConfig } from "@/lib/site";
+import { blogConfig, siteConfig } from "@/lib/site";
 
 type HomingPostItem = {
   slug: string;
@@ -35,26 +36,27 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
       <section className="homing-container">
         <HomingHeader />
 
-        <section className="homing-hero">
-          <div className="homing-feature-image" aria-hidden="true">
-            <Image
-              src="/images/blog/mushoku-family-home.webp"
-              alt=""
-              width={520}
-              height={669}
-              priority
-              sizes="(max-width: 760px) 72vw, 220px"
-            />
-          </div>
+        <div className="homing-feature-banner" aria-hidden="true">
+          <Image
+            className="homing-feature-image"
+            src="/images/blog/mushoku-family-banner-wide.webp"
+            alt=""
+            width={1600}
+            height={640}
+            priority
+            unoptimized
+            sizes="(max-width: 760px) 100vw, 1024px"
+          />
+        </div>
 
+        <section className="homing-hero">
           <div className="homing-hero-copy">
-            <h1>Hi, I&apos;m Zhihong Wu</h1>
+            <h1>Hi, I&apos;m Namranta</h1>
             <p>
-              A student of Artificial Intelligence, writing about projects, learning notes, campus life, and small
-              experiments that are worth keeping.
+              A student of Artificial Intelligence, writing blogs that are worth keeping.
             </p>
           </div>
-          <Image className="homing-avatar" src={siteConfig.avatar} alt="Zhihong Wu" width={190} height={190} priority />
+          <Image className="homing-avatar" src={siteConfig.avatar} alt="Namranta" width={190} height={190} priority />
         </section>
 
         <section className="homing-latest">
@@ -65,9 +67,9 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
 
           <ul className="homing-list homing-home-list">
             {latestPosts.length === 0 ? <li className="homing-empty">No posts found.</li> : null}
-            {latestPosts.map((post) => (
+            {latestPosts.map((post, index) => (
               <li key={post.slug}>
-                <article>
+                <article className="homing-post-card" style={{ "--post-index": index } as CSSProperties}>
                   <time dateTime={post.date}>{formatDate(post.date)}</time>
                   <div>
                     <h2>
@@ -162,9 +164,9 @@ export function HomingListPage({
 
           <ul className="homing-list">
             {posts.length === 0 ? <li className="homing-empty">No posts found.</li> : null}
-            {posts.map((post) => (
+            {posts.map((post, index) => (
               <li key={post.slug}>
-                <article>
+                <article className="homing-post-card" style={{ "--post-index": index } as CSSProperties}>
                   <time dateTime={post.date}>{formatDate(post.date)}</time>
                   <div>
                     <h2>
@@ -234,7 +236,7 @@ function HomingHeader({ compact = false }: { compact?: boolean }) {
   return (
     <header className={`homing-header ${compact ? "compact" : ""}`}>
       <Link href="/blog/home" prefetch={false}>
-        Namranta
+        {blogConfig.name}
       </Link>
       <nav aria-label="内容导航">
         <Link href="/blog" prefetch={false}>
@@ -265,7 +267,7 @@ function HomingFooter() {
       <p>
         {siteConfig.author} <span>·</span> © {new Date().getFullYear()} <span>·</span>{" "}
         <Link href="/blog/home" prefetch={false}>
-          Namranta
+          {blogConfig.name}
         </Link>
       </p>
     </footer>

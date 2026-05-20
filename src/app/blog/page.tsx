@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { HomingListPage } from "@/components/homing-content";
+import { blogConfig } from "@/lib/site";
 import { listWriting, listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 const POSTS_PER_PAGE = 5;
 
 export const metadata: Metadata = {
-  title: "Blog | NAMRANTA",
-  description: "吴志宏的学习笔记、项目复盘和工程记录。",
+  title: `Blog | ${blogConfig.name}`,
+  description: blogConfig.description,
 };
 
 type BlogPageProps = {

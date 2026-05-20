@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MarkdownView } from "@/components/markdown-view";
-import { siteConfig } from "@/lib/site";
+import { blogConfig, siteConfig } from "@/lib/site";
 import { slugifyTag } from "@/components/homing-content";
 
 type HomingArticle = {
@@ -27,7 +27,7 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
       <section className="homing-container">
         <header className="homing-header">
           <Link href="/blog/home" prefetch={false}>
-            Namranta
+            {blogConfig.name}
           </Link>
           <nav aria-label="Content navigation">
             <Link href="/blog" prefetch={false}>
@@ -130,7 +130,7 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
           <p>
             {siteConfig.author} <span>/</span> {new Date().getFullYear()} <span>/</span>{" "}
             <Link href="/blog/home" prefetch={false}>
-              Namranta
+              {blogConfig.name}
             </Link>
           </p>
         </footer>

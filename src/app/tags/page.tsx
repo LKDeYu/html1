@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { HomingTagsPage } from "@/components/homing-content";
+import { blogConfig } from "@/lib/site";
 import { listWritingTags, slugifyWritingTag } from "@/lib/writing";
 
 export const metadata: Metadata = {
-  title: "Tags | NAMRANTA",
-  description: "按标签浏览吴志宏的项目、学习笔记和工程复盘。",
+  title: `Tags | ${blogConfig.name}`,
+  description: blogConfig.description,
 };
 
 export default function TagsPage() {
