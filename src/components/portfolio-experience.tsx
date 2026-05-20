@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap } from "gsap";
@@ -10,13 +11,29 @@ import Lenis from "lenis";
 import { BookOpen, Code2, Mail, MessageCircle, Tags } from "lucide-react";
 import { blogPreview, navItems } from "@/lib/content";
 import type { ProjectRecord, SkillRecord } from "@/lib/portfolio-types";
-import { CampusGallery } from "@/components/campus-gallery";
+import { DeferredStoryVisual } from "@/components/deferred-story-visual";
 import { InfiniteCityCanvas } from "@/components/infinite-city-canvas";
-import { IntroWorkstation } from "@/components/intro-workstation";
-import { InterestCarousel } from "@/components/interest-carousel";
-import { ProjectHyperScroll } from "@/components/project-hyper-scroll";
-import { SkillCubeGallery } from "@/components/skill-cube-gallery";
 import { STORY_SCROLL_DISTANCE, STORY_TOTAL_UNITS, getStorySceneStart } from "@/components/story-scene-timing";
+
+const IntroWorkstation = dynamic(
+  () => import("@/components/intro-workstation").then((mod) => mod.IntroWorkstation),
+  { ssr: false },
+);
+const SkillCubeGallery = dynamic(
+  () => import("@/components/skill-cube-gallery").then((mod) => mod.SkillCubeGallery),
+  { ssr: false },
+);
+const ProjectHyperScroll = dynamic(
+  () => import("@/components/project-hyper-scroll").then((mod) => mod.ProjectHyperScroll),
+  { ssr: false },
+);
+const CampusGallery = dynamic(() => import("@/components/campus-gallery").then((mod) => mod.CampusGallery), {
+  ssr: false,
+});
+const InterestCarousel = dynamic(
+  () => import("@/components/interest-carousel").then((mod) => mod.InterestCarousel),
+  { ssr: false },
+);
 
 const STORY_SCENE_FADE = 0.56;
 const STORY_SCENE_ORDER = ["#about", "#skills", "#projects", "#campus", "#interests", "#blog", "#contact"];
@@ -305,7 +322,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                     也会把课程练习、项目复盘、校园照片和日常兴趣整理在这里。
                   </p>
                 </div>
-                <IntroWorkstation />
+                <DeferredStoryVisual sceneIndex={0} fallbackClassName="intro-workstation-placeholder">
+                  <IntroWorkstation />
+                </DeferredStoryVisual>
               </section>
 
               <section id="skills" className="story-scene scene-skills immersive-scene">
@@ -314,7 +333,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                   <h2>围绕编程基础、AI 实验和工程部署持续积累。</h2>
                   <p>我会把每项技能和具体课程、项目、笔记联系起来，而不是只列出工具名称。</p>
                 </div>
-                <SkillCubeGallery skills={skills} />
+                <DeferredStoryVisual sceneIndex={1} fallbackClassName="story-visual-placeholder warm">
+                  <SkillCubeGallery skills={skills} />
+                </DeferredStoryVisual>
               </section>
 
               <section id="projects" className="story-scene scene-projects immersive-scene">
@@ -323,7 +344,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                   <h2>把做过的练习和项目整理成长期档案。</h2>
                   <p>每个项目会保留目标、技术栈、实现过程和复盘，方便之后继续补充截图、链接和实验结果。</p>
                 </div>
-                <ProjectHyperScroll projects={projects} />
+                <DeferredStoryVisual sceneIndex={2}>
+                  <ProjectHyperScroll projects={projects} />
+                </DeferredStoryVisual>
               </section>
 
               <section id="campus" className="story-scene scene-campus immersive-scene">
@@ -332,7 +355,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                   <h2>江南大学里的学习、风景和日常片段。</h2>
                   <p>这里记录教室、自习、校园景色、美食和课余生活，让个人网站不只停留在技术简历。</p>
                 </div>
-                <CampusGallery />
+                <DeferredStoryVisual sceneIndex={3}>
+                  <CampusGallery />
+                </DeferredStoryVisual>
               </section>
 
               <section id="interests" className="story-scene scene-interests immersive-scene">
@@ -341,7 +366,9 @@ export function PortfolioExperience({ projects, skills, posts }: PortfolioExperi
                   <h2>阅读、运动、音乐和棋类，让生活保持节奏。</h2>
                   <p>这些兴趣会作为学习之外的记录，帮助我保留更完整的个人面貌。</p>
                 </div>
-                <InterestCarousel />
+                <DeferredStoryVisual sceneIndex={4}>
+                  <InterestCarousel />
+                </DeferredStoryVisual>
               </section>
 
               <section id="blog" className="story-scene scene-blog">

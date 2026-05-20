@@ -1089,6 +1089,7 @@ html.dark .liquid-glass {
   pointer-events: none;
 }
 
+.scene-intro > .deferred-story-visual,
 .scene-intro > .intro-workstation {
   position: absolute;
   top: 50%;
@@ -1101,6 +1102,12 @@ html.dark .liquid-glass {
   min-height: 0;
   aspect-ratio: 16 / 9;
   transform: translateY(-50%);
+}
+
+.scene-intro > .deferred-story-visual > .intro-workstation,
+.scene-intro > .deferred-story-visual > .intro-workstation-placeholder {
+  width: 100%;
+  height: 100%;
 }
 
 .intro-workstation {
@@ -1116,6 +1123,19 @@ html.dark .liquid-glass {
   background: transparent;
   box-shadow: none;
   opacity: 0.96;
+  pointer-events: none;
+  contain: layout paint size;
+}
+
+.intro-workstation-placeholder {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 58% 48%, rgba(118, 245, 255, 0.1), transparent 32%),
+    radial-gradient(ellipse at 50% 62%, rgba(255, 255, 255, 0.08), transparent 38%),
+    transparent;
+  opacity: 0.42;
   pointer-events: none;
   contain: layout paint size;
 }
@@ -1898,12 +1918,54 @@ html.dark .liquid-glass {
   box-shadow: none;
 }
 
+.immersive-scene > .deferred-story-visual {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 100svh;
+  height: 100%;
+}
+
+.deferred-story-visual > :is(.skill-cube-gallery, .project-hyper, .campus-gallery, .interest-carousel),
+.story-visual-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 100svh;
+  height: 100%;
+}
+
+.story-visual-placeholder {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 66% 52%, rgba(124, 246, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 38% 58%, rgba(255, 111, 183, 0.08), transparent 34%),
+    transparent;
+  opacity: 0.42;
+}
+
+.story-visual-placeholder.warm {
+  background:
+    radial-gradient(circle at 64% 50%, rgba(240, 236, 227, 0.18), transparent 34%),
+    radial-gradient(circle at 40% 58%, rgba(212, 168, 75, 0.12), transparent 32%),
+    transparent;
+}
+
 .scene-skills > .skill-cube-gallery .skill-cube-scene,
 .scene-projects > .project-hyper .project-hyper-viewport {
   transform: translateX(12vw);
 }
 
+.scene-skills > .deferred-story-visual .skill-cube-gallery .skill-cube-scene,
+.scene-projects > .deferred-story-visual .project-hyper .project-hyper-viewport {
+  transform: translateX(12vw);
+}
+
 .scene-campus > .campus-gallery .campus-gallery-grid {
+  left: 64%;
+}
+
+.scene-campus > .deferred-story-visual .campus-gallery .campus-gallery-grid {
   left: 64%;
 }
 
@@ -1915,7 +1977,15 @@ html.dark .liquid-glass {
   margin-left: 0;
 }
 
+.scene-interests > .deferred-story-visual .interest-carousel .interest-ring {
+  margin-left: 0;
+}
+
 .scene-projects > .project-hyper .project-hud {
+  inset: 6vw;
+}
+
+.scene-projects > .deferred-story-visual .project-hyper .project-hud {
   inset: 6vw;
 }
 
@@ -4289,7 +4359,9 @@ html.dark .blog-grid article {
     pointer-events: auto;
   }
 
+  .scene-intro > .deferred-story-visual,
   .scene-intro > .intro-workstation,
+  .immersive-scene > .deferred-story-visual,
   .immersive-scene > .skill-cube-gallery,
   .immersive-scene > .project-hyper,
   .immersive-scene > .campus-gallery,
@@ -4302,13 +4374,33 @@ html.dark .blog-grid article {
     transform: none;
   }
 
-  .scene-skills > .skill-cube-gallery .skill-cube-scene,
-  .scene-projects > .project-hyper .project-hyper-viewport,
-  .scene-campus > .campus-gallery .campus-gallery-grid {
+  .scene-intro > .deferred-story-visual > .intro-workstation,
+  .scene-intro > .deferred-story-visual > .intro-workstation-placeholder {
+    width: 100%;
+    height: 560px;
+    min-height: 560px;
+  }
+
+  .deferred-story-visual > :is(.skill-cube-gallery, .project-hyper, .campus-gallery, .interest-carousel),
+  .story-visual-placeholder {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 560px;
+    min-height: 560px;
     transform: none;
   }
 
-  .scene-campus > .campus-gallery .campus-gallery-grid {
+  .scene-skills > .skill-cube-gallery .skill-cube-scene,
+  .scene-projects > .project-hyper .project-hyper-viewport,
+  .scene-campus > .campus-gallery .campus-gallery-grid,
+  .scene-skills > .deferred-story-visual .skill-cube-gallery .skill-cube-scene,
+  .scene-projects > .deferred-story-visual .project-hyper .project-hyper-viewport {
+    transform: none;
+  }
+
+  .scene-campus > .campus-gallery .campus-gallery-grid,
+  .scene-campus > .deferred-story-visual .campus-gallery .campus-gallery-grid {
     left: 50%;
     width: min(900px, calc(100vw - 32px));
   }
