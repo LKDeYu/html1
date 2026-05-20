@@ -968,7 +968,7 @@ html.dark .liquid-glass {
   max-width: 560px;
   text-shadow:
     0 2px 18px rgba(0, 0, 0, 0.18),
-    0 0 36px rgba(255, 53, 155, 0.12);
+    0 0 34px rgba(124, 246, 255, 0.14);
 }
 
 .scene-copy h2,
@@ -1153,8 +1153,9 @@ html.dark .liquid-glass {
   border: 0;
   border-radius: 0;
   background:
-    radial-gradient(circle at 48% 50%, rgba(255, 255, 255, 0.44), transparent 31%),
-    #f0ece3;
+    radial-gradient(circle at 58% 48%, rgba(240, 236, 227, 0.14), transparent 25%),
+    radial-gradient(circle at 60% 52%, rgba(124, 246, 255, 0.08), transparent 38%),
+    transparent;
   box-shadow: none;
   color: #0d0d14;
   perspective: 1100px;
@@ -1166,10 +1167,11 @@ html.dark .liquid-glass {
   inset: 0;
   content: "";
   background:
-    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+    linear-gradient(rgba(124, 246, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 246, 255, 0.04) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: radial-gradient(circle at center, black, transparent 76%);
+  mask-image: radial-gradient(circle at 58% 50%, black, transparent 68%);
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -1187,6 +1189,7 @@ html.dark .liquid-glass {
   position: relative;
   width: var(--s);
   height: var(--s);
+  transform: rotateX(90deg) rotateY(0deg);
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -1946,8 +1949,8 @@ html.dark .liquid-glass {
 
 .story-visual-placeholder.warm {
   background:
-    radial-gradient(circle at 64% 50%, rgba(240, 236, 227, 0.18), transparent 34%),
-    radial-gradient(circle at 40% 58%, rgba(212, 168, 75, 0.12), transparent 32%),
+    radial-gradient(circle at 64% 50%, rgba(124, 246, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 40% 58%, rgba(240, 236, 227, 0.06), transparent 32%),
     transparent;
 }
 
@@ -3109,6 +3112,27 @@ html.dark .blog-grid article {
   padding: clamp(34px, 7vw, 86px) 0 52px;
 }
 
+.homing-feature-image {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  width: clamp(112px, 15vw, 190px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.homing-feature-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 228px;
+  border-radius: 7px;
+  object-fit: cover;
+  object-position: center 42%;
+  opacity: 0.92;
+  filter: saturate(0.96) contrast(1.02);
+}
+
 .homing-hero-copy {
   max-width: 650px;
 }
@@ -3472,6 +3496,15 @@ html.dark .blog-grid article {
   color: #111827;
 }
 
+.homing-article .markdown-view img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  margin: 28px 0;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 .homing-article-actions {
   display: flex;
   align-items: center;
@@ -3649,6 +3682,19 @@ html.dark .blog-grid article {
     align-items: flex-start;
     gap: 26px;
     padding: 18px 0 36px;
+  }
+
+  .homing-feature-image {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: min(220px, 72vw);
+    margin: 0;
+    transform: none;
+  }
+
+  .homing-feature-image img {
+    max-height: 260px;
   }
 
   .homing-avatar {

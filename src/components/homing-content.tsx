@@ -36,6 +36,17 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
         <HomingHeader />
 
         <section className="homing-hero">
+          <div className="homing-feature-image" aria-hidden="true">
+            <Image
+              src="/images/blog/mushoku-family-home.webp"
+              alt=""
+              width={520}
+              height={669}
+              priority
+              sizes="(max-width: 760px) 72vw, 220px"
+            />
+          </div>
+
           <div className="homing-hero-copy">
             <h1>Hi, I&apos;m Zhihong Wu</h1>
             <p>
@@ -66,7 +77,7 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
                     </h2>
                     <div className="homing-tags">
                       {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
-                        <Link href={`/tags/${slugifyTag(tag)}`} key={tag}>
+                        <Link href={`/tags/${slugifyTag(tag)}`} prefetch={false} key={tag}>
                           {tag}
                         </Link>
                       ))}
@@ -83,7 +94,9 @@ export function HomingHomePage({ posts }: { posts: HomingPostItem[] }) {
 
           {posts.length > HOME_DISPLAY_LIMIT ? (
             <div className="homing-all-posts">
-              <Link href="/blog">All Posts -&gt;</Link>
+              <Link href="/blog" prefetch={false}>
+                All Posts -&gt;
+              </Link>
             </div>
           ) : null}
         </section>
@@ -125,7 +138,7 @@ export function HomingListPage({
               {!activeTag ? (
                 <h3>All Posts</h3>
               ) : (
-                <Link className="homing-sidebar-all" href="/blog">
+                <Link className="homing-sidebar-all" href="/blog" prefetch={false}>
                   All Posts
                 </Link>
               )}
@@ -135,7 +148,7 @@ export function HomingListPage({
                     {activeTag === tag.label ? (
                       <h3>{`${tag.label} (${tag.count})`}</h3>
                     ) : tag.href ? (
-                      <Link href={tag.href} aria-label={`View posts tagged ${tag.label}`}>
+                      <Link href={tag.href} aria-label={`View posts tagged ${tag.label}`} prefetch={false}>
                         {`${tag.label} (${tag.count})`}
                       </Link>
                     ) : (
@@ -161,7 +174,7 @@ export function HomingListPage({
                     </h2>
                     <div className="homing-tags">
                       {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
-                        <Link href={`/tags/${slugifyTag(tag)}`} key={tag}>
+                        <Link href={`/tags/${slugifyTag(tag)}`} prefetch={false} key={tag}>
                           {tag}
                         </Link>
                       ))}
@@ -195,11 +208,14 @@ export function HomingTagsPage({ tags }: { tags: HomingTagItem[] }) {
             {tags.length === 0 ? <p>No tags found.</p> : null}
             {tags.map((tag) => (
               <div key={tag.label}>
-                <Link href={tag.href ?? `/tags/${slugifyTag(tag.label)}`}>{tag.label}</Link>
+                <Link href={tag.href ?? `/tags/${slugifyTag(tag.label)}`} prefetch={false}>
+                  {tag.label}
+                </Link>
                 <Link
                   className="homing-tag-count"
                   href={tag.href ?? `/tags/${slugifyTag(tag.label)}`}
                   aria-label={`View posts tagged ${tag.label}`}
+                  prefetch={false}
                 >
                   {` (${tag.count})`}
                 </Link>
@@ -217,11 +233,19 @@ export function HomingTagsPage({ tags }: { tags: HomingTagItem[] }) {
 function HomingHeader({ compact = false }: { compact?: boolean }) {
   return (
     <header className={`homing-header ${compact ? "compact" : ""}`}>
-      <Link href="/blog/home">Namranta</Link>
+      <Link href="/blog/home" prefetch={false}>
+        Namranta
+      </Link>
       <nav aria-label="内容导航">
-        <Link href="/blog">Blog</Link>
-        <Link href="/tags">Tags</Link>
-        <Link href="/">Visual</Link>
+        <Link href="/blog" prefetch={false}>
+          Blog
+        </Link>
+        <Link href="/tags" prefetch={false}>
+          Tags
+        </Link>
+        <Link href="/" prefetch={false}>
+          Visual
+        </Link>
       </nav>
     </header>
   );
@@ -231,16 +255,18 @@ function HomingFooter() {
   return (
     <footer className="homing-footer">
       <div className="homing-socials">
-        <Link href={`mailto:${siteConfig.email}`} aria-label="Email">
+        <Link href={`mailto:${siteConfig.email}`} aria-label="Email" prefetch={false}>
           <Mail size={24} strokeWidth={2.4} />
         </Link>
-        <Link href={siteConfig.github} aria-label="GitHub">
+        <Link href={siteConfig.github} aria-label="GitHub" prefetch={false}>
           <GitBranch size={24} strokeWidth={2.4} />
         </Link>
       </div>
       <p>
         {siteConfig.author} <span>·</span> © {new Date().getFullYear()} <span>·</span>{" "}
-        <Link href="/blog/home">Namranta</Link>
+        <Link href="/blog/home" prefetch={false}>
+          Namranta
+        </Link>
       </p>
     </footer>
   );
@@ -253,11 +279,23 @@ function HomingPagination({ currentPage, totalPages, basePath = "/blog" }: Homin
 
   return (
     <nav className="homing-pagination" aria-label="Blog pagination">
-      {prevPage >= 1 ? <Link href={pageHref(prevPage)}>Previous</Link> : <span aria-disabled="true">Previous</span>}
+      {prevPage >= 1 ? (
+        <Link href={pageHref(prevPage)} prefetch={false}>
+          Previous
+        </Link>
+      ) : (
+        <span aria-disabled="true">Previous</span>
+      )}
       <small>
         {currentPage} of {totalPages}
       </small>
-      {nextPage <= totalPages ? <Link href={pageHref(nextPage)}>Next</Link> : <span aria-disabled="true">Next</span>}
+      {nextPage <= totalPages ? (
+        <Link href={pageHref(nextPage)} prefetch={false}>
+          Next
+        </Link>
+      ) : (
+        <span aria-disabled="true">Next</span>
+      )}
     </nav>
   );
 }

@@ -90,8 +90,8 @@ export function SkillCubeGallery({ skills }: SkillCubeGalleryProps) {
       }
 
       const sceneProgress = getStorySceneProgress(1, root, 0, 1);
-      const hold = 0.18;
-      const travel = clamp((sceneProgress - hold) / 0.74);
+      const hold = 0.34;
+      const travel = clamp((sceneProgress - hold) / 0.58);
       const smooth = easeIO(travel);
       const t = smooth * (STOPS.length - 1);
       const index = Math.min(Math.floor(t), STOPS.length - 2);

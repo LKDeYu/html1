@@ -26,11 +26,19 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
     <main className="homing-page">
       <section className="homing-container">
         <header className="homing-header">
-          <Link href="/blog/home">Namranta</Link>
+          <Link href="/blog/home" prefetch={false}>
+            Namranta
+          </Link>
           <nav aria-label="Content navigation">
-            <Link href="/blog">Blog</Link>
-            <Link href="/tags">Tags</Link>
-            <Link href="/">Visual</Link>
+            <Link href="/blog" prefetch={false}>
+              Blog
+            </Link>
+            <Link href="/tags" prefetch={false}>
+              Tags
+            </Link>
+            <Link href="/" prefetch={false}>
+              Visual
+            </Link>
           </nav>
         </header>
 
@@ -60,7 +68,7 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
                 <dt>Tags</dt>
                 <dd className="homing-tags">
                   {(post.tags.length > 0 ? post.tags : [post.category ?? "note"]).map((tag) => (
-                    <Link href={`/tags/${slugifyTag(tag)}`} key={tag}>
+                    <Link href={`/tags/${slugifyTag(tag)}`} prefetch={false} key={tag}>
                       {tag}
                     </Link>
                   ))}
@@ -72,19 +80,23 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
                   {prev ? (
                     <div>
                       <h2>Previous Article</h2>
-                      <Link href={prev.href}>{prev.title}</Link>
+                      <Link href={prev.href} prefetch={false}>
+                        {prev.title}
+                      </Link>
                     </div>
                   ) : null}
                   {next ? (
                     <div>
                       <h2>Next Article</h2>
-                      <Link href={next.href}>{next.title}</Link>
+                      <Link href={next.href} prefetch={false}>
+                        {next.title}
+                      </Link>
                     </div>
                   ) : null}
                 </nav>
               )}
 
-              <Link className="homing-back" href={backHref} aria-label="Back to the blog">
+              <Link className="homing-back" href={backHref} aria-label="Back to the blog" prefetch={false}>
                 Back to the blog
               </Link>
             </aside>
@@ -102,11 +114,13 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
               ) : null}
               <MarkdownView>{post.body}</MarkdownView>
               <div className="homing-article-actions">
-                <Link href={`mailto:${siteConfig.email}?subject=${encodeURIComponent(post.title)}`}>
+                <Link href={`mailto:${siteConfig.email}?subject=${encodeURIComponent(post.title)}`} prefetch={false}>
                   Discuss by Email
                 </Link>
                 <span>/</span>
-                <Link href={`${siteConfig.siteRepo}/tree/main/content/writing`}>View on GitHub</Link>
+                <Link href={`${siteConfig.siteRepo}/tree/main/content/writing`} prefetch={false}>
+                  View on GitHub
+                </Link>
               </div>
             </div>
           </div>
@@ -115,7 +129,9 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
         <footer className="homing-footer">
           <p>
             {siteConfig.author} <span>/</span> {new Date().getFullYear()} <span>/</span>{" "}
-            <Link href="/blog/home">Namranta</Link>
+            <Link href="/blog/home" prefetch={false}>
+              Namranta
+            </Link>
           </p>
         </footer>
       </section>

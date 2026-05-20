@@ -8,6 +8,7 @@ export type WritingRecord = {
   summary: string;
   tags: string[];
   imageUrl?: string;
+  pinned: boolean;
   body: string;
 };
 
@@ -48,6 +49,10 @@ function stripQuotes(value: string | undefined) {
   return (value ?? "").trim().replace(/^["']|["']$/g, "");
 }
 
+function parseBoolean(value: string | undefined) {
+  return ["true", "yes", "1"].includes(stripQuotes(value).toLowerCase());
+}
+
 function parseMdx(raw: string, slug: string): WritingRecord {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   const frontmatter = match?.[1] ?? "";
@@ -70,6 +75,7 @@ function parseMdx(raw: string, slug: string): WritingRecord {
     summary: stripQuotes(meta.get("summary")),
     tags: parseArray(meta.get("tags")),
     imageUrl: stripQuotes(meta.get("imageUrl")) || undefined,
+    pinned: parseBoolean(meta.get("pinned")),
     body,
   };
 }
@@ -87,7 +93,12 @@ export function listWriting(options: { tag?: string } = {}) {
       const raw = fs.readFileSync(path.join(WRITING_DIR, file), "utf8");
       return parseMdx(raw, slug);
     })
-    .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title, "zh-CN"));
+    .sort(
+      (a, b) =>
+        Number(b.pinned) - Number(a.pinned) ||
+        b.date.localeCompare(a.date) ||
+        a.title.localeCompare(b.title, "zh-CN"),
+    );
 
   if (!options.tag) {
     return posts;
