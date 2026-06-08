@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_SC, Space_Grotesk } from "next/font/google";
 import { RouteStarfield } from "@/components/route-starfield";
 import { siteConfig } from "@/lib/site";
+import "@waline/client/style";
 import "./globals.css";
 
 const notoSansSc = Noto_Sans_SC({

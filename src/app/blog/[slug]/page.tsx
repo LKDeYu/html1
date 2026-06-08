@@ -67,6 +67,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         imageUrl: post.imageUrl,
       }}
       backHref="/blog"
+      commentPath={`/blog/${post.slug}`}
       prev={prev ? { title: prev.title, href: `/blog/${prev.slug}` } : undefined}
       next={next ? { title: next.title, href: `/blog/${next.slug}` } : undefined}
     />

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MarkdownView } from "@/components/markdown-view";
+import { WalineComments } from "@/components/waline-comments";
 import { blogConfig, siteConfig } from "@/lib/site";
 import { slugifyTag } from "@/components/homing-content";
 
@@ -17,11 +18,12 @@ type HomingArticle = {
 type HomingArticlePageProps = {
   post: HomingArticle;
   backHref: string;
+  commentPath?: string;
   prev?: { title: string; href: string };
   next?: { title: string; href: string };
 };
 
-export function HomingArticlePage({ post, backHref, prev, next }: HomingArticlePageProps) {
+export function HomingArticlePage({ post, backHref, commentPath, prev, next }: HomingArticlePageProps) {
   return (
     <main className="homing-page">
       <section className="homing-container">
@@ -113,6 +115,7 @@ export function HomingArticlePage({ post, backHref, prev, next }: HomingArticleP
                 />
               ) : null}
               <MarkdownView>{post.body}</MarkdownView>
+              {commentPath ? <WalineComments path={commentPath} /> : null}
               <div className="homing-article-actions">
                 <Link href={`mailto:${siteConfig.email}?subject=${encodeURIComponent(post.title)}`} prefetch={false}>
                   Discuss by Email

@@ -1,0 +1,88 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: coordinate-zero-nginx
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+      waline:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - coordinate-zero
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_WALINE_SERVER_URL: ${NEXT_PUBLIC_WALINE_SERVER_URL:-/waline}
+    image: coordinate-zero-web:latest
+    container_name: coordinate-zero-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_WALINE_SERVER_URL: ${NEXT_PUBLIC_WALINE_SERVER_URL:-/waline}
+    networks:
+      - coordinate-zero
+
+  waline:
+    image: lizheming/waline:latest
+    container_name: coordinate-zero-waline
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      SITE_NAME: ${SITE_NAME:-Coordinate Zero}
+      SITE_URL: ${SITE_URL}
+      SECURE_DOMAINS: ${SECURE_DOMAINS}
+      AUTHOR_EMAIL: ${AUTHOR_EMAIL}
+      JWT_TOKEN: ${JWT_TOKEN}
+      MYSQL_DB: ${MYSQL_DATABASE:-waline}
+      MYSQL_USER: ${MYSQL_USER:-waline}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_CHARSET: utf8mb4
+      IPQPS: ${IPQPS:-60}
+      COMMENT_AUDIT: ${COMMENT_AUDIT:-false}
+      DISABLE_REGION: ${DISABLE_REGION:-true}
+      DISABLE_USERAGENT: ${DISABLE_USERAGENT:-false}
+    networks:
+      - coordinate-zero
+
+  mysql:
+    image: mysql:8.4
+    container_name: coordinate-zero-mysql
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-waline}
+      MYSQL_USER: ${MYSQL_USER:-waline}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - coordinate-zero
+
+volumes:
+  mysql-data:
+
+networks:
+  coordinate-zero:
+    driver: bridge

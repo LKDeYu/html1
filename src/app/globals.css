@@ -3349,6 +3349,56 @@ html.dark .blog-grid article {
   object-fit: contain;
 }
 
+.homing-comments {
+  margin-top: 40px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 28px;
+}
+
+.homing-comments-header {
+  margin-bottom: 18px;
+}
+
+.homing-comments-header p {
+  margin: 0 0 6px;
+  color: #9d174d;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.homing-comments-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.homing-comments .wl-panel,
+.homing-comments .wl-editor,
+.homing-comments .wl-input,
+.homing-comments .wl-btn,
+.homing-comments .wl-card {
+  border-radius: 6px;
+}
+
+.homing-comments .wl-panel {
+  border-color: #e5e7eb;
+}
+
+.homing-comments .wl-btn.primary {
+  border-color: #be185d;
+  background: #be185d;
+  color: #ffffff;
+}
+
+.homing-comments .wl-btn.primary:hover {
+  border-color: #9d174d;
+  background: #9d174d;
+}
+
 .homing-article-actions {
   display: flex;
   align-items: center;
