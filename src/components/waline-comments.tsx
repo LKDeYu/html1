@@ -51,8 +51,7 @@ export function WalineComments({ path }: WalineCommentsProps) {
   return (
     <section className="homing-comments" aria-labelledby="article-comments-title">
       <div className="homing-comments-header">
-        <p>Comments / 评论</p>
-        <h2 id="article-comments-title">登录后参与讨论</h2>
+        <p id="article-comments-title">Comments / 评论</p>
       </div>
       <div ref={containerRef} />
     </section>
