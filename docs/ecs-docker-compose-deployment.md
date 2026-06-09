@@ -2,6 +2,9 @@
 
 本手册用于把 `Coordinate Zero` 个人内容站部署到一台阿里云 ECS 上。部署形态是：
 
+完整的组件职责、本地运行方式和访问数据流见
+[`architecture-and-data-flow.md`](./architecture-and-data-flow.md)。
+
 ```text
 公网浏览器 -> Nginx 容器 80
                  -> Next.js 前端容器 3000
