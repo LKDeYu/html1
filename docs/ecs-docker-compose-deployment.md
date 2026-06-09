@@ -148,6 +148,16 @@ http://你的ECS公网IP/waline/ui
 
 截图点：管理员后台或用户登录状态。
 
+### 修改评论用户头像
+
+进入 `/waline/ui/profile`，点击左侧圆形头像下方的“修改头像”，然后粘贴一个
+公网可访问的 `http://` 或 `https://` 图片地址。Waline 原生采用 URL 方式，
+当前版本不负责把本地图片上传到服务器。
+
+没有自定义头像时，Waline 会根据注册邮箱使用 Libravatar/Gravatar 默认头像。
+GitHub 账号绑定成功后会记录 GitHub 用户名，但不会稳定地自动替换已有头像；
+需要时仍可在个人设置中手动填写 GitHub 头像或其他图片 URL。
+
 ## 8. 常见问题
 
 ### 评论区显示但请求失败
@@ -163,6 +173,17 @@ http://你的ECS公网IP/waline/ui
 ```bash
 docker compose build web
 docker compose up -d
+```
+
+### GitHub 绑定成功后返回 404
+
+Waline 1.40.3 可能把成功页面跳转到 `/ui/profile`，而本项目的 Waline 实际挂载在
+`/waline`。项目中的 Nginx 配置已经把该地址改写为 `/waline/ui/profile`。
+如果云服务器仍出现旧问题，请确认拉取了最新代码并重建 Nginx：
+
+```bash
+git pull
+docker compose up -d --force-recreate nginx
 ```
 
 ### Waline 连不上 MySQL

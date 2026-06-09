@@ -1,11 +1,28 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 const pieces = ["one", "two", "three"] as const;
 
-export function NotFoundVisual() {
+type ErrorVisualProps = {
+  code: string;
+  message: ReactNode;
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+};
+
+export function ErrorVisual({
+  code,
+  message,
+  primaryHref = "/",
+  primaryLabel = "Go home",
+  secondaryHref = "/blog/home",
+  secondaryLabel = "Read blog",
+}: ErrorVisualProps) {
   return (
     <main className="not-found-page">
-      <nav className="not-found-menu" aria-label="404 navigation">
+      <nav className="not-found-menu" aria-label={`${code} navigation`}>
         <Link className="not-found-logo" href="/">
           Namranta
         </Link>
@@ -30,23 +47,35 @@ export function NotFoundVisual() {
                 </div>
               </div>
             ))}
-            <p className="not-found-404 front">404</p>
-            <p className="not-found-404 back">404</p>
+            <p className="not-found-404 front">{code}</p>
+            <p className="not-found-404 back">{code}</p>
           </div>
 
           <article className="not-found-text">
-            <p>
-              Uh oh! Looks like this page drifted away.
-              <br />
-              Go back to the homepage if you dare.
-            </p>
+            <p>{message}</p>
             <div>
-              <Link href="/">I dare!</Link>
-              <Link href="/blog/home">Read blog</Link>
+              <Link href={primaryHref}>{primaryLabel}</Link>
+              <Link href={secondaryHref}>{secondaryLabel}</Link>
             </div>
           </article>
         </div>
       </section>
     </main>
+  );
+}
+
+export function NotFoundVisual() {
+  return (
+    <ErrorVisual
+      code="404"
+      message={
+        <>
+          Uh oh! Looks like this page drifted away.
+          <br />
+          Go back to the homepage if you dare.
+        </>
+      }
+      primaryLabel="I dare!"
+    />
   );
 }

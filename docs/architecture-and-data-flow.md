@@ -95,6 +95,22 @@ GitHub 登录或账号绑定默认通过 Waline 公共 OAuth 中心完成：
 服务时，才需要把 `GITHUB_ID` 和 `GITHUB_SECRET` 配置到那个独立服务中，
 并通过 Waline 的 `OAUTH_URL` 指向它。
 
+GitHub 绑定成功后，Waline 1.40.3 会返回相对站点根目录的 `/ui/profile`。
+本站把 Waline 挂载在 `/waline` 下，因此 Nginx 会把该跳转改写为
+`/waline/ui/profile`，并为直接访问旧路径提供兼容重定向。
+
+### 修改用户头像
+
+Waline 默认不提供本地文件上传，而是保存一个公开可访问的头像 URL：
+
+1. 登录 `/waline/ui/profile`。
+2. 点击左侧圆形头像下方的“修改头像”。
+3. 粘贴以 `http://` 或 `https://` 开头的图片地址。
+4. 保存后，地址写入 MySQL 的 `wl_Users.avatar` 字段。
+
+如果没有设置头像 URL，Waline 会根据邮箱使用 Libravatar/Gravatar 生成默认头像。
+绑定 GitHub 账号和修改头像是两个独立动作，绑定成功不保证自动覆盖当前头像。
+
 ### 发表评论
 
 ```text
@@ -173,14 +189,14 @@ ECS 上仍运行相同的四个容器，区别只是 `localhost` 被 ECS 公网 
 
 ## 7. 错误页面边界
 
-自定义 404 页面只处理 Next.js 页面路由不存在的情况。不同层需要保留不同的
-错误响应：
+不同层仍保留不同的响应格式，但所有由浏览器直接展示的异常页使用同一套
+404 动画视觉：
 
 - Next.js 页面 404：返回自定义视觉页面。
-- Next.js 页面运行异常：应由 `error.tsx` 或 `global-error.tsx` 处理。
+- Next.js 页面运行异常：由 `error.tsx` 或 `global-error.tsx` 返回同风格 500 页面。
 - Waline API 的 401、403、404、500：继续返回 JSON，供评论客户端判断错误。
-- Nginx 的 502、503、504：可配置单独的静态服务异常页面。
-- GitHub OAuth 错误：由 GitHub、OAuth 中心或 Waline 返回。
+- Nginx 的 500、502、503、504：前端不可用时返回独立静态同风格页面。
+- GitHub OAuth 回调错误：返回同风格认证异常页；GitHub 外部页面仍由 GitHub 控制。
 
 不能把所有 API 错误都改成自定义 404 HTML，否则客户端期待 JSON 时会再次出现
 `Unexpected token '<'`。

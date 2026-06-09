@@ -1,0 +1,254 @@
+:root {
+  --pink: #fb8a8a;
+  --cream: #ffedc0;
+  --bg: #695681;
+  --deep: #36184f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: var(--bg);
+  color: #fff;
+  font-family: Arial, "Microsoft YaHei UI", sans-serif;
+}
+
+header {
+  position: fixed;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  width: 100%;
+  height: 80px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo {
+  border-radius: 2px;
+  background: #fff;
+  color: var(--bg);
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0.62;
+  padding: 4px 8px;
+}
+
+nav {
+  display: flex;
+  gap: clamp(24px, 4vw, 50px);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.62;
+  text-transform: uppercase;
+}
+
+main {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+.circle,
+.code {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.circle {
+  background: rgba(54, 24, 79, 0.22);
+  box-shadow:
+    inset 5px 20px 40px rgba(54, 24, 79, 0.25),
+    2px 2px 5px rgba(255, 255, 255, 0.2);
+  animation: circle-in 700ms ease-out both;
+}
+
+.circle-large {
+  width: min(800px, 86vw);
+  height: min(800px, 86vw);
+}
+
+.circle-small {
+  width: min(600px, 68vw);
+  height: min(600px, 68vw);
+  animation-delay: 180ms;
+}
+
+.piece {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  border-radius: 80px;
+  animation: drift 5s ease-in-out infinite alternate;
+}
+
+.piece.one {
+  top: 23%;
+  left: 25%;
+  width: 120px;
+  height: 30px;
+  background: linear-gradient(90deg, #8077ea, #eb73ff);
+}
+
+.piece.two {
+  top: 35%;
+  right: 22%;
+  width: 160px;
+  height: 44px;
+  background: linear-gradient(90deg, var(--cream), #ff9d87);
+  animation-delay: -1s;
+}
+
+.piece.three {
+  right: 28%;
+  bottom: 25%;
+  width: 130px;
+  height: 34px;
+  background: var(--pink);
+  animation-delay: -2s;
+}
+
+.piece.four {
+  bottom: 18%;
+  left: 31%;
+  width: 80px;
+  height: 20px;
+  background: linear-gradient(90deg, #8077ea, #eb73ff);
+  animation-delay: -3s;
+}
+
+.code {
+  z-index: 2;
+  display: grid;
+  width: 100%;
+  place-items: center;
+  border-radius: 0;
+  font-size: clamp(84px, 17vw, 200px);
+  letter-spacing: 4px;
+  animation: code-in 600ms 500ms ease-out both;
+}
+
+.code.shadow {
+  z-index: 1;
+  color: var(--deep);
+  filter: blur(10px);
+  opacity: 0.8;
+}
+
+section {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(42px, 10vh, 96px);
+  width: min(460px, calc(100vw - 36px));
+  text-align: center;
+}
+
+section p {
+  margin: 0 0 34px;
+  font-size: 18px;
+  line-height: 1.65;
+  text-shadow: 6px 6px 10px #32243e;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.actions a {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background: #fff;
+  box-shadow: 0 15px 20px rgba(54, 24, 79, 0.42);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0 28px;
+  text-transform: uppercase;
+}
+
+@keyframes circle-in {
+  from {
+    width: 0;
+    height: 0;
+  }
+}
+
+@keyframes code-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5);
+  }
+}
+
+@keyframes drift {
+  to {
+    transform: translateX(70px);
+  }
+}
+
+@media (max-width: 720px) {
+  nav {
+    display: none;
+  }
+
+  .piece.three,
+  .piece.four {
+    display: none;
+  }
+
+  section {
+    bottom: 34px;
+    padding: 0 14px;
+  }
+
+  section p {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
