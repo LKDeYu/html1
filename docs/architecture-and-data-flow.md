@@ -84,6 +84,17 @@ http://localhost
 密码不会以明文保存，Waline 保存的是密码哈希。登录成功后，Waline 签发令牌；
 浏览器保存令牌，后续评论请求通过 `Authorization: Bearer <token>` 携带身份。
 
+GitHub 登录或账号绑定默认通过 Waline 公共 OAuth 中心完成：
+
+```text
+浏览器 -> Waline -> oauth.lithub.cc -> GitHub
+       -> oauth.lithub.cc -> Waline -> MySQL
+```
+
+当前 Waline 容器不直接保存 GitHub Client Secret。只有自建 `walinejs/auth`
+服务时，才需要把 `GITHUB_ID` 和 `GITHUB_SECRET` 配置到那个独立服务中，
+并通过 Waline 的 `OAUTH_URL` 指向它。
+
 ### 发表评论
 
 ```text
@@ -160,7 +171,21 @@ ECS 上仍运行相同的四个容器，区别只是 `localhost` 被 ECS 公网 
 目前分别通过 Nginx 统一入口、MySQL 8.0 兼容认证、首次启动 SQL 和
 `SERVER_URL=站点地址/waline` 解决。
 
-## 7. 常用检查命令
+## 7. 错误页面边界
+
+自定义 404 页面只处理 Next.js 页面路由不存在的情况。不同层需要保留不同的
+错误响应：
+
+- Next.js 页面 404：返回自定义视觉页面。
+- Next.js 页面运行异常：应由 `error.tsx` 或 `global-error.tsx` 处理。
+- Waline API 的 401、403、404、500：继续返回 JSON，供评论客户端判断错误。
+- Nginx 的 502、503、504：可配置单独的静态服务异常页面。
+- GitHub OAuth 错误：由 GitHub、OAuth 中心或 Waline 返回。
+
+不能把所有 API 错误都改成自定义 404 HTML，否则客户端期待 JSON 时会再次出现
+`Unexpected token '<'`。
+
+## 8. 常用检查命令
 
 ```bash
 docker compose ps
