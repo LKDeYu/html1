@@ -33,7 +33,7 @@ services:
       - coordinate-zero
 
   waline:
-    image: lizheming/waline:latest
+    image: lizheming/waline:1.40.3
     container_name: coordinate-zero-waline
     restart: unless-stopped
     depends_on:
@@ -43,9 +43,11 @@ services:
       TZ: Asia/Shanghai
       SITE_NAME: ${SITE_NAME:-Coordinate Zero}
       SITE_URL: ${SITE_URL}
+      SERVER_URL: ${SITE_URL}/waline
       SECURE_DOMAINS: ${SECURE_DOMAINS}
       AUTHOR_EMAIL: ${AUTHOR_EMAIL}
       JWT_TOKEN: ${JWT_TOKEN}
+      LOGIN: force
       MYSQL_DB: ${MYSQL_DATABASE:-waline}
       MYSQL_USER: ${MYSQL_USER:-waline}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -60,10 +62,13 @@ services:
       - coordinate-zero
 
   mysql:
-    image: mysql:8.4
+    image: mysql:8.0.43
     container_name: coordinate-zero-mysql
     restart: unless-stopped
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-waline}
       MYSQL_USER: ${MYSQL_USER:-waline}
@@ -72,6 +77,7 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./deploy/mysql/waline.sql:/docker-entrypoint-initdb.d/01-waline.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
       interval: 10s

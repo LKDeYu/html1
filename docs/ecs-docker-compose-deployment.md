@@ -86,6 +86,10 @@ docker compose up -d
 docker compose ps
 ```
 
+首次使用空数据卷启动时，MySQL 会自动执行
+`deploy/mysql/waline.sql`，创建评论、计数和用户表。后续重启容器不会重复初始化，
+也不会删除 `mysql-data` volume 中的数据。
+
 检查日志：
 
 ```bash
@@ -99,6 +103,7 @@ docker compose logs -f nginx
 
 - `docker compose ps` 显示 `nginx`、`web`、`waline`、`mysql` 都是 running/healthy
 - `docker volume ls` 显示 MySQL 持久化 volume
+- MySQL 日志显示执行了 `/docker-entrypoint-initdb.d/01-waline.sql`
 
 ## 6. 访问验证
 
@@ -115,7 +120,8 @@ http://你的ECS公网IP/blog/ecg-diagnosis-system
 
 ```bash
 curl -I http://你的ECS公网IP/waline/
-curl "http://你的ECS公网IP/waline/api/comment?type=count&url=%2Fblog%2Fecg-diagnosis-system"
+curl -H "Referer: http://你的ECS公网IP/blog/ecg-diagnosis-system" \
+  "http://你的ECS公网IP/waline/api/comment?type=count&url=%2Fblog%2Fecg-diagnosis-system"
 ```
 
 截图点：
@@ -169,6 +175,7 @@ docker compose ps
 - `.env` 里的 `MYSQL_PASSWORD` 是否和 MySQL 服务一致
 - MySQL 是否已经 healthy
 - `MYSQL_DB`、`MYSQL_USER`、`MYSQL_PASSWORD` 是否传给 Waline
+- 项目固定使用 MySQL 8.0 的 `mysql_native_password`，以兼容 Waline 当前的 MySQL 驱动
 
 ### 修改 `.env` 后没有生效
 
