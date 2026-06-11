@@ -633,17 +633,11 @@ sudo docker compose up -d --build
 
 ## 15. 暂未完成的后续任务
 
-- 购买或确认 ECS。
-- 配置安全组。
-- 完成第一次 SSH 登录。
-- 安装 Docker 与 Compose。
-- 在 ECS 创建云端 `.env`。
-- 构建并启动四个容器。
-- 公网访问和评论全流程验收。
-- 注册云端 Waline 管理员。
-- 完成数据持久化测试。
-- 收集课程报告截图。
-- 可选：域名、HTTPS、自动备份和监控。
+- 第一阶段 ECS 部署、公网访问、Waline 登录评论和 MySQL volume 持久化已完成。
+- 下一阶段部署宿主机状态采集和 MySQL 每日备份。
+- 当前 HTTP 阶段保持 `ADMIN_TOKEN` 为空，运维面板不正式开放。
+- 完成域名、备案和 HTTPS 后，再设置独立 `ADMIN_TOKEN` 并启用面板。
+- 详细更新流程、定时任务和恢复命令见 `docs/ops-runbook.md`。
 
 ## 16. 给 GPT 网页端的建议开场提示
 
@@ -665,6 +659,7 @@ ECS 部署。不要采用旧的 SQLite CMS 架构，也不要使用 website_draf
 - `docs/ecs-docker-compose-deployment.md`
 - `docs/architecture-and-data-flow.md`
 - `docs/cloud-assignment-report-notes.md`
+- `docs/ops-runbook.md`
 - `deploy/compose.env.example`
 - `docker-compose.yml`
 - `deploy/nginx.conf`

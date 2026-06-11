@@ -29,11 +29,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-dev-server.*.log
-prod-server.*.log
+*.log
+__pycache__/
+*.py[cod]
 
 # local visual QA
 /qa/
+/runtime/
 
 # local source photo library
 /pictures/
