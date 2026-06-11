@@ -47,7 +47,7 @@ docker compose version
 ```bash
 mkdir -p /var/www
 cd /var/www
-git clone https://github.com/LKDeYu/website_draft.git coordinate-zero
+git clone https://github.com/LKDeYu/html1.git coordinate-zero
 cd coordinate-zero
 git log --oneline -3
 ```
