@@ -1,6 +1,6 @@
 # Coordinate Zero 云部署交接文档
 
-更新时间：2026-06-11  
+更新时间：2026-06-11
 用途：将本文件提供给 GPT 网页端或其他协作者，继续完成阿里云 ECS 部署与验收。
 
 > 本文件是当前云部署工作的主要上下文。`docs/AI_HANDOFF.md` 是早期开发阶段的
@@ -669,4 +669,3 @@ ECS 部署。不要采用旧的 SQLite CMS 架构，也不要使用 website_draf
 - `docker-compose.yml`
 - `deploy/nginx.conf`
 - `Dockerfile`
-
