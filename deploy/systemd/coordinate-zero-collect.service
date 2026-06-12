@@ -1,0 +1,13 @@
+[Unit]
+Description=Collect Coordinate Zero operations telemetry
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=PROJECT_DIR=@PROJECT_DIR@
+ExecStart=/bin/bash @PROJECT_DIR@/deploy/ops/collect-status.sh
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Collect Coordinate Zero operations telemetry every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Persistent=true
+Unit=coordinate-zero-collect.service
+
+[Install]
+WantedBy=timers.target

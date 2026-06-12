@@ -1,0 +1,14 @@
+[Unit]
+Description=Back up the Coordinate Zero Waline MySQL database
+After=docker.service
+
+[Service]
+Type=oneshot
+Environment=PROJECT_DIR=@PROJECT_DIR@
+Environment=OPS_BACKUP_DIR=@BACKUP_DIR@
+Environment=OPS_BACKUP_RETENTION=7
+ExecStart=/bin/bash @PROJECT_DIR@/deploy/ops/backup-mysql.sh
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

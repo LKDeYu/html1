@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up Coordinate Zero MySQL daily at 03:30 China Standard Time
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Asia/Shanghai
+AccuracySec=1min
+Persistent=true
+Unit=coordinate-zero-backup.service
+
+[Install]
+WantedBy=timers.target

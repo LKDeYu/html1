@@ -1,0 +1,12 @@
+[Unit]
+Description=Generate the Coordinate Zero GoAccess traffic report
+After=docker.service
+
+[Service]
+Type=oneshot
+Environment=PROJECT_DIR=@PROJECT_DIR@
+ExecStart=/bin/bash @PROJECT_DIR@/deploy/goaccess/generate-report.sh
+Nice=15
+
+[Install]
+WantedBy=multi-user.target
