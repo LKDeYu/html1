@@ -71,6 +71,8 @@ SECURE_DOMAINS=你的ECS公网IP
 JWT_TOKEN=一段足够长的随机字符串
 MYSQL_PASSWORD=一个强密码
 MYSQL_ROOT_PASSWORD=另一个强密码
+ADMIN_TOKEN=
+OPS_ALLOW_INSECURE_HTTP=false
 ```
 
 生成随机字符串可用：
@@ -80,6 +82,10 @@ openssl rand -hex 32
 ```
 
 注意：`.env` 不要提交到 GitHub。
+
+`OPS_ALLOW_INSECURE_HTTP=true` 只用于可信网络中的临时 HTTP 运维面板测试。
+启用时管理员口令和会话没有传输加密。配置 HTTPS 后必须删除该配置或改回
+`false`，并执行 `docker compose up -d --force-recreate web`。
 
 ## 5. 启动多容器架构
 

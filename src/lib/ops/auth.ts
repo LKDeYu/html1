@@ -29,6 +29,10 @@ export function isOpsAdminConfigured() {
   return getAdminToken() !== null;
 }
 
+export function isOpsInsecureHttpMode() {
+  return process.env.OPS_ALLOW_INSECURE_HTTP === "true";
+}
+
 export function verifyAdminToken(candidate: string) {
   const token = getAdminToken();
   if (!token) {
@@ -78,10 +82,14 @@ export function verifyOpsSessionValue(
 }
 
 export function getOpsSessionCookieOptions() {
+  const secure =
+    process.env.NODE_ENV === "production" &&
+    !isOpsInsecureHttpMode();
+
   return {
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     maxAge: OPS_SESSION_MAX_AGE_SECONDS,
   };

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { OpsLoginForm } from "@/components/ops-login-form";
 import {
   isOpsAdminConfigured,
+  isOpsInsecureHttpMode,
   OPS_SESSION_COOKIE,
   verifyOpsSessionValue,
 } from "@/lib/ops/auth";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function OpsLoginPage() {
   const configured = isOpsAdminConfigured();
+  const insecureHttpMode = isOpsInsecureHttpMode();
   const cookieStore = await cookies();
   if (
     configured &&
@@ -21,7 +23,10 @@ export default async function OpsLoginPage() {
 
   return (
     <main className="ops-login-page">
-      <OpsLoginForm configured={configured} />
+      <OpsLoginForm
+        configured={configured}
+        insecureHttpMode={insecureHttpMode}
+      />
     </main>
   );
 }

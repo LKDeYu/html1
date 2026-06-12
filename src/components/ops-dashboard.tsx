@@ -34,6 +34,7 @@ import type {
 
 type OpsDashboardProps = {
   initialData: OpsDataEnvelope;
+  insecureHttpMode: boolean;
   uptimeStatusUrl: string | null;
 };
 
@@ -109,6 +110,7 @@ function recordRisk(record: OpsAccessRecord) {
 
 export function OpsDashboard({
   initialData,
+  insecureHttpMode,
   uptimeStatusUrl,
 }: OpsDashboardProps) {
   const router = useRouter();
@@ -207,7 +209,15 @@ export function OpsDashboard({
       <header className="ops-header">
         <div>
           <p className="ops-eyebrow">Coordinate Zero / Operations</p>
-          <h1>只读运维面板</h1>
+          <div className="ops-title-row">
+            <h1>只读运维面板</h1>
+            {insecureHttpMode ? (
+              <span className="ops-insecure-badge">
+                <ShieldAlert size={14} />
+                HTTP 测试模式
+              </span>
+            ) : null}
+          </div>
           <p>
             数据来自宿主机定时生成的运行状态摘要，不提供远程控制能力。
           </p>

@@ -4984,6 +4984,30 @@ html.dark .blog-grid article {
   padding: 14px;
 }
 
+.ops-http-warning {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  border: 1px solid #7d4b36;
+  border-left: 3px solid #ff8a5b;
+  border-radius: 6px;
+  background: #2a1712;
+  color: #ffc0a5;
+  padding: 14px;
+}
+
+.ops-http-warning strong,
+.ops-http-warning span {
+  display: block;
+}
+
+.ops-http-warning span {
+  margin-top: 5px;
+  color: #ddb4a4;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .ops-config-warning strong,
 .ops-config-warning span {
   display: block;
@@ -5019,6 +5043,28 @@ html.dark .blog-grid article {
 
 .ops-header-actions form {
   margin: 0;
+}
+
+.ops-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.ops-insecure-badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  border: 1px solid #8b5138;
+  border-radius: 6px;
+  background: #2a1712;
+  color: #ffb08c;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 9px;
 }
 
 .ops-icon-button {

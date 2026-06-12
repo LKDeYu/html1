@@ -6,9 +6,13 @@ import { FormEvent, useState } from "react";
 
 type OpsLoginFormProps = {
   configured: boolean;
+  insecureHttpMode: boolean;
 };
 
-export function OpsLoginForm({ configured }: OpsLoginFormProps) {
+export function OpsLoginForm({
+  configured,
+  insecureHttpMode,
+}: OpsLoginFormProps) {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
@@ -67,6 +71,18 @@ export function OpsLoginForm({ configured }: OpsLoginFormProps) {
           使用独立管理员口令进入只读运行状态页面。
         </p>
       </div>
+
+      {insecureHttpMode ? (
+        <div className="ops-http-warning" role="alert">
+          <ShieldAlert size={18} />
+          <div>
+            <strong>HTTP 测试模式</strong>
+            <span>
+              当前运维面板运行在 HTTP 测试模式，管理员口令和会话未经过传输加密，请勿在不可信网络使用。
+            </span>
+          </div>
+        </div>
+      ) : null}
 
       {configured ? (
         <>

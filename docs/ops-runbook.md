@@ -11,8 +11,10 @@
 面板不能执行 Shell，不能访问 Docker Socket，也没有重启、删除、恢复或封禁按钮。
 数据库恢复只能通过 SSH 手工执行。
 
-当前公网仍为 HTTP 时必须保持 `ADMIN_TOKEN=`。生产构建的登录 Cookie 强制使用
-`Secure`，因此应在域名和 HTTPS 完成后再正式开放面板。
+默认情况下，生产构建的登录 Cookie 强制使用 `Secure`，因此 HTTP 站点不能完成
+会话登录。如需在当前 HTTP 阶段临时验收面板，必须在 ECS 服务端显式设置
+`OPS_ALLOW_INSECURE_HTTP=true`。这会关闭运维会话 Cookie 的 `Secure` 属性，管理员
+口令和会话将不再经过传输加密，只能在可信网络中短期测试，不能作为长期配置。
 
 ## 2. 文件与数据流
 
@@ -81,10 +83,11 @@ sudo chmod 700 /var/backups/coordinate-zero/mysql
 sudo chmod +x deploy/ops/*.sh deploy/ops/*.py
 ```
 
-编辑 ECS 的 `.env`，HTTP 阶段保持：
+编辑 ECS 的 `.env`。默认安全配置为：
 
 ```env
 ADMIN_TOKEN=
+OPS_ALLOW_INSECURE_HTTP=false
 OPS_BACKUP_DIR=/var/backups/coordinate-zero/mysql
 OPS_BACKUP_RETENTION=7
 NEXT_PUBLIC_UPTIME_STATUS_URL=
@@ -145,28 +148,59 @@ docker compose up -d nginx
 docker compose ps
 ```
 
-HTTP 阶段访问 `/admin/ops/login` 应看到“尚未配置 ADMIN_TOKEN”，API 应返回
-`503`。网站首页、博客、Waline 登录评论和已有评论必须保持正常。
+未配置 `ADMIN_TOKEN` 时，访问 `/admin/ops/login` 应看到“尚未配置
+ADMIN_TOKEN”，API 应返回 `503`。网站首页、博客、Waline 登录评论和已有评论必须
+保持正常。
 
-## 8. HTTPS 后启用面板
+## 8. 临时 HTTP 测试
 
-域名、证书和 Nginx HTTPS 配置完成后，在 ECS 本机生成口令：
+仅在需要通过公网 IP 临时验收运维面板、且当前网络可信时使用。在 ECS 本机生成
+至少 32 位的独立口令：
 
 ```bash
 openssl rand -hex 32
 ```
 
-把结果只写入 ECS `.env` 的 `ADMIN_TOKEN`，不要发送到聊天、截图或提交 Git。
-然后重建 Web：
+把结果只写入 ECS `.env`，不要发送到聊天、截图或提交 Git：
+
+```env
+ADMIN_TOKEN=这里填写刚生成的随机字符串
+OPS_ALLOW_INSECURE_HTTP=true
+```
+
+重新创建 Web 容器：
 
 ```bash
 docker compose up -d --build web
 ```
 
+登录页会显示传输未加密警告，面板顶部会显示“HTTP 测试模式”标签。测试结束后应将
+`ADMIN_TOKEN` 清空，并把 `OPS_ALLOW_INSECURE_HTTP` 改回 `false`，然后再次执行：
+
+```bash
+docker compose up -d --force-recreate web
+```
+
+## 9. HTTPS 后正式启用面板
+
+域名、证书和 Nginx HTTPS 配置完成后，在 ECS `.env` 中设置：
+
+```env
+ADMIN_TOKEN=至少32位的独立随机字符串
+OPS_ALLOW_INSECURE_HTTP=false
+```
+
+如果 HTTP 测试时配置过 `OPS_ALLOW_INSECURE_HTTP=true`，必须删除该行或改为
+`false`，并重新创建 Web 容器：
+
+```bash
+docker compose up -d --force-recreate web
+```
+
 登录会话有效期为 12 小时。Cookie 保存 HMAC 签名，不保存明文 Token，并设置
 `HttpOnly`、`SameSite=Lax`、`Secure`。
 
-## 9. 手工恢复
+## 10. 手工恢复
 
 恢复会覆盖当前 Waline 数据。仅在确认需要恢复时通过 SSH 执行：
 
@@ -178,7 +212,7 @@ sudo ./deploy/ops/restore-mysql.sh --confirm \
 脚本会先自动创建一份恢复前备份，再导入指定文件。恢复后立即验证 Waline 管理员
 登录、文章评论读取和新增评论，不在生产库上做破坏性演练。
 
-## 10. 验收截图
+## 11. 验收截图
 
 - `runtime/ops` 四个 JSON 的格式化输出。
 - `docker compose ps` 四个容器状态。

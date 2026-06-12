@@ -368,6 +368,10 @@ IPQPS=60
 COMMENT_AUDIT=false
 DISABLE_REGION=true
 DISABLE_USERAGENT=false
+
+# 运维面板默认保持关闭
+ADMIN_TOKEN=
+OPS_ALLOW_INSECURE_HTTP=false
 ```
 
 随机值生成：
@@ -634,9 +638,12 @@ sudo docker compose up -d --build
 ## 15. 暂未完成的后续任务
 
 - 第一阶段 ECS 部署、公网访问、Waline 登录评论和 MySQL volume 持久化已完成。
-- 下一阶段部署宿主机状态采集和 MySQL 每日备份。
-- 当前 HTTP 阶段保持 `ADMIN_TOKEN` 为空，运维面板不正式开放。
-- 完成域名、备案和 HTTPS 后，再设置独立 `ADMIN_TOKEN` 并启用面板。
+- 只读运维面板、宿主机状态采集和 MySQL 每日备份代码已完成。
+- 默认保持 `OPS_ALLOW_INSECURE_HTTP=false`；生产 Cookie 使用 `Secure`。
+- 如需在当前 HTTP 阶段临时验收，可在 ECS 服务端设置独立 `ADMIN_TOKEN` 和
+  `OPS_ALLOW_INSECURE_HTTP=true`，页面会明确标记 HTTP 测试模式。
+- HTTP 测试模式没有传输加密，只能短期用于可信网络，不能作为长期生产配置。
+- 完成域名、备案和 HTTPS 后，必须删除该变量或改回 `false`，并重新创建 Web 容器。
 - 详细更新流程、定时任务和恢复命令见 `docs/ops-runbook.md`。
 
 ## 16. 给 GPT 网页端的建议开场提示
