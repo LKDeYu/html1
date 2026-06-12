@@ -120,8 +120,19 @@ services:
     networks:
       - coordinate-zero
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.4.0-slim
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - coordinate-zero
+
 volumes:
   mysql-data:
+  uptime-kuma-data:
 
 networks:
   coordinate-zero:
