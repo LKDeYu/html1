@@ -13,27 +13,23 @@ export function getReplicaId(): string {
   return normalizeReplicaId(process.env.WEB_REPLICA_ID);
 }
 
-export function createHealthPayload(replicaId: string) {
+export function createHealthPayload(
+  replicaId: string,
+  checkedAt = new Date(),
+) {
   return {
     status: "ok" as const,
     replica: normalizeReplicaId(replicaId),
+    checkedAt: checkedAt.toISOString(),
   };
-}
-
-interface InstanceRuntime {
-  hostname: string;
-  pid: number;
-  uptimeSeconds: number;
 }
 
 export function createInstancePayload(
   replicaId: string,
-  runtime: InstanceRuntime,
+  time = new Date(),
 ) {
   return {
     replica: normalizeReplicaId(replicaId),
-    hostname: runtime.hostname.slice(0, 128),
-    pid: runtime.pid,
-    uptimeSeconds: Math.max(0, Math.floor(runtime.uptimeSeconds)),
+    time: time.toISOString(),
   };
 }

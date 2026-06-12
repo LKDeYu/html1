@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { createMockOpsData } from "@/lib/ops/mock-data";
+import { createMockOpsData } from "./mock-data.ts";
 import {
   OPS_DATA_FILES,
   type AvailabilityStatus,
@@ -17,7 +17,7 @@ import {
   type OpsServiceStatus,
   type RiskLevel,
   type TrafficClassification,
-} from "@/lib/ops/types";
+} from "./types.ts";
 
 const MAX_JSON_BYTES = 2_000_000;
 

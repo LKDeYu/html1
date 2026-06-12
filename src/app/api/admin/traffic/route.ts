@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const reportHeaders = {
   "Cache-Control": "no-store, max-age=0",
   "Content-Security-Policy":
-    "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline';",
+    "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'unsafe-eval';",
   "Content-Type": "text/html; charset=utf-8",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "SAMEORIGIN",

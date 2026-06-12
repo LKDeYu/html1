@@ -1,5 +1,3 @@
-import os from "node:os";
-
 import { NextResponse } from "next/server";
 
 import {
@@ -12,11 +10,7 @@ export const dynamic = "force-dynamic";
 
 export function GET() {
   const replicaId = getReplicaId();
-  const payload = createInstancePayload(replicaId, {
-    hostname: os.hostname(),
-    pid: process.pid,
-    uptimeSeconds: process.uptime(),
-  });
+  const payload = createInstancePayload(replicaId);
 
   return NextResponse.json(payload, {
     headers: {

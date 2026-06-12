@@ -1,8 +1,12 @@
 # Coordinate Zero 云部署交接文档
 
-更新时间：2026-06-11
+更新时间：2026-06-12
 用途：将本文件提供给 GPT 网页端或其他协作者，继续完成阿里云 ECS 部署与验收。
 
+> 《要求2》的七服务高可用、Kuma、GoAccess、systemd timer 和双副本验收流程已
+> 汇总到 [`full-stack-deployment.md`](./full-stack-deployment.md)。后续 ECS
+> 更新应优先按该文件执行；本文件后续章节保留第一阶段背景和历史排错信息。
+>
 > 本文件是当前云部署工作的主要上下文。`docs/AI_HANDOFF.md` 是早期开发阶段的
 > 旧记录，其中的 SQLite CMS、旧仓库地址和部分路由信息已经过时，不应作为本次
 > 部署依据。

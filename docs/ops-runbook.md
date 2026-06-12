@@ -1,5 +1,8 @@
 # Coordinate Zero 只读运维与备份手册
 
+> 七服务架构、双 Web 故障转移、Uptime Kuma、GoAccess 和 systemd timer 的
+> 最新操作见 [`full-stack-deployment.md`](./full-stack-deployment.md)。
+>
 ## 1. 实现边界
 
 本阶段新增三类能力：

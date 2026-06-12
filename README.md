@@ -42,7 +42,15 @@ Open <http://127.0.0.1:3001>.
 ```powershell
 npm run lint
 npm run build
+npm run test:ops
 ```
+
+## Cloud Deployment
+
+The course deployment uses Nginx, two Next.js replicas, Waline, MySQL,
+Uptime Kuma, and GoAccess on one ECS instance. See
+[`docs/full-stack-deployment.md`](./docs/full-stack-deployment.md) for the
+current deployment, monitoring, backup, failover, and rollback procedures.
 
 ## Public Routes
 

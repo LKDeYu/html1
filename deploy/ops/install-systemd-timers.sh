@@ -29,7 +29,7 @@ while IFS= read -r -d '' script; do
 done < <(find "${DEPLOY_DIR}" -type f -name '*.sh' -print0)
 
 while IFS= read -r -d '' module; do
-  python3 -m py_compile "${module}"
+  PYTHONPYCACHEPREFIX="${TEMP_DIR}/pycache" python3 -m py_compile "${module}"
 done < <(find "${DEPLOY_DIR}/ops" -maxdepth 1 -type f -name '*.py' -print0)
 
 PROJECT_DIR="${PROJECT_DIR}" OPS_BACKUP_DIR="${BACKUP_DIR}" \

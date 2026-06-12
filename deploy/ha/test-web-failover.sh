@@ -25,11 +25,35 @@ wait_for_health() {
   return 1
 }
 
+wait_for_replica_recovery() {
+  local expected="$1"
+  local attempts=30
+  local actual=""
+
+  while ((attempts > 0)); do
+    actual="$(curl --silent --show-error --max-time 15 "$BASE_URL/api/instance" \
+      | sed -n 's/.*"replica":"\([^"]*\)".*/\1/p')" || true
+    if [[ "$actual" == "$expected" ]]; then
+      return 0
+    fi
+    sleep 2
+    attempts=$((attempts - 1))
+  done
+
+  echo "Timed out waiting for $expected to rejoin the Nginx upstream." >&2
+  return 1
+}
+
 restore_service() {
   if [[ -n "$STOPPED_SERVICE" ]]; then
     echo "Restoring $STOPPED_SERVICE..."
     compose start "$STOPPED_SERVICE" >/dev/null
     wait_for_health "$STOPPED_SERVICE"
+    if [[ "$STOPPED_SERVICE" == "web" ]]; then
+      wait_for_replica_recovery web-primary
+    else
+      wait_for_replica_recovery web-replica
+    fi
     STOPPED_SERVICE=""
   fi
 }
@@ -58,6 +82,27 @@ assert_replica() {
   fi
 }
 
+assert_both_replicas() {
+  local attempts=12
+  local actual=""
+  local saw_primary=false
+  local saw_replica=false
+
+  while ((attempts > 0)); do
+    actual="$(curl --silent --show-error --max-time 15 "$BASE_URL/api/instance" \
+      | sed -n 's/.*"replica":"\([^"]*\)".*/\1/p')"
+    [[ "$actual" == "web-primary" ]] && saw_primary=true
+    [[ "$actual" == "web-replica" ]] && saw_replica=true
+    if [[ "$saw_primary" == true && "$saw_replica" == true ]]; then
+      return 0
+    fi
+    attempts=$((attempts - 1))
+  done
+
+  echo "Round-robin check did not reach both web replicas." >&2
+  return 1
+}
+
 assert_stack_paths() {
   assert_http "/"
   assert_http "/blog/home"
@@ -70,6 +115,7 @@ echo "Checking the complete stack before the drill..."
 assert_stack_paths
 wait_for_health web
 wait_for_health web-replica
+assert_both_replicas
 
 echo "Stopping the primary web service..."
 STOPPED_SERVICE="web"

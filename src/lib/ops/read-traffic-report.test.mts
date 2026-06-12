@@ -4,7 +4,24 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { readTrafficReport } from "./read-traffic-report.ts";
+import {
+  readTrafficReport,
+  sanitizeTrafficReport,
+} from "./read-traffic-report.ts";
+
+test("removes unresolved Glyphicons font references from GoAccess HTML", () => {
+  const html =
+    "<style>@font-face{font-family:'Glyphicons Halflings';src:url(../fonts/glyphicons-halflings-regular.woff2) format('woff2')}body{color:#fff}</style><script>window.reportReady=true</script>";
+
+  const sanitized = sanitizeTrafficReport(html);
+
+  assert.equal(sanitized.includes("glyphicons-halflings-regular"), false);
+  assert.equal(sanitized.includes("body{color:#fff}"), true);
+  assert.equal(
+    sanitized.includes("<script>window.reportReady=true</script>"),
+    true,
+  );
+});
 
 test("returns a missing result when the report does not exist", async () => {
   const result = await readTrafficReport("Z:/missing/report.html");

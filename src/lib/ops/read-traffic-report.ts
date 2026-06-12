@@ -7,6 +7,13 @@ export type TrafficReportResult =
   | { status: "ready"; html: string }
   | { status: "missing" | "too-large" | "unreadable" };
 
+export function sanitizeTrafficReport(html: string): string {
+  return html.replace(
+    /@font-face\s*\{[^{}]*font-family\s*:\s*['"]?Glyphicons Halflings['"]?[^{}]*\}/gi,
+    "",
+  );
+}
+
 export async function readTrafficReport(
   reportPath =
     process.env.GOACCESS_REPORT_PATH?.trim() || DEFAULT_REPORT_PATH,
@@ -23,7 +30,7 @@ export async function readTrafficReport(
 
     return {
       status: "ready",
-      html: await readFile(reportPath, "utf8"),
+      html: sanitizeTrafficReport(await readFile(reportPath, "utf8")),
     };
   } catch (error) {
     const code =

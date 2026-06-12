@@ -1,4 +1,4 @@
-import type { OpsDataEnvelope } from "@/lib/ops/types";
+import type { OpsDataEnvelope } from "./types.ts";
 
 export function createMockOpsData(): OpsDataEnvelope {
   const generatedAt = new Date().toISOString();

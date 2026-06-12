@@ -1,5 +1,8 @@
 # ECS Docker Compose 部署手册
 
+> 本文件描述第一阶段四服务部署。2026-06-12 起的七服务更新与验收请使用
+> [`full-stack-deployment.md`](./full-stack-deployment.md)。
+>
 本手册用于把 `Coordinate Zero` 个人内容站部署到一台阿里云 ECS 上。部署形态是：
 
 完整的组件职责、本地运行方式和访问数据流见

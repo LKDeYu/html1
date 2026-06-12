@@ -15,7 +15,7 @@ docker compose --project-directory "$PROJECT_DIR" \
     umask 022
     output_dir=/var/www/goaccess
     target="$output_dir/report.html"
-    temporary="$output_dir/.report.html.tmp.$$"
+    temporary="$output_dir/.report.tmp.$$.html"
     trap "rm -f \"$temporary\"" EXIT
 
     /usr/bin/goaccess /var/log/nginx/access.log \

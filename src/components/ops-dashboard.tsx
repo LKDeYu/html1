@@ -138,13 +138,16 @@ function formatDuration(value: number | null) {
   return days > 0 ? `${days} 天 ${hours} 小时` : `${hours} 小时`;
 }
 
-function formatAge(value: string | null) {
+function formatAge(value: string | null, referenceTime: string) {
   if (!value) {
     return "未知";
   }
   const seconds = Math.max(
     0,
-    Math.floor((Date.now() - new Date(value).getTime()) / 1000),
+    Math.floor(
+      (new Date(referenceTime).getTime() - new Date(value).getTime()) /
+        1000,
+    ),
   );
   if (seconds < 60) {
     return `${seconds} 秒前`;
@@ -339,7 +342,10 @@ export function OpsDashboard({
           检测时间 {formatTime(data.status.checkedAt)}
         </span>
         <span>
-          采集新鲜度 <strong>{formatAge(data.status.checkedAt)}</strong>
+          采集新鲜度{" "}
+          <strong>
+            {formatAge(data.status.checkedAt, data.generatedAt)}
+          </strong>
         </span>
         <span>
           数据源 <strong>{data.source}</strong>
@@ -610,7 +616,10 @@ export function OpsDashboard({
                 <dd>
                   {formatTime(data.backup.lastBackupAt)}
                   {" · "}
-                  {formatAge(data.backup.lastBackupAt)}
+                  {formatAge(
+                    data.backup.lastBackupAt,
+                    data.generatedAt,
+                  )}
                 </dd>
               </div>
               <div>

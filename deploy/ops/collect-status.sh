@@ -44,11 +44,11 @@ website_code="$(http_status "/")"
 blog_code="$(http_status "/blog/home")"
 waline_code="$(http_status "/waline/")"
 
-if ! docker compose ps --format json > "${TEMP_DIR}/compose-ps.json" 2>/dev/null; then
+if ! docker compose ps -a --format json > "${TEMP_DIR}/compose-ps.json" 2>/dev/null; then
   printf '[]\n' > "${TEMP_DIR}/compose-ps.json"
 fi
 
-mapfile -t container_ids < <(docker compose ps -q 2>/dev/null || true)
+mapfile -t container_ids < <(docker compose ps -a -q 2>/dev/null || true)
 if ((${#container_ids[@]} > 0)); then
   if ! docker inspect "${container_ids[@]}" > "${TEMP_DIR}/docker-inspect.json"; then
     printf '[]\n' > "${TEMP_DIR}/docker-inspect.json"
