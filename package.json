@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:ops": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/ops/auth.test.mts"
+    "test:ops": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/ops/*.test.mts src/lib/runtime/*.test.mts"
   },
   "dependencies": {
     "@waline/client": "^3.15.2",

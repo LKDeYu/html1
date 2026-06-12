@@ -1,0 +1,19 @@
+import { NextResponse } from "next/server";
+
+import {
+  createHealthPayload,
+  getReplicaId,
+  REPLICA_ID_HEADER,
+} from "@/lib/runtime/instance";
+
+export const dynamic = "force-dynamic";
+
+export function GET() {
+  const replicaId = getReplicaId();
+  return NextResponse.json(createHealthPayload(replicaId), {
+    headers: {
+      "Cache-Control": "no-store",
+      [REPLICA_ID_HEADER]: replicaId,
+    },
+  });
+}

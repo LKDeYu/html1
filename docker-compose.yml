@@ -1,11 +1,44 @@
+x-web-environment: &web-environment
+  NODE_ENV: production
+  NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+  NEXT_PUBLIC_WALINE_SERVER_URL: ${NEXT_PUBLIC_WALINE_SERVER_URL:-/waline}
+  NEXT_PUBLIC_UPTIME_STATUS_URL: ${NEXT_PUBLIC_UPTIME_STATUS_URL:-}
+  ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+  OPS_ALLOW_INSECURE_HTTP: ${OPS_ALLOW_INSECURE_HTTP:-false}
+  OPS_DATA_DIR: /app/runtime/ops
+  OPS_USE_MOCK_DATA: "false"
+
+x-web-common: &web-common
+  image: coordinate-zero-web:latest
+  restart: unless-stopped
+  environment:
+    <<: *web-environment
+  volumes:
+    - ./runtime/ops:/app/runtime/ops:ro
+  healthcheck:
+    test:
+      [
+        "CMD",
+        "node",
+        "-e",
+        "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+      ]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+    start_period: 20s
+  networks:
+    - coordinate-zero
+
 services:
   nginx:
     image: nginx:1.27-alpine
-    container_name: coordinate-zero-nginx
     restart: unless-stopped
     depends_on:
       web:
-        condition: service_started
+        condition: service_healthy
+      web-replica:
+        condition: service_healthy
       waline:
         condition: service_started
     ports:
@@ -17,6 +50,7 @@ services:
       - coordinate-zero
 
   web:
+    <<: *web-common
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,26 +58,18 @@ services:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
         NEXT_PUBLIC_WALINE_SERVER_URL: ${NEXT_PUBLIC_WALINE_SERVER_URL:-/waline}
         NEXT_PUBLIC_UPTIME_STATUS_URL: ${NEXT_PUBLIC_UPTIME_STATUS_URL:-}
-    image: coordinate-zero-web:latest
-    container_name: coordinate-zero-web
-    restart: unless-stopped
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
-      NEXT_PUBLIC_WALINE_SERVER_URL: ${NEXT_PUBLIC_WALINE_SERVER_URL:-/waline}
-      NEXT_PUBLIC_UPTIME_STATUS_URL: ${NEXT_PUBLIC_UPTIME_STATUS_URL:-}
-      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
-      OPS_ALLOW_INSECURE_HTTP: ${OPS_ALLOW_INSECURE_HTTP:-false}
-      OPS_DATA_DIR: /app/runtime/ops
-      OPS_USE_MOCK_DATA: "false"
-    volumes:
-      - ./runtime/ops:/app/runtime/ops:ro
-    networks:
-      - coordinate-zero
+      <<: *web-environment
+      WEB_REPLICA_ID: web-primary
+
+  web-replica:
+    <<: *web-common
+    environment:
+      <<: *web-environment
+      WEB_REPLICA_ID: web-replica
 
   waline:
     image: lizheming/waline:1.40.3
-    container_name: coordinate-zero-waline
     restart: unless-stopped
     depends_on:
       mysql:
@@ -72,7 +98,6 @@ services:
 
   mysql:
     image: mysql:8.0.43
-    container_name: coordinate-zero-mysql
     restart: unless-stopped
     command:
       - --default-authentication-plugin=mysql_native_password
