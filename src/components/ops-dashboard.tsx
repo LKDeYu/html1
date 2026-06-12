@@ -5,15 +5,20 @@ import {
   AlertTriangle,
   Archive,
   ArrowUpRight,
+  BarChart3,
   BookOpen,
+  Boxes,
   CheckCircle2,
   Clock3,
+  Cpu,
   Database,
   ExternalLink,
   FileWarning,
   Gauge,
   Globe2,
+  HardDrive,
   LogOut,
+  MemoryStick,
   RefreshCw,
   Server,
   ShieldAlert,
@@ -25,11 +30,13 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   AvailabilityStatus,
+  ClusterHealth,
   ContainerState,
   DatabaseHealth,
   OpsAccessRecord,
   OpsDataEnvelope,
   RiskLevel,
+  TrafficClassification,
 } from "@/lib/ops/types";
 
 type OpsDashboardProps = {
@@ -41,14 +48,19 @@ type OpsDashboardProps = {
 type StatusTone = "good" | "bad" | "neutral";
 
 function statusTone(
-  status: AvailabilityStatus | ContainerState | DatabaseHealth,
+  status:
+    | AvailabilityStatus
+    | ContainerState
+    | DatabaseHealth
+    | ClusterHealth,
 ): StatusTone {
   if (status === "healthy" || status === "running") {
     return "good";
   }
   if (
     status === "unhealthy" ||
-    status === "stopped"
+    status === "stopped" ||
+    status === "down"
   ) {
     return "bad";
   }
@@ -56,7 +68,11 @@ function statusTone(
 }
 
 function statusLabel(
-  status: AvailabilityStatus | ContainerState | DatabaseHealth,
+  status:
+    | AvailabilityStatus
+    | ContainerState
+    | DatabaseHealth
+    | ClusterHealth,
 ) {
   const labels: Record<string, string> = {
     healthy: "正常",
@@ -64,8 +80,21 @@ function statusLabel(
     unknown: "未知",
     running: "运行中",
     stopped: "已停止",
+    degraded: "降级运行",
+    down: "不可用",
   };
   return labels[status] || status;
+}
+
+function classificationLabel(value: string) {
+  const labels: Record<TrafficClassification, string> = {
+    visitor: "访客",
+    "search-engine": "搜索引擎",
+    scanner: "扫描器",
+    internal: "内部检查",
+    suspicious: "可疑访问",
+  };
+  return labels[value as TrafficClassification] || value;
 }
 
 function riskLabel(level: RiskLevel) {
@@ -98,6 +127,35 @@ function formatBytes(value: number | null) {
     return `${(value / 1024).toFixed(1)} KB`;
   }
   return `${(value / 1024 ** 2).toFixed(1)} MB`;
+}
+
+function formatDuration(value: number | null) {
+  if (value === null) {
+    return "未知";
+  }
+  const days = Math.floor(value / 86400);
+  const hours = Math.floor((value % 86400) / 3600);
+  return days > 0 ? `${days} 天 ${hours} 小时` : `${hours} 小时`;
+}
+
+function formatAge(value: string | null) {
+  if (!value) {
+    return "未知";
+  }
+  const seconds = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(value).getTime()) / 1000),
+  );
+  if (seconds < 60) {
+    return `${seconds} 秒前`;
+  }
+  if (seconds < 3600) {
+    return `${Math.floor(seconds / 60)} 分钟前`;
+  }
+  if (seconds < 86400) {
+    return `${Math.floor(seconds / 3600)} 小时前`;
+  }
+  return `${Math.floor(seconds / 86400)} 天前`;
 }
 
 function shortReferer(value: string) {
@@ -158,6 +216,12 @@ export function OpsDashboard({
 
   const services = [
     {
+      name: "Web Cluster",
+      value: data.status.clusterHealth,
+      detail: "2 replicas",
+      icon: Boxes,
+    },
+    {
       name: "Website",
       value: data.status.website.status,
       detail: data.status.website.httpStatus
@@ -184,13 +248,25 @@ export function OpsDashboard({
     {
       name: "Nginx",
       value: data.status.nginx.state,
-      detail: "Gateway",
+      detail: `重启 ${data.status.nginx.restartCount}`,
       icon: Gauge,
     },
     {
-      name: "Web",
-      value: data.status.web.state,
-      detail: "Next.js",
+      name: "Web Primary",
+      value:
+        data.status.webPrimary.health !== "unknown"
+          ? data.status.webPrimary.health
+          : data.status.webPrimary.state,
+      detail: `重启 ${data.status.webPrimary.restartCount}`,
+      icon: Server,
+    },
+    {
+      name: "Web Replica",
+      value:
+        data.status.webReplica.health !== "unknown"
+          ? data.status.webReplica.health
+          : data.status.webReplica.state,
+      detail: `重启 ${data.status.webReplica.restartCount}`,
       icon: Server,
     },
     {
@@ -199,8 +275,20 @@ export function OpsDashboard({
         data.status.mysql.health !== "unknown"
           ? data.status.mysql.health
           : data.status.mysql.state,
-      detail: "Database",
+      detail: `重启 ${data.status.mysql.restartCount}`,
       icon: Database,
+    },
+    {
+      name: "Uptime Kuma",
+      value: data.status.uptimeKuma.state,
+      detail: `重启 ${data.status.uptimeKuma.restartCount}`,
+      icon: Activity,
+    },
+    {
+      name: "GoAccess",
+      value: data.status.goaccess.state,
+      detail: `重启 ${data.status.goaccess.restartCount}`,
+      icon: BarChart3,
     },
   ] as const;
 
@@ -251,6 +339,9 @@ export function OpsDashboard({
           检测时间 {formatTime(data.status.checkedAt)}
         </span>
         <span>
+          采集新鲜度 <strong>{formatAge(data.status.checkedAt)}</strong>
+        </span>
+        <span>
           数据源 <strong>{data.source}</strong>
         </span>
         {data.missingFiles.length ? (
@@ -279,6 +370,41 @@ export function OpsDashboard({
         })}
       </section>
 
+      <section className="ops-resource-band" aria-label="ECS 主机资源">
+        <div>
+          <Cpu size={17} />
+          <span>CPU</span>
+          <strong>
+            {data.status.host.cpuPercent === null
+              ? "未知"
+              : `${data.status.host.cpuPercent.toFixed(1)}%`}
+          </strong>
+        </div>
+        <div>
+          <MemoryStick size={17} />
+          <span>内存</span>
+          <strong>
+            {data.status.host.memoryPercent === null
+              ? "未知"
+              : `${data.status.host.memoryPercent.toFixed(1)}%`}
+          </strong>
+        </div>
+        <div>
+          <HardDrive size={17} />
+          <span>系统盘</span>
+          <strong>
+            {data.status.host.diskPercent === null
+              ? "未知"
+              : `${data.status.host.diskPercent.toFixed(1)}%`}
+          </strong>
+        </div>
+        <div>
+          <Clock3 size={17} />
+          <span>ECS 运行时间</span>
+          <strong>{formatDuration(data.status.host.uptimeSeconds)}</strong>
+        </div>
+      </section>
+
       <section className="ops-summary-band">
         <div className="ops-section-heading">
           <div>
@@ -290,6 +416,10 @@ export function OpsDashboard({
           ) : null}
         </div>
         <div className="ops-metric-grid">
+          <div>
+            <span>估算访客</span>
+            <strong>{data.access.estimatedVisitors.toLocaleString()}</strong>
+          </div>
           <div>
             <span>今日请求</span>
             <strong>{data.access.todayRequests.toLocaleString()}</strong>
@@ -366,6 +496,30 @@ export function OpsDashboard({
       <section className="ops-panel">
         <div className="ops-section-heading">
           <div>
+            <p className="ops-eyebrow">Traffic classification</p>
+            <h2>访问来源分类</h2>
+          </div>
+          <BarChart3 size={21} />
+        </div>
+        <div className="ops-classification-grid">
+          {data.access.trafficClasses.length ? (
+            data.access.trafficClasses.map((item) => (
+              <div key={item.label}>
+                <span>
+                  {classificationLabel(item.label)}
+                </span>
+                <strong>{item.count.toLocaleString()}</strong>
+              </div>
+            ))
+          ) : (
+            <p className="ops-empty">暂无分类数据</p>
+          )}
+        </div>
+      </section>
+
+      <section className="ops-panel">
+        <div className="ops-section-heading">
+          <div>
             <p className="ops-eyebrow">Heuristic detection</p>
             <h2>可疑访问</h2>
           </div>
@@ -438,7 +592,8 @@ export function OpsDashboard({
               </div>
             </div>
           ) : (
-            <dl className="ops-detail-list">
+            <div>
+              <dl className="ops-detail-list">
               <div>
                 <dt>最近结果</dt>
                 <dd className={data.backup.success ? "is-good" : "is-bad"}>
@@ -452,7 +607,11 @@ export function OpsDashboard({
               </div>
               <div>
                 <dt>备份时间</dt>
-                <dd>{formatTime(data.backup.lastBackupAt)}</dd>
+                <dd>
+                  {formatTime(data.backup.lastBackupAt)}
+                  {" · "}
+                  {formatAge(data.backup.lastBackupAt)}
+                </dd>
               </div>
               <div>
                 <dt>文件</dt>
@@ -478,7 +637,22 @@ export function OpsDashboard({
                   <dd className="is-bad">{data.backup.errorSummary}</dd>
                 </div>
               ) : null}
-            </dl>
+              </dl>
+              {data.backup.backups.length ? (
+                <div className="ops-backup-list">
+                  {data.backup.backups.map((backup) => (
+                    <div key={backup.fileName}>
+                      <code>{backup.fileName}</code>
+                      <span>{formatBytes(backup.sizeBytes)}</span>
+                      <span>{formatTime(backup.createdAt)}</span>
+                      <strong data-valid={backup.gzipValid}>
+                        {backup.gzipValid ? "gzip 有效" : "gzip 异常"}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           )}
         </section>
 
@@ -491,6 +665,11 @@ export function OpsDashboard({
             <ExternalLink size={21} />
           </div>
           <nav className="ops-shortcuts" aria-label="运维快捷入口">
+            <Link href="/admin/traffic">
+              <BarChart3 size={18} />
+              进入访问分析
+              <ArrowUpRight size={15} />
+            </Link>
             <Link href="/waline/ui">
               <ShieldCheck size={18} />
               Waline 后台
@@ -506,6 +685,13 @@ export function OpsDashboard({
               博客首页
               <ArrowUpRight size={15} />
             </Link>
+            <div className="ops-kuma-help">
+              <Activity size={18} />
+              <div>
+                <strong>Uptime Kuma（SSH 隧道）</strong>
+                <code>ssh -L 3001:127.0.0.1:3001 root@ECS公网IP</code>
+              </div>
+            </div>
             {uptimeStatusUrl ? (
               <a
                 href={uptimeStatusUrl}
@@ -545,6 +731,7 @@ export function OpsDashboard({
                 <th>状态</th>
                 <th>Referer</th>
                 <th>User-Agent</th>
+                <th>分类</th>
                 <th>风险</th>
               </tr>
             </thead>
@@ -566,6 +753,7 @@ export function OpsDashboard({
                     </td>
                     <td>{shortReferer(record.referer)}</td>
                     <td>{record.userAgent}</td>
+                    <td>{classificationLabel(record.classification)}</td>
                     <td>
                       {record.risk ? (
                         <span
@@ -582,7 +770,7 @@ export function OpsDashboard({
                 ))
               ) : (
                 <tr>
-                  <td className="ops-empty-cell" colSpan={8}>
+                  <td className="ops-empty-cell" colSpan={9}>
                     暂无最近访问记录
                   </td>
                 </tr>

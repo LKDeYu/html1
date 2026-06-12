@@ -4,6 +4,7 @@ import { createMockOpsData } from "@/lib/ops/mock-data";
 import {
   OPS_DATA_FILES,
   type AvailabilityStatus,
+  type ClusterHealth,
   type ContainerState,
   type DatabaseHealth,
   type OpsAccessRecord,
@@ -15,6 +16,7 @@ import {
   type OpsSecurityEvent,
   type OpsServiceStatus,
   type RiskLevel,
+  type TrafficClassification,
 } from "@/lib/ops/types";
 
 const MAX_JSON_BYTES = 2_000_000;
@@ -51,6 +53,12 @@ function count(value: unknown) {
 function nullableCount(value: unknown) {
   return typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.floor(value))
+    : null;
+}
+
+function nullablePercent(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, Math.min(100, value))
     : null;
 }
 
@@ -113,19 +121,56 @@ function riskLevel(value: unknown): RiskLevel | null {
     : (value as RiskLevel);
 }
 
+function clusterHealth(value: unknown): ClusterHealth {
+  return enumValue(
+    value,
+    ["healthy", "degraded", "down", "unknown"] as const,
+    "unknown",
+  );
+}
+
+function trafficClassification(value: unknown): TrafficClassification {
+  return enumValue(
+    value,
+    [
+      "visitor",
+      "search-engine",
+      "scanner",
+      "internal",
+      "suspicious",
+    ] as const,
+    "visitor",
+  );
+}
+
 function emptyStatus(): OpsServiceStatus {
   const endpoint = { status: "unknown" as const, httpStatus: null };
-  const container = { state: "unknown" as const, health: "unknown" as const };
+  const container = {
+    state: "unknown" as const,
+    health: "unknown" as const,
+    restartCount: 0,
+  };
 
   return {
     checkedAt: null,
+    host: {
+      cpuPercent: null,
+      memoryPercent: null,
+      diskPercent: null,
+      uptimeSeconds: null,
+    },
+    clusterHealth: "unknown",
     website: { ...endpoint },
     blog: { ...endpoint },
     waline: { ...endpoint },
     nginx: { ...container },
     web: { ...container },
+    webPrimary: { ...container },
+    webReplica: { ...container },
     walineContainer: { ...container },
     mysql: { ...container },
+    uptimeKuma: { ...container },
+    goaccess: { ...container },
   };
 }
 
@@ -137,6 +182,8 @@ function emptyAccess(): OpsAccessSummary {
     notFoundCount: 0,
     serverErrorCount: 0,
     sampleTruncated: false,
+    estimatedVisitors: 0,
+    trafficClasses: [],
     topPaths: [],
     statusCodes: [],
     topIps: [],
@@ -155,6 +202,7 @@ function emptyBackup(): OpsBackupStatus {
     availableBackups: 0,
     directory: null,
     errorSummary: null,
+    backups: [],
   };
 }
 
@@ -178,6 +226,7 @@ function parseContainer(value: unknown) {
   return {
     state: containerState(input.state),
     health: databaseHealth(input.health),
+    restartCount: count(input.restartCount),
   };
 }
 
@@ -186,15 +235,29 @@ function parseStatus(value: unknown): OpsServiceStatus {
     return emptyStatus();
   }
 
+  const host = isRecord(value.host) ? value.host : {};
+  const webPrimary = parseContainer(value.webPrimary || value.web);
+
   return {
     checkedAt: isoDate(value.checkedAt),
+    host: {
+      cpuPercent: nullablePercent(host.cpuPercent),
+      memoryPercent: nullablePercent(host.memoryPercent),
+      diskPercent: nullablePercent(host.diskPercent),
+      uptimeSeconds: nullableCount(host.uptimeSeconds),
+    },
+    clusterHealth: clusterHealth(value.clusterHealth),
     website: parseEndpoint(value.website),
     blog: parseEndpoint(value.blog),
     waline: parseEndpoint(value.waline),
     nginx: parseContainer(value.nginx),
-    web: parseContainer(value.web),
+    web: webPrimary,
+    webPrimary,
+    webReplica: parseContainer(value.webReplica),
     walineContainer: parseContainer(value.walineContainer),
     mysql: parseContainer(value.mysql),
+    uptimeKuma: parseContainer(value.uptimeKuma),
+    goaccess: parseContainer(value.goaccess),
   };
 }
 
@@ -215,6 +278,26 @@ function parseCountItems(
       ? urlText(item.label, 300)
       : text(item.label, 300);
     return label ? [{ label, count: count(item.count) }] : [];
+  });
+}
+
+function parseTrafficClassItems(value: unknown): OpsCountItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const allowed = [
+    "visitor",
+    "search-engine",
+    "scanner",
+    "internal",
+    "suspicious",
+  ] as const;
+  return value.slice(0, allowed.length).flatMap((item) => {
+    if (!isRecord(item)) {
+      return [];
+    }
+    const label = enumValue(item.label, allowed, "visitor");
+    return [{ label, count: count(item.count) }];
   });
 }
 
@@ -244,6 +327,7 @@ function parseAccessRecord(value: unknown): OpsAccessRecord | null {
     referer: urlText(value.referer, 240, "-"),
     userAgent: text(value.userAgent, 160, "unknown"),
     risk: riskLevel(value.risk),
+    classification: trafficClassification(value.classification),
   };
 }
 
@@ -259,6 +343,8 @@ function parseAccess(value: unknown): OpsAccessSummary {
     notFoundCount: count(value.notFoundCount),
     serverErrorCount: count(value.serverErrorCount),
     sampleTruncated: boolean(value.sampleTruncated),
+    estimatedVisitors: count(value.estimatedVisitors),
+    trafficClasses: parseTrafficClassItems(value.trafficClasses),
     topPaths: parseCountItems(value.topPaths, 10, true),
     statusCodes: parseCountItems(value.statusCodes, 20),
     topIps: parseCountItems(value.topIps, 10),
@@ -309,6 +395,27 @@ function parseBackup(value: unknown): OpsBackupStatus {
     return emptyBackup();
   }
 
+  const backups = Array.isArray(value.backups)
+    ? value.backups.slice(0, 20).flatMap((item) => {
+        if (!isRecord(item)) {
+          return [];
+        }
+        const fileName = text(item.fileName, 200);
+        const createdAt = isoDate(item.createdAt);
+        if (!fileName || !createdAt) {
+          return [];
+        }
+        return [
+          {
+            fileName,
+            createdAt,
+            sizeBytes: count(item.sizeBytes),
+            gzipValid: boolean(item.gzipValid),
+          },
+        ];
+      })
+    : [];
+
   return {
     checkedAt: isoDate(value.checkedAt),
     lastBackupAt: isoDate(value.lastBackupAt),
@@ -319,6 +426,7 @@ function parseBackup(value: unknown): OpsBackupStatus {
     availableBackups: count(value.availableBackups),
     directory: nullableText(value.directory, 300),
     errorSummary: nullableText(value.errorSummary, 240),
+    backups,
   };
 }
 

@@ -7,6 +7,7 @@ OPS_BASE_URL="${OPS_BASE_URL:-http://127.0.0.1}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 MAX_ACCESS_LINES="${OPS_MAX_ACCESS_LINES:-20000}"
 WALINE_LOG_LINES="${OPS_WALINE_LOG_LINES:-300}"
+NGINX_ACCESS_LOG="${OPS_NGINX_ACCESS_LOG:-${PROJECT_DIR}/runtime/nginx/access.log}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 TEMP_DIR="$(mktemp -d)"
@@ -47,9 +48,13 @@ if ! docker compose ps --format json > "${TEMP_DIR}/compose-ps.json" 2>/dev/null
   printf '[]\n' > "${TEMP_DIR}/compose-ps.json"
 fi
 
-if ! docker compose logs --no-color --since 24h --tail "${MAX_ACCESS_LINES}" nginx \
-  > "${TEMP_DIR}/nginx.log" 2>/dev/null; then
-  : > "${TEMP_DIR}/nginx.log"
+mapfile -t container_ids < <(docker compose ps -q 2>/dev/null || true)
+if ((${#container_ids[@]} > 0)); then
+  if ! docker inspect "${container_ids[@]}" > "${TEMP_DIR}/docker-inspect.json"; then
+    printf '[]\n' > "${TEMP_DIR}/docker-inspect.json"
+  fi
+else
+  printf '[]\n' > "${TEMP_DIR}/docker-inspect.json"
 fi
 
 if ! docker compose logs --no-color --tail "${WALINE_LOG_LINES}" waline \
@@ -57,14 +62,24 @@ if ! docker compose logs --no-color --tail "${WALINE_LOG_LINES}" waline \
   : > "${TEMP_DIR}/waline.log"
 fi
 
-access_line_count="$(wc -l < "${TEMP_DIR}/nginx.log" | tr -d '[:space:]')"
 sample_truncated=false
-if [[ "${access_line_count:-0}" -ge "${MAX_ACCESS_LINES}" ]]; then
-  sample_truncated=true
+if [[ -f "${NGINX_ACCESS_LOG}" ]]; then
+  tail -n "$((MAX_ACCESS_LINES + 1))" -- "${NGINX_ACCESS_LOG}" \
+    > "${TEMP_DIR}/nginx.log"
+  access_line_count="$(wc -l < "${TEMP_DIR}/nginx.log" | tr -d '[:space:]')"
+  if [[ "${access_line_count:-0}" -gt "${MAX_ACCESS_LINES}" ]]; then
+    tail -n "${MAX_ACCESS_LINES}" -- "${TEMP_DIR}/nginx.log" \
+      > "${TEMP_DIR}/nginx-bounded.log"
+    mv -- "${TEMP_DIR}/nginx-bounded.log" "${TEMP_DIR}/nginx.log"
+    sample_truncated=true
+  fi
+else
+  : > "${TEMP_DIR}/nginx.log"
 fi
 
 "${PYTHON_BIN}" "${SCRIPT_DIR}/collect_ops.py" \
   --compose-ps "${TEMP_DIR}/compose-ps.json" \
+  --docker-inspect "${TEMP_DIR}/docker-inspect.json" \
   --access-log "${TEMP_DIR}/nginx.log" \
   --waline-log "${TEMP_DIR}/waline.log" \
   --output-dir "${OPS_DATA_DIR}" \

@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import os
 import re
+import shutil
 import tempfile
+import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -34,6 +37,21 @@ SCAN_RE = re.compile(
 )
 RISK_ORDER = {"low": 1, "medium": 2, "high": 3}
 SHANGHAI = ZoneInfo("Asia/Shanghai")
+TRAFFIC_CLASSES = (
+    "visitor",
+    "search-engine",
+    "scanner",
+    "internal",
+    "suspicious",
+)
+SEARCH_ENGINE_RE = re.compile(
+    r"(?:googlebot|bingbot|baiduspider|duckduckbot|yandexbot|sogou)",
+    re.IGNORECASE,
+)
+SCANNER_AGENT_RE = re.compile(
+    r"(?:masscan|nmap|nikto|sqlmap|zgrab|acunetix|nessus)",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -74,6 +92,38 @@ def clean_url(raw: str, limit: int = 300) -> str:
     except ValueError:
         cleaned = raw.split("?", 1)[0].split("#", 1)[0]
     return clip(cleaned, limit, "/")
+
+
+def mask_ip(raw: str) -> str:
+    try:
+        address = ipaddress.ip_address(raw)
+    except ValueError:
+        return "unknown"
+    if isinstance(address, ipaddress.IPv4Address):
+        first, second, _, _ = str(address).split(".")
+        return f"{first}.{second}.*.*"
+    groups = [
+        format(int(group, 16), "x")
+        for group in address.exploded.split(":")[:3]
+    ]
+    return f"{groups[0]}:{groups[1]}:{groups[2]}::*"
+
+
+def is_internal_ip(raw: str) -> bool:
+    try:
+        address = ipaddress.ip_address(raw)
+    except ValueError:
+        return False
+    internal_networks = (
+        ipaddress.ip_network("10.0.0.0/8"),
+        ipaddress.ip_network("172.16.0.0/12"),
+        ipaddress.ip_network("192.168.0.0/16"),
+        ipaddress.ip_network("127.0.0.0/8"),
+        ipaddress.ip_network("fc00::/7"),
+        ipaddress.ip_network("fe80::/10"),
+        ipaddress.ip_network("::1/128"),
+    )
+    return any(address in network for network in internal_networks)
 
 
 def parse_access_log(path: Path, now: datetime) -> list[AccessEntry]:
@@ -145,9 +195,36 @@ def read_compose_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def container_state(row: dict[str, Any] | None) -> dict[str, str]:
+def read_inspect_rows(path: Path) -> dict[str, dict[str, Any]]:
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(parsed, list):
+        return {}
+
+    rows: dict[str, dict[str, Any]] = {}
+    for item in parsed:
+        if not isinstance(item, dict):
+            continue
+        config = item.get("Config")
+        labels = config.get("Labels") if isinstance(config, dict) else None
+        service = (
+            labels.get("com.docker.compose.service")
+            if isinstance(labels, dict)
+            else None
+        )
+        if isinstance(service, str) and service:
+            rows[service] = item
+    return rows
+
+
+def container_state(
+    row: dict[str, Any] | None,
+    inspect_row: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if not row:
-        return {"state": "unknown", "health": "unknown"}
+        return {"state": "unknown", "health": "unknown", "restartCount": 0}
     raw_state = str(row.get("State") or row.get("state") or "").lower()
     raw_health = str(row.get("Health") or row.get("health") or "").lower()
     state = "running" if raw_state == "running" else "stopped"
@@ -157,7 +234,95 @@ def container_state(row: dict[str, Any] | None) -> dict[str, str]:
         health = "unhealthy"
     else:
         health = "unknown"
-    return {"state": state, "health": health}
+    restart_count = 0
+    if inspect_row:
+        raw_restart_count = inspect_row.get("RestartCount")
+        if isinstance(raw_restart_count, int):
+            restart_count = max(0, raw_restart_count)
+    return {
+        "state": state,
+        "health": health,
+        "restartCount": restart_count,
+    }
+
+
+def cluster_health(
+    primary: dict[str, Any],
+    replica: dict[str, Any],
+) -> str:
+    def available(container: dict[str, Any]) -> bool:
+        return (
+            container.get("state") == "running"
+            and container.get("health") == "healthy"
+        )
+
+    available_count = sum((available(primary), available(replica)))
+    if available_count == 2:
+        return "healthy"
+    if available_count == 1:
+        return "degraded"
+    if primary.get("state") == "unknown" and replica.get("state") == "unknown":
+        return "unknown"
+    return "down"
+
+
+def read_cpu_times() -> tuple[int, int] | None:
+    try:
+        values = Path("/proc/stat").read_text(encoding="utf-8").splitlines()[0].split()
+        ticks = [int(value) for value in values[1:]]
+    except (OSError, ValueError, IndexError):
+        return None
+    idle = ticks[3] + (ticks[4] if len(ticks) > 4 else 0)
+    return sum(ticks), idle
+
+
+def host_metrics() -> dict[str, Any]:
+    first = read_cpu_times()
+    time.sleep(0.2)
+    second = read_cpu_times()
+    cpu_percent = None
+    if first and second:
+        total_delta = second[0] - first[0]
+        idle_delta = second[1] - first[1]
+        if total_delta > 0:
+            cpu_percent = round(
+                max(0.0, min(100.0, (1 - idle_delta / total_delta) * 100)),
+                1,
+            )
+
+    memory_percent = None
+    try:
+        memory_values: dict[str, int] = {}
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            key, value = line.split(":", 1)
+            memory_values[key] = int(value.strip().split()[0])
+        total = memory_values["MemTotal"]
+        available = memory_values["MemAvailable"]
+        memory_percent = round((1 - available / total) * 100, 1)
+    except (OSError, ValueError, KeyError, ZeroDivisionError):
+        pass
+
+    disk_percent = None
+    try:
+        disk = shutil.disk_usage("/")
+        disk_percent = round(disk.used / disk.total * 100, 1)
+    except (OSError, ZeroDivisionError):
+        pass
+
+    uptime_seconds = None
+    try:
+        uptime_seconds = int(
+            float(Path("/proc/uptime").read_text(encoding="utf-8").split()[0])
+        )
+    except (OSError, ValueError, IndexError):
+        pass
+
+    return {
+        "cpuPercent": cpu_percent,
+        "memoryPercent": memory_percent,
+        "diskPercent": disk_percent,
+        "uptimeSeconds": uptime_seconds,
+    }
 
 
 def endpoint_status(raw_code: str) -> dict[str, Any]:
@@ -184,7 +349,7 @@ def add_event(
     event = event_map.get(key)
     if event is None:
         event_map[key] = {
-            "ip": ip,
+            "ip": mask_ip(ip),
             "path": clip(path, 300, "/"),
             "rule": clip(rule, 120),
             "count": count,
@@ -195,6 +360,19 @@ def add_event(
     event["count"] += count
     if timestamp > datetime.fromisoformat(event["lastSeenAt"].replace("Z", "+00:00")):
         event["lastSeenAt"] = iso_utc(timestamp)
+
+
+def is_expected_waline_write(entry: AccessEntry) -> bool:
+    if not entry.path.startswith("/waline/api/"):
+        return False
+    if entry.method in {"GET", "POST", "OPTIONS"}:
+        return True
+    if entry.method != "PUT":
+        return False
+    return (
+        entry.path == "/waline/api/user"
+        or any(marker in entry.path for marker in ("/2fa", "/mfa", "/otp"))
+    )
 
 
 def static_risks(entry: AccessEntry) -> list[tuple[str, str]]:
@@ -212,9 +390,31 @@ def static_risks(entry: AccessEntry) -> list[tuple[str, str]]:
         risks.append(("high", f"Disallowed {entry.method} method"))
     if SCAN_RE.search(target):
         risks.append(("medium", "Common admin/CMS scan"))
-    if entry.method in {"PUT", "DELETE"}:
+    if entry.method in {"PUT", "DELETE"} and not is_expected_waline_write(entry):
         risks.append(("medium", f"Unexpected {entry.method} method"))
     return risks
+
+
+def classify_entry(entry: AccessEntry) -> str:
+    risks = static_risks(entry)
+    if any(level == "high" for level, _ in risks):
+        return "suspicious"
+    if SCAN_RE.search(entry.inspection_text) or SCANNER_AGENT_RE.search(
+        entry.user_agent
+    ):
+        return "scanner"
+    if risks:
+        return "suspicious"
+    health_paths = {"/", "/blog/home", "/waline/", "/api/health", "/api/instance"}
+    is_curl_health_check = (
+        entry.user_agent.lower().startswith("curl/")
+        and entry.path in health_paths
+    )
+    if is_internal_ip(entry.ip) or is_curl_health_check:
+        return "internal"
+    if SEARCH_ENGINE_RE.search(entry.user_agent):
+        return "search-engine"
+    return "visitor"
 
 
 def window_key(entry: AccessEntry) -> tuple[str, int]:
@@ -291,19 +491,26 @@ def build_access_and_security(
 
     today = now.astimezone(SHANGHAI).date()
     sorted_entries = sorted(entries, key=lambda entry: entry.time, reverse=True)
+    classifications = {entry: classify_entry(entry) for entry in entries}
     recent = [
         {
             "time": iso_utc(entry.time),
-            "ip": entry.ip,
+            "ip": mask_ip(entry.ip),
             "method": entry.method,
             "path": entry.path,
             "statusCode": entry.status_code,
             "referer": entry.referer,
             "userAgent": entry.user_agent,
             "risk": entry_risks.get(entry),
+            "classification": classifications[entry],
         }
         for entry in sorted_entries[:50]
     ]
+    visitor_keys = {
+        (entry.ip, entry.user_agent)
+        for entry in entries
+        if classifications[entry] == "visitor"
+    }
     access = {
         "generatedAt": iso_utc(now),
         "todayRequests": sum(
@@ -313,11 +520,13 @@ def build_access_and_security(
         "notFoundCount": sum(1 for entry in entries if entry.status_code == 404),
         "serverErrorCount": sum(1 for entry in entries if entry.status_code >= 500),
         "sampleTruncated": sample_truncated,
+        "estimatedVisitors": len(visitor_keys),
+        "trafficClasses": count_items(Counter(classifications.values()), 10),
         "topPaths": count_items(Counter(entry.path for entry in entries), 10),
         "statusCodes": count_items(
             Counter(str(entry.status_code) for entry in entries), 20
         ),
-        "topIps": count_items(Counter(entry.ip for entry in entries), 10),
+        "topIps": count_items(Counter(mask_ip(entry.ip) for entry in entries), 10),
         "recent": recent,
     }
     events = sorted(
@@ -357,6 +566,7 @@ def write_json_atomic(output_dir: Path, name: str, payload: dict[str, Any]) -> N
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--compose-ps", type=Path, required=True)
+    parser.add_argument("--docker-inspect", type=Path, required=True)
     parser.add_argument("--access-log", type=Path, required=True)
     parser.add_argument("--waline-log", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -371,6 +581,7 @@ def main() -> None:
     args = parse_args()
     now = datetime.now(timezone.utc)
     compose_rows = read_compose_rows(args.compose_ps)
+    inspect_rows = read_inspect_rows(args.docker_inspect)
     rows_by_service = {
         str(row.get("Service") or row.get("service") or ""): row
         for row in compose_rows
@@ -383,15 +594,37 @@ def main() -> None:
     except OSError:
         pass
 
+    web_primary = container_state(
+        rows_by_service.get("web"), inspect_rows.get("web")
+    )
+    web_replica = container_state(
+        rows_by_service.get("web-replica"), inspect_rows.get("web-replica")
+    )
     status = {
         "checkedAt": iso_utc(now),
         "website": endpoint_status(args.website_code),
         "blog": endpoint_status(args.blog_code),
         "waline": endpoint_status(args.waline_code),
-        "nginx": container_state(rows_by_service.get("nginx")),
-        "web": container_state(rows_by_service.get("web")),
-        "walineContainer": container_state(rows_by_service.get("waline")),
-        "mysql": container_state(rows_by_service.get("mysql")),
+        "host": host_metrics(),
+        "clusterHealth": cluster_health(web_primary, web_replica),
+        "nginx": container_state(
+            rows_by_service.get("nginx"), inspect_rows.get("nginx")
+        ),
+        "web": web_primary,
+        "webPrimary": web_primary,
+        "webReplica": web_replica,
+        "walineContainer": container_state(
+            rows_by_service.get("waline"), inspect_rows.get("waline")
+        ),
+        "mysql": container_state(
+            rows_by_service.get("mysql"), inspect_rows.get("mysql")
+        ),
+        "uptimeKuma": container_state(
+            rows_by_service.get("uptime-kuma"), inspect_rows.get("uptime-kuma")
+        ),
+        "goaccess": container_state(
+            rows_by_service.get("goaccess"), inspect_rows.get("goaccess")
+        ),
     }
     entries = parse_access_log(args.access_log, now)
     access, security = build_access_and_security(

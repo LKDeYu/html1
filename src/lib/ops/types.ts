@@ -11,6 +11,13 @@ export type AvailabilityStatus = "healthy" | "unhealthy" | "unknown";
 export type ContainerState = "running" | "stopped" | "unknown";
 export type DatabaseHealth = "healthy" | "unhealthy" | "unknown";
 export type RiskLevel = "low" | "medium" | "high";
+export type ClusterHealth = "healthy" | "degraded" | "down" | "unknown";
+export type TrafficClassification =
+  | "visitor"
+  | "search-engine"
+  | "scanner"
+  | "internal"
+  | "suspicious";
 
 export type EndpointStatus = {
   status: AvailabilityStatus;
@@ -20,17 +27,31 @@ export type EndpointStatus = {
 export type ContainerStatus = {
   state: ContainerState;
   health: DatabaseHealth;
+  restartCount: number;
+};
+
+export type OpsHostMetrics = {
+  cpuPercent: number | null;
+  memoryPercent: number | null;
+  diskPercent: number | null;
+  uptimeSeconds: number | null;
 };
 
 export type OpsServiceStatus = {
   checkedAt: string | null;
+  host: OpsHostMetrics;
+  clusterHealth: ClusterHealth;
   website: EndpointStatus;
   blog: EndpointStatus;
   waline: EndpointStatus;
   nginx: ContainerStatus;
   web: ContainerStatus;
+  webPrimary: ContainerStatus;
+  webReplica: ContainerStatus;
   walineContainer: ContainerStatus;
   mysql: ContainerStatus;
+  uptimeKuma: ContainerStatus;
+  goaccess: ContainerStatus;
 };
 
 export type OpsCountItem = {
@@ -47,6 +68,7 @@ export type OpsAccessRecord = {
   referer: string;
   userAgent: string;
   risk: RiskLevel | null;
+  classification: TrafficClassification;
 };
 
 export type OpsAccessSummary = {
@@ -56,6 +78,8 @@ export type OpsAccessSummary = {
   notFoundCount: number;
   serverErrorCount: number;
   sampleTruncated: boolean;
+  estimatedVisitors: number;
+  trafficClasses: OpsCountItem[];
   topPaths: OpsCountItem[];
   statusCodes: OpsCountItem[];
   topIps: OpsCountItem[];
@@ -81,6 +105,14 @@ export type OpsBackupStatus = {
   availableBackups: number;
   directory: string | null;
   errorSummary: string | null;
+  backups: OpsBackupItem[];
+};
+
+export type OpsBackupItem = {
+  fileName: string;
+  createdAt: string;
+  sizeBytes: number;
+  gzipValid: boolean;
 };
 
 export type OpsDataEnvelope = {

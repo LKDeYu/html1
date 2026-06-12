@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import os
 import tempfile
@@ -31,6 +32,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def gzip_valid(path: Path) -> bool:
+    try:
+        with gzip.open(path, "rb") as stream:
+            while stream.read(1024 * 1024):
+                pass
+        return True
+    except (OSError, EOFError):
+        return False
+
+
 def main() -> None:
     args = parse_args()
     retention = max(1, min(args.retention, 365))
@@ -47,6 +58,8 @@ def main() -> None:
         for stale_path in backups[retention:]:
             stale_path.unlink(missing_ok=True)
         backups = backups[:retention]
+    else:
+        backups = backups[:retention]
 
     selected = args.file if args.file and args.file.is_file() else None
     if selected is None and backups:
@@ -62,6 +75,15 @@ def main() -> None:
         "availableBackups": len(backups),
         "directory": str(args.backup_dir.resolve()),
         "errorSummary": args.error[:240] or None,
+        "backups": [
+            {
+                "fileName": path.name,
+                "createdAt": iso_timestamp(path.stat().st_mtime),
+                "sizeBytes": path.stat().st_size,
+                "gzipValid": gzip_valid(path),
+            }
+            for path in backups
+        ],
     }
 
     file_descriptor, temp_name = tempfile.mkstemp(

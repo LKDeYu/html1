@@ -5105,6 +5105,7 @@ html.dark .blog-grid article {
 }
 
 .ops-service-grid,
+.ops-resource-band,
 .ops-summary-band,
 .ops-two-column,
 .ops-panel {
@@ -5114,9 +5115,38 @@ html.dark .blog-grid article {
 
 .ops-service-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
+}
+
+.ops-resource-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 10px;
+  border: 1px solid #233541;
+  background: #0a151f;
+}
+
+.ops-resource-band > div {
+  display: grid;
+  min-height: 68px;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #20323f;
+  color: #7f929f;
+  padding: 0 16px;
+}
+
+.ops-resource-band > div:last-child {
+  border-right: 0;
+}
+
+.ops-resource-band strong {
+  color: #e8f0f5;
+  font-family: var(--font-space-grotesk), monospace;
+  font-size: 14px;
 }
 
 .ops-service-card {
@@ -5212,9 +5242,37 @@ html.dark .blog-grid article {
 
 .ops-metric-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin-top: 18px;
   border-top: 1px solid #20323f;
+}
+
+.ops-classification-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 18px;
+  background: #20323f;
+}
+
+.ops-classification-grid > div {
+  display: grid;
+  min-height: 72px;
+  align-content: center;
+  gap: 6px;
+  background: #0d1b25;
+  padding: 12px 15px;
+}
+
+.ops-classification-grid span {
+  color: #8194a1;
+  font-size: 11px;
+}
+
+.ops-classification-grid strong {
+  color: #edf5f8;
+  font-family: var(--font-space-grotesk), monospace;
+  font-size: 20px;
 }
 
 .ops-metric-grid > div {
@@ -5499,6 +5557,41 @@ html.dark .blog-grid article {
   color: #ff969d;
 }
 
+.ops-backup-list {
+  display: grid;
+  margin-top: 14px;
+  border: 1px solid #203440;
+}
+
+.ops-backup-list > div {
+  display: grid;
+  min-height: 42px;
+  grid-template-columns: minmax(150px, 1.5fr) 80px minmax(130px, 1fr) 78px;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #1d2d38;
+  color: #8296a2;
+  font-size: 10px;
+  padding: 7px 10px;
+}
+
+.ops-backup-list > div:last-child {
+  border-bottom: 0;
+}
+
+.ops-backup-list code {
+  overflow-wrap: anywhere;
+  color: #bfd7e2;
+}
+
+.ops-backup-list strong {
+  color: #ff969d;
+}
+
+.ops-backup-list strong[data-valid="true"] {
+  color: #88dfb3;
+}
+
 .ops-shortcuts {
   display: grid;
   gap: 8px;
@@ -5531,6 +5624,35 @@ html.dark .blog-grid article {
   cursor: not-allowed;
 }
 
+.ops-kuma-help {
+  display: grid;
+  min-height: 64px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #29414f;
+  border-radius: 6px;
+  color: #8fa2ad;
+  padding: 9px 13px;
+}
+
+.ops-kuma-help strong,
+.ops-kuma-help code {
+  display: block;
+}
+
+.ops-kuma-help strong {
+  color: #c9dce6;
+  font-size: 12px;
+}
+
+.ops-kuma-help code {
+  margin-top: 5px;
+  color: #72c8de;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
 .ops-ip-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -5561,6 +5683,11 @@ html.dark .blog-grid article {
 @media (max-width: 1180px) {
   .ops-service-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ops-resource-band,
+  .ops-classification-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ops-ip-grid {
@@ -5596,6 +5723,16 @@ html.dark .blog-grid article {
     grid-template-columns: 1fr;
   }
 
+  .ops-resource-band,
+  .ops-classification-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-resource-band > div {
+    border-right: 0;
+    border-bottom: 1px solid #20323f;
+  }
+
   .ops-metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5612,6 +5749,10 @@ html.dark .blog-grid article {
 
   .ops-login-form {
     padding: 24px 20px;
+  }
+
+  .ops-backup-list > div {
+    grid-template-columns: 1fr 76px;
   }
 }
 
