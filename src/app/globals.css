@@ -5614,3 +5614,131 @@ html.dark .blog-grid article {
     padding: 24px 20px;
   }
 }
+
+.traffic-page {
+  min-height: 100vh;
+  background: #08131b;
+  color: #cbd7de;
+  padding: 24px;
+}
+
+.traffic-header {
+  display: flex;
+  max-width: 1600px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto 16px;
+  border: 1px solid #203440;
+  background: #0d1c26;
+  padding: 20px 22px;
+}
+
+.traffic-header h1 {
+  margin: 5px 0;
+  color: #f4f8fa;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.traffic-header p {
+  margin: 0;
+  color: #8296a2;
+  font-size: 12px;
+}
+
+.traffic-header nav {
+  display: flex;
+  gap: 8px;
+}
+
+.traffic-header nav a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #2a4655;
+  border-radius: 6px;
+  color: #c9dae3;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 12px;
+}
+
+.traffic-header nav a:hover {
+  border-color: #55bfd9;
+  background: #102531;
+  color: #ffffff;
+}
+
+.traffic-report-frame {
+  width: 100%;
+  max-width: 1600px;
+  height: calc(100vh - 150px);
+  min-height: 620px;
+  margin: 0 auto;
+  border: 1px solid #203440;
+  background: #ffffff;
+}
+
+.traffic-report-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.traffic-empty {
+  display: flex;
+  width: 100%;
+  max-width: 1600px;
+  min-height: 360px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0 auto;
+  border: 1px dashed #344956;
+  background: #0b1922;
+  color: #d6b76e;
+  padding: 28px;
+}
+
+.traffic-empty h2,
+.traffic-empty p {
+  margin: 0;
+}
+
+.traffic-empty h2 {
+  color: #eef4f7;
+  font-size: 19px;
+}
+
+.traffic-empty p {
+  margin-top: 7px;
+  color: #8296a2;
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .traffic-page {
+    padding: 12px;
+  }
+
+  .traffic-header {
+    display: grid;
+    align-items: start;
+  }
+
+  .traffic-header nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .traffic-header nav a {
+    justify-content: center;
+  }
+
+  .traffic-report-frame {
+    height: calc(100vh - 210px);
+    min-height: 520px;
+  }
+}

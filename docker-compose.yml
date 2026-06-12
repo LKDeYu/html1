@@ -7,6 +7,7 @@ x-web-environment: &web-environment
   OPS_ALLOW_INSECURE_HTTP: ${OPS_ALLOW_INSECURE_HTTP:-false}
   OPS_DATA_DIR: /app/runtime/ops
   OPS_USE_MOCK_DATA: "false"
+  GOACCESS_REPORT_PATH: /app/runtime/goaccess/report.html
 
 x-web-common: &web-common
   image: coordinate-zero-web:latest
@@ -15,6 +16,7 @@ x-web-common: &web-common
     <<: *web-environment
   volumes:
     - ./runtime/ops:/app/runtime/ops:ro
+    - ./runtime/goaccess:/app/runtime/goaccess:ro
   healthcheck:
     test:
       [
@@ -46,6 +48,7 @@ services:
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/errors:/usr/share/nginx/html/errors:ro
+      - ./runtime/nginx:/var/log/nginx
     networks:
       - coordinate-zero
 
@@ -127,6 +130,20 @@ services:
       - "127.0.0.1:3001:3001"
     volumes:
       - uptime-kuma-data:/app/data
+    networks:
+      - coordinate-zero
+
+  goaccess:
+    image: allinurl/goaccess:1.10.2
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "trap 'exit 0' TERM INT; while :; do sleep 3600 & wait $$!; done"
+    environment:
+      LANG: C
+    volumes:
+      - ./runtime/nginx:/var/log/nginx:ro
+      - ./runtime/goaccess:/var/www/goaccess
     networks:
       - coordinate-zero
 
