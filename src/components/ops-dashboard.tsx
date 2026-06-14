@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatOpsTime } from "@/lib/ops/format-time";
 import type {
   AvailabilityStatus,
   ClusterHealth,
@@ -103,17 +104,6 @@ function riskLabel(level: RiskLevel) {
     medium: "中",
     high: "高",
   }[level];
-}
-
-function formatTime(value: string | null) {
-  if (!value) {
-    return "未检测";
-  }
-  return new Intl.DateTimeFormat("zh-CN", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    hour12: false,
-  }).format(new Date(value));
 }
 
 function formatBytes(value: number | null) {
@@ -339,7 +329,7 @@ export function OpsDashboard({
       <section className="ops-meta-bar" aria-label="数据状态">
         <span>
           <Clock3 size={15} />
-          检测时间 {formatTime(data.status.checkedAt)}
+          检测时间 {formatOpsTime(data.status.checkedAt)}
         </span>
         <span>
           采集新鲜度{" "}
@@ -565,7 +555,7 @@ export function OpsDashboard({
                     <td><code>{event.path}</code></td>
                     <td>{event.rule}</td>
                     <td>{event.count}</td>
-                    <td>{formatTime(event.lastSeenAt)}</td>
+                    <td>{formatOpsTime(event.lastSeenAt)}</td>
                   </tr>
                 ))
               ) : (
@@ -614,7 +604,7 @@ export function OpsDashboard({
               <div>
                 <dt>备份时间</dt>
                 <dd>
-                  {formatTime(data.backup.lastBackupAt)}
+                  {formatOpsTime(data.backup.lastBackupAt)}
                   {" · "}
                   {formatAge(
                     data.backup.lastBackupAt,
@@ -653,7 +643,7 @@ export function OpsDashboard({
                     <div key={backup.fileName}>
                       <code>{backup.fileName}</code>
                       <span>{formatBytes(backup.sizeBytes)}</span>
-                      <span>{formatTime(backup.createdAt)}</span>
+                      <span>{formatOpsTime(backup.createdAt)}</span>
                       <strong data-valid={backup.gzipValid}>
                         {backup.gzipValid ? "gzip 有效" : "gzip 异常"}
                       </strong>
@@ -748,7 +738,7 @@ export function OpsDashboard({
               {data.access.recent.length ? (
                 data.access.recent.map((record, index) => (
                   <tr key={`${record.time}-${record.ip}-${index}`}>
-                    <td>{formatTime(record.time)}</td>
+                    <td>{formatOpsTime(record.time)}</td>
                     <td><code>{record.ip}</code></td>
                     <td><code>{record.method}</code></td>
                     <td><code>{record.path}</code></td>
