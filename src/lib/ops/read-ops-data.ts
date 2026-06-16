@@ -13,6 +13,7 @@ import {
   type OpsCountItem,
   type OpsDataEnvelope,
   type OpsDataFile,
+  type OpsHourlyAccessItem,
   type OpsSecurityEvent,
   type OpsServiceStatus,
   type RiskLevel,
@@ -183,6 +184,7 @@ function emptyAccess(): OpsAccessSummary {
     serverErrorCount: 0,
     sampleTruncated: false,
     estimatedVisitors: 0,
+    requestsByHour: [],
     trafficClasses: [],
     topPaths: [],
     statusCodes: [],
@@ -301,6 +303,31 @@ function parseTrafficClassItems(value: unknown): OpsCountItem[] {
   });
 }
 
+function parseHourlyAccessItems(value: unknown): OpsHourlyAccessItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.slice(0, 24).flatMap((item) => {
+    if (!isRecord(item)) {
+      return [];
+    }
+    const time = isoDate(item.time);
+    if (!time) {
+      return [];
+    }
+    return [
+      {
+        time,
+        requests: count(item.requests),
+        errors: count(item.errors),
+        notFound: count(item.notFound),
+        serverErrors: count(item.serverErrors),
+      },
+    ];
+  });
+}
+
 function parseAccessRecord(value: unknown): OpsAccessRecord | null {
   if (!isRecord(value)) {
     return null;
@@ -344,6 +371,7 @@ function parseAccess(value: unknown): OpsAccessSummary {
     serverErrorCount: count(value.serverErrorCount),
     sampleTruncated: boolean(value.sampleTruncated),
     estimatedVisitors: count(value.estimatedVisitors),
+    requestsByHour: parseHourlyAccessItems(value.requestsByHour),
     trafficClasses: parseTrafficClassItems(value.trafficClasses),
     topPaths: parseCountItems(value.topPaths, 10, true),
     statusCodes: parseCountItems(value.statusCodes, 20),

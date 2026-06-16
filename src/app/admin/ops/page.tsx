@@ -21,15 +21,23 @@ export default async function OpsPage() {
   }
 
   const data = await readOpsData();
-  const uptimeStatusUrl =
-    process.env.NEXT_PUBLIC_UPTIME_STATUS_URL?.trim() || null;
+  const monitoringLinks = {
+    uptimeRobot:
+      process.env.NEXT_PUBLIC_UPTIMEROBOT_STATUS_URL?.trim() ||
+      process.env.NEXT_PUBLIC_UPTIME_STATUS_URL?.trim() ||
+      null,
+    hetrixTools:
+      process.env.NEXT_PUBLIC_HETRIXTOOLS_STATUS_URL?.trim() || null,
+    betterStack:
+      process.env.NEXT_PUBLIC_BETTERSTACK_STATUS_URL?.trim() || null,
+  };
   const insecureHttpMode = isOpsInsecureHttpMode();
 
   return (
     <OpsDashboard
       initialData={data}
       insecureHttpMode={insecureHttpMode}
-      uptimeStatusUrl={uptimeStatusUrl}
+      monitoringLinks={monitoringLinks}
     />
   );
 }

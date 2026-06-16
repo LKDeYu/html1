@@ -96,11 +96,21 @@ test("validates and sanitizes the expanded operations JSON", async () => {
         generatedAt,
         estimatedVisitors: 3,
         trafficClasses: [{ label: "visitor", count: 8 }],
+        requestsByHour: [
+          {
+            time: "2026-06-12T07:00:00Z",
+            requests: 5,
+            errors: 2,
+            notFound: 1,
+            serverErrors: 1,
+          },
+        ],
         topPaths: [{ label: "/blog/home?token=secret", count: 4 }],
+        topIps: [{ label: "203.0.113.42", count: 4 }],
         recent: [
           {
             time: generatedAt,
-            ip: "203.0.*.*",
+            ip: "203.0.113.42",
             method: "GET",
             path: "/blog/home?token=secret",
             statusCode: 200,
@@ -135,7 +145,11 @@ test("validates and sanitizes the expanded operations JSON", async () => {
       assert.equal(data.status.clusterHealth, "healthy");
       assert.equal(data.status.webPrimary.restartCount, 2);
       assert.equal(data.access.estimatedVisitors, 3);
+      assert.equal(data.access.requestsByHour[0]?.requests, 5);
+      assert.equal(data.access.requestsByHour[0]?.errors, 2);
       assert.equal(data.access.topPaths[0]?.label, "/blog/home");
+      assert.equal(data.access.topIps[0]?.label, "203.0.113.42");
+      assert.equal(data.access.recent[0]?.ip, "203.0.113.42");
       assert.equal(data.access.recent[0]?.referer, "https://example.com/");
       assert.equal(data.backup.backups[0]?.gzipValid, true);
       assert.deepEqual(data.missingFiles, []);

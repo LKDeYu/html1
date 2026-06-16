@@ -2,6 +2,22 @@ import type { OpsDataEnvelope } from "./types.ts";
 
 export function createMockOpsData(): OpsDataEnvelope {
   const generatedAt = new Date().toISOString();
+  const currentHour = new Date(generatedAt);
+  currentHour.setMinutes(0, 0, 0);
+  const requestsByHour = Array.from({ length: 24 }, (_, index) => {
+    const time = new Date(currentHour);
+    time.setHours(currentHour.getHours() - (23 - index));
+    const requests = 12 + ((index * 17) % 38);
+    const notFound = index % 7 === 0 ? 2 : index % 5 === 0 ? 1 : 0;
+    const serverErrors = index === 18 ? 1 : 0;
+    return {
+      time: time.toISOString(),
+      requests,
+      errors: notFound + serverErrors,
+      notFound,
+      serverErrors,
+    };
+  });
 
   return {
     source: "mock",
@@ -36,6 +52,7 @@ export function createMockOpsData(): OpsDataEnvelope {
       serverErrorCount: 1,
       sampleTruncated: false,
       estimatedVisitors: 183,
+      requestsByHour,
       trafficClasses: [
         { label: "visitor", count: 621 },
         { label: "search-engine", count: 54 },
@@ -56,14 +73,14 @@ export function createMockOpsData(): OpsDataEnvelope {
         { label: "502", count: 1 },
       ],
       topIps: [
-        { label: "203.0.*.*", count: 92 },
-        { label: "198.51.*.*", count: 64 },
-        { label: "192.0.*.*", count: 41 },
+        { label: "203.0.113.42", count: 92 },
+        { label: "198.51.100.18", count: 64 },
+        { label: "192.0.2.77", count: 41 },
       ],
       recent: [
         {
           time: generatedAt,
-          ip: "203.0.*.*",
+          ip: "203.0.113.42",
           method: "GET",
           path: "/blog/home",
           statusCode: 200,
@@ -74,7 +91,7 @@ export function createMockOpsData(): OpsDataEnvelope {
         },
         {
           time: generatedAt,
-          ip: "198.51.*.*",
+          ip: "198.51.100.18",
           method: "GET",
           path: "/.env",
           statusCode: 404,
@@ -87,7 +104,7 @@ export function createMockOpsData(): OpsDataEnvelope {
     },
     securityEvents: [
       {
-        ip: "198.51.*.*",
+        ip: "198.51.100.18",
         path: "/.env",
         rule: "Sensitive file probe",
         count: 3,
@@ -95,7 +112,7 @@ export function createMockOpsData(): OpsDataEnvelope {
         level: "high",
       },
       {
-        ip: "192.0.*.*",
+        ip: "192.0.2.77",
         path: "/wp-admin",
         rule: "CMS scanner",
         count: 8,

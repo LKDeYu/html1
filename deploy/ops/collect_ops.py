@@ -109,6 +109,14 @@ def mask_ip(raw: str) -> str:
     return f"{groups[0]}:{groups[1]}:{groups[2]}::*"
 
 
+def admin_ip(raw: str) -> str:
+    try:
+        ipaddress.ip_address(raw)
+    except ValueError:
+        return "unknown"
+    return clip(raw, 64, "unknown")
+
+
 def is_internal_ip(raw: str) -> bool:
     try:
         address = ipaddress.ip_address(raw)
@@ -349,7 +357,7 @@ def add_event(
     event = event_map.get(key)
     if event is None:
         event_map[key] = {
-            "ip": mask_ip(ip),
+            "ip": admin_ip(ip),
             "path": clip(path, 300, "/"),
             "rule": clip(rule, 120),
             "count": count,
@@ -467,6 +475,37 @@ def count_items(counter: Counter[Any], limit: int) -> list[dict[str, Any]]:
     ]
 
 
+def hourly_series(entries: list[AccessEntry], now: datetime) -> list[dict[str, Any]]:
+    current_hour = now.astimezone(timezone.utc).replace(
+        minute=0, second=0, microsecond=0
+    )
+    buckets = [current_hour - timedelta(hours=offset) for offset in range(23, -1, -1)]
+    counts = {
+        bucket: {"time": iso_utc(bucket), "requests": 0, "errors": 0, "notFound": 0, "serverErrors": 0}
+        for bucket in buckets
+    }
+
+    first_bucket = buckets[0]
+    for entry in entries:
+        entry_hour = entry.time.astimezone(timezone.utc).replace(
+            minute=0, second=0, microsecond=0
+        )
+        if entry_hour < first_bucket or entry_hour > current_hour:
+            continue
+        bucket = counts.get(entry_hour)
+        if bucket is None:
+            continue
+        bucket["requests"] += 1
+        if entry.status_code >= 400:
+            bucket["errors"] += 1
+        if entry.status_code == 404:
+            bucket["notFound"] += 1
+        if entry.status_code >= 500:
+            bucket["serverErrors"] += 1
+
+    return [counts[bucket] for bucket in buckets]
+
+
 def build_access_and_security(
     entries: list[AccessEntry], now: datetime, sample_truncated: bool
 ) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -495,7 +534,7 @@ def build_access_and_security(
     recent = [
         {
             "time": iso_utc(entry.time),
-            "ip": mask_ip(entry.ip),
+            "ip": admin_ip(entry.ip),
             "method": entry.method,
             "path": entry.path,
             "statusCode": entry.status_code,
@@ -521,12 +560,13 @@ def build_access_and_security(
         "serverErrorCount": sum(1 for entry in entries if entry.status_code >= 500),
         "sampleTruncated": sample_truncated,
         "estimatedVisitors": len(visitor_keys),
+        "requestsByHour": hourly_series(entries, now),
         "trafficClasses": count_items(Counter(classifications.values()), 10),
         "topPaths": count_items(Counter(entry.path for entry in entries), 10),
         "statusCodes": count_items(
             Counter(str(entry.status_code) for entry in entries), 20
         ),
-        "topIps": count_items(Counter(mask_ip(entry.ip) for entry in entries), 10),
+        "topIps": count_items(Counter(admin_ip(entry.ip) for entry in entries), 10),
         "recent": recent,
     }
     events = sorted(

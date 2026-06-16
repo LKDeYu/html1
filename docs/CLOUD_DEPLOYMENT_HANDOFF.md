@@ -356,6 +356,9 @@ nano .env
 PUBLIC_HOST=你的ECS公网IP
 NEXT_PUBLIC_SITE_URL=http://你的ECS公网IP
 NEXT_PUBLIC_WALINE_SERVER_URL=/waline
+NEXT_PUBLIC_UPTIMEROBOT_STATUS_URL=https://stats.uptimerobot.com/WVRRUbWXeI
+NEXT_PUBLIC_HETRIXTOOLS_STATUS_URL=https://hetrixtools.com/r/76b59e349672cb4a3983adbe516cb511/
+NEXT_PUBLIC_BETTERSTACK_STATUS_URL=https://coordinate-zero.betteruptime.com/
 
 SITE_NAME=Coordinate Zero
 SITE_URL=http://你的ECS公网IP

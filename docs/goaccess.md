@@ -9,8 +9,9 @@ tail -n 100 runtime/nginx/access.log
 ```
 
 日志不包含 Cookie、Authorization 和请求正文。GoAccess 生成报告时忽略查询
-参数，并使用二级 IP 匿名化。报告保存在 `runtime/goaccess/report.html`，但该
-目录不直接公开，只能在管理员登录后通过 `/admin/traffic` 读取。
+参数，但保留完整访问 IP，便于管理员排查可疑访问。报告保存在
+`runtime/goaccess/report.html`，该目录不直接公开，只能在管理员登录后通过
+`/admin/traffic` 读取。
 
 ## 手工生成和验收
 

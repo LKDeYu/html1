@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import unittest
 
 from collect_ops import (
     AccessEntry,
+    build_access_and_security,
     classify_entry,
     cluster_health,
-    mask_ip,
     static_risks,
 )
 
@@ -18,24 +18,62 @@ def entry(
     method: str = "GET",
     path: str = "/",
     inspection_text: str | None = None,
+    status_code: int = 200,
+    time: datetime | None = None,
     user_agent: str = "Mozilla/5.0",
 ) -> AccessEntry:
     return AccessEntry(
-        time=datetime.now(timezone.utc),
+        time=time or datetime.now(timezone.utc),
         ip=ip,
         method=method,
         path=path,
         inspection_text=inspection_text or path,
-        status_code=200,
+        status_code=status_code,
         referer="-",
         user_agent=user_agent,
     )
 
 
 class CollectOpsTests(unittest.TestCase):
-    def test_masks_public_addresses_before_output(self) -> None:
-        self.assertEqual(mask_ip("203.0.113.42"), "203.0.*.*")
-        self.assertEqual(mask_ip("2001:db8:85a3::8a2e:370:7334"), "2001:db8:85a3::*")
+    def test_keeps_full_admin_ip_addresses_in_summaries(self) -> None:
+        now = datetime(2026, 6, 16, 12, 30, tzinfo=timezone.utc)
+        access, security = build_access_and_security(
+            [
+                entry(ip="203.0.113.42", path="/", time=now),
+                entry(ip="203.0.113.42", path="/.env", status_code=404, time=now),
+                entry(ip="2001:db8:85a3::8a2e:370:7334", path="/blog/home", time=now),
+            ],
+            now,
+            False,
+        )
+
+        self.assertEqual(access["topIps"][0]["label"], "203.0.113.42")
+        self.assertIn(
+            "2001:db8:85a3::8a2e:370:7334",
+            {record["ip"] for record in access["recent"]},
+        )
+        self.assertEqual(security["events"][0]["ip"], "203.0.113.42")
+
+    def test_builds_hourly_request_and_error_series_for_charts(self) -> None:
+        now = datetime(2026, 6, 16, 12, 30, tzinfo=timezone.utc)
+        access, _ = build_access_and_security(
+            [
+                entry(path="/", status_code=200, time=now - timedelta(minutes=5)),
+                entry(path="/missing", status_code=404, time=now - timedelta(minutes=4)),
+                entry(path="/broken", status_code=502, time=now - timedelta(hours=1)),
+            ],
+            now,
+            False,
+        )
+
+        self.assertEqual(len(access["requestsByHour"]), 24)
+        current_hour = access["requestsByHour"][-1]
+        previous_hour = access["requestsByHour"][-2]
+        self.assertEqual(current_hour["requests"], 2)
+        self.assertEqual(current_hour["notFound"], 1)
+        self.assertEqual(current_hour["errors"], 1)
+        self.assertEqual(previous_hour["requests"], 1)
+        self.assertEqual(previous_hour["serverErrors"], 1)
 
     def test_classifies_internal_checks_and_search_engines(self) -> None:
         self.assertEqual(

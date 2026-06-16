@@ -43,7 +43,9 @@ Browser
 ```
 
 URL、Referer 的查询参数不会写入面板 JSON。User-Agent 会截断。面板不返回原始日志、
-Cookie、Authorization、请求体、数据库密码或 `.env` 内容。
+Cookie、Authorization、请求体、数据库密码或 `.env` 内容。管理员面板和
+GoAccess 报告会显示完整访问 IP，因此 `runtime/ops` 与 `runtime/goaccess` 仍应只
+通过受保护的管理员页面读取，不要作为静态目录公开。
 
 ## 3. 更新前保护
 
@@ -94,6 +96,9 @@ OPS_ALLOW_INSECURE_HTTP=false
 OPS_BACKUP_DIR=/var/backups/coordinate-zero/mysql
 OPS_BACKUP_RETENTION=7
 NEXT_PUBLIC_UPTIME_STATUS_URL=
+NEXT_PUBLIC_UPTIMEROBOT_STATUS_URL=https://stats.uptimerobot.com/WVRRUbWXeI
+NEXT_PUBLIC_HETRIXTOOLS_STATUS_URL=https://hetrixtools.com/r/76b59e349672cb4a3983adbe516cb511/
+NEXT_PUBLIC_BETTERSTACK_STATUS_URL=https://coordinate-zero.betteruptime.com/
 ```
 
 ## 5. 首次采集与备份

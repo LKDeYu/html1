@@ -3,8 +3,7 @@
 更新时间：2026-06-12
 
 本文件是《要求2》完成后的主要 ECS 操作手册。部署目标是一台阿里云 ECS 上的
-单机多容器架构，适合课程展示高可用、反向代理、监控、日志分析、持久化和自动
-备份等云计算知识点。
+单机多容器架构，适合课程展示高可用、反向代理、监控、日志分析、持久化和自动备份等云计算知识点。
 
 ## 1. 最终架构
 
@@ -188,6 +187,16 @@ Password: 用户自行创建的 Google 应用专用密码
 用户需要自行开启 Google 两步验证、创建应用专用密码并点击测试通知。密码不
 写入项目、`.env` 或脚本。同机 Kuma 无法在整台 ECS 宕机时发送异地告警。
 
+公网外部监控建议同时使用 UptimeRobot、HetrixTools 和 Better Stack。它们不能
+监控本地 `localhost`，只能在 ECS 公网 IP 或域名可访问后验证。将状态页链接写入
+ECS `.env` 后，管理员面板会显示对应入口：
+
+```env
+NEXT_PUBLIC_UPTIMEROBOT_STATUS_URL=https://stats.uptimerobot.com/WVRRUbWXeI
+NEXT_PUBLIC_HETRIXTOOLS_STATUS_URL=https://hetrixtools.com/r/76b59e349672cb4a3983adbe516cb511/
+NEXT_PUBLIC_BETTERSTACK_STATUS_URL=https://coordinate-zero.betteruptime.com/
+```
+
 ## 8. 双 Web 验收
 
 查看轮询：
@@ -229,7 +238,9 @@ docker compose logs --tail 100 nginx
 tail -n 100 runtime/nginx/access.log
 ```
 
-GoAccess 报告隐藏查询参数并匿名化 IP；Ops JSON 中也只保存部分掩码 IP。
+GoAccess 报告隐藏查询参数但保留完整访问 IP；Ops JSON 同样保留完整 IP，便于
+管理员排查可疑访问。两者都只能在管理员登录后读取，不能把 `runtime/ops` 或
+`runtime/goaccess` 目录直接公开。
 
 ## 10. 备份与恢复验收
 

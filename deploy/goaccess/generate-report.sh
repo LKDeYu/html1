@@ -20,8 +20,6 @@ docker compose --project-directory "$PROJECT_DIR" \
 
     /usr/bin/goaccess /var/log/nginx/access.log \
       --log-format=COMBINED \
-      --anonymize-ip \
-      --anonymize-level=2 \
       --no-query-string \
       --html-report-title="Coordinate Zero Traffic" \
       --output="$temporary"

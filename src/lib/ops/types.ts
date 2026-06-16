@@ -59,6 +59,14 @@ export type OpsCountItem = {
   count: number;
 };
 
+export type OpsHourlyAccessItem = {
+  time: string;
+  requests: number;
+  errors: number;
+  notFound: number;
+  serverErrors: number;
+};
+
 export type OpsAccessRecord = {
   time: string;
   ip: string;
@@ -79,6 +87,7 @@ export type OpsAccessSummary = {
   serverErrorCount: number;
   sampleTruncated: boolean;
   estimatedVisitors: number;
+  requestsByHour: OpsHourlyAccessItem[];
   trafficClasses: OpsCountItem[];
   topPaths: OpsCountItem[];
   statusCodes: OpsCountItem[];
