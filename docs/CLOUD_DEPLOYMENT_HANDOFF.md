@@ -7,6 +7,13 @@
 > 汇总到 [`full-stack-deployment.md`](./full-stack-deployment.md)。后续 ECS
 > 更新应优先按该文件执行；本文件后续章节保留第一阶段背景和历史排错信息。
 >
+> 2026-06-16 追加：若 ECS 更新前只有 `mysql`、`nginx`、`waline`、`web` 四个
+> 服务，这不是常规 Web 更新，而是首次七服务扩容。必须先运行
+> `deploy/full-stack/preflight-seven-service.sh` 检查七服务镜像；缺少
+> `allinurl/goaccess:1.10.2` 时用本地 `docker save`、`scp`、ECS `docker load`
+> 导入。首次扩容使用 `docker compose up -d --pull never` 启动完整 Compose，并在
+> 运行 `verify-stack.sh` 前执行 `deploy/ops/install-systemd-timers.sh`。
+>
 > 本文件是当前云部署工作的主要上下文。`docs/AI_HANDOFF.md` 是早期开发阶段的
 > 旧记录，其中的 SQLite CMS、旧仓库地址和部分路由信息已经过时，不应作为本次
 > 部署依据。

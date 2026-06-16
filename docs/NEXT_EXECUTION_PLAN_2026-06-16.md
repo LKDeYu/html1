@@ -139,12 +139,58 @@ HTTPS 正式启用后必须改为：
 OPS_ALLOW_INSECURE_HTTP=false
 ```
 
-重建 Web，不删除数据库 volume：
+先执行七服务预检。该脚本不会启动、停止、拉取或删除容器，只检查 Compose
+声明、ECS 本地镜像、当前运行状态和 timers 状态：
+
+```bash
+sudo chmod +x deploy/full-stack/preflight-seven-service.sh
+PROJECT_DIR=$PWD ./deploy/full-stack/preflight-seven-service.sh
+```
+
+如果预检提示缺少 `allinurl/goaccess:1.10.2` 等镜像，而 ECS 又无法从镜像源拉取，
+使用本地导出、上传、导入的兜底流程。下面命令在本地电脑执行：
+
+```bash
+docker image inspect allinurl/goaccess:1.10.2
+docker save allinurl/goaccess:1.10.2 -o allinurl-goaccess-1.10.2.tar
+scp allinurl-goaccess-1.10.2.tar root@ECS公网IP:/var/www/coordinate-zero/deploy/images/
+```
+
+然后在 ECS 执行：
+
+```bash
+mkdir -p /var/www/coordinate-zero/deploy/images
+docker load -i /var/www/coordinate-zero/deploy/images/allinurl-goaccess-1.10.2.tar
+docker image inspect allinurl/goaccess:1.10.2 >/dev/null
+PROJECT_DIR=$PWD ./deploy/full-stack/preflight-seven-service.sh
+```
+
+首次从四服务扩展到七服务时，不要只启动 `web`、`web-replica`、`nginx`。应在镜像
+已经就绪后启动完整 Compose，不删除数据库 volume：
+
+```bash
+sudo PROJECT_DIR=$PWD OPS_BACKUP_DIR=/var/backups/coordinate-zero/mysql ./deploy/full-stack/prepare-runtime.sh
+docker compose config --quiet
+docker compose build web
+docker compose up -d --pull never
+docker compose ps
+```
+
+如果 ECS 已经是七服务正常运行，只是以后常规更新新版 Web 或 Nginx 配置，则使用：
 
 ```bash
 docker compose config --quiet
 docker compose up -d --build --pull never web web-replica nginx
 docker compose ps
+```
+
+运行 `verify-stack.sh` 前必须安装或刷新三个 systemd timers，否则验证会因为
+`coordinate-zero-collect.timer`、`coordinate-zero-backup.timer`、
+`coordinate-zero-goaccess.timer` 未启用而失败：
+
+```bash
+sudo PROJECT_DIR=$PWD OPS_BACKUP_DIR=/var/backups/coordinate-zero/mysql ./deploy/ops/install-systemd-timers.sh
+systemctl list-timers 'coordinate-zero-*' --no-pager
 ```
 
 刷新采集和 GoAccess：

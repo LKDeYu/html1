@@ -3,6 +3,10 @@
 > 七服务架构、双 Web 故障转移、Uptime Kuma、GoAccess 和 systemd timer 的
 > 最新操作见 [`full-stack-deployment.md`](./full-stack-deployment.md)。
 >
+> 注意：本文件中较早的 cron/四服务命令只作为历史参考。当前 ECS 若要通过
+> `verify-stack.sh`，必须按七服务流程执行镜像预检、完整 `docker compose up -d
+> --pull never` 和 `deploy/ops/install-systemd-timers.sh`。
+>
 ## 1. 实现边界
 
 本阶段新增三类能力：

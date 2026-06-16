@@ -78,25 +78,44 @@ ls -lh /var/backups/coordinate-zero/mysql
 建议同时在阿里云控制台创建 ECS 系统盘快照。确认现有评论、Waline 登录和公网
 首页正常后再更新。
 
-## 4. ECS 镜像预拉取
+## 4. ECS 镜像预检与兜底导入
 
-Docker Hub 不稳定时，先从 DaoCloud 拉取新增镜像并重新 tag：
+首次把旧 ECS 从四服务扩展到七服务前，先运行预检脚本。它只读检查 Compose
+声明、ECS 本地镜像、当前运行服务和 timers 状态，不会启动、停止、拉取或删除
+任何容器：
+
+```bash
+cd /var/www/coordinate-zero
+sudo chmod +x deploy/full-stack/preflight-seven-service.sh
+PROJECT_DIR=$PWD ./deploy/full-stack/preflight-seven-service.sh
+```
+
+如果缺少 Uptime Kuma 或 GoAccess 镜像，可以先尝试当前 ECS 可用的镜像源。示例：
 
 ```bash
 docker pull m.daocloud.io/docker.io/louislam/uptime-kuma:2.4.0-slim
-docker tag m.daocloud.io/docker.io/louislam/uptime-kuma:2.4.0-slim \
-  louislam/uptime-kuma:2.4.0-slim
-
-docker pull m.daocloud.io/docker.io/allinurl/goaccess:1.10.2
-docker tag m.daocloud.io/docker.io/allinurl/goaccess:1.10.2 \
-  allinurl/goaccess:1.10.2
-
+docker tag m.daocloud.io/docker.io/louislam/uptime-kuma:2.4.0-slim louislam/uptime-kuma:2.4.0-slim
 docker image inspect louislam/uptime-kuma:2.4.0-slim >/dev/null
-docker image inspect allinurl/goaccess:1.10.2 >/dev/null
 ```
 
-若 DaoCloud 对某个请求返回 `403`，可使用 ECS 当前可用的国内镜像源拉取同一
-精确标签后重新 tag。不要改用 `latest`。
+不要在 Compose 中改成 `latest`。如果 DaoCloud 返回 `403`，或 Docker Hub 对
+`allinurl/goaccess:1.10.2` 返回 `not found`，使用本地已有镜像导出上传：
+
+```bash
+# 在本地电脑执行
+docker image inspect allinurl/goaccess:1.10.2
+docker save allinurl/goaccess:1.10.2 -o allinurl-goaccess-1.10.2.tar
+scp allinurl-goaccess-1.10.2.tar root@ECS公网IP:/var/www/coordinate-zero/deploy/images/
+```
+
+```bash
+# 在 ECS 执行
+cd /var/www/coordinate-zero
+mkdir -p deploy/images
+docker load -i deploy/images/allinurl-goaccess-1.10.2.tar
+docker image inspect allinurl/goaccess:1.10.2 >/dev/null
+PROJECT_DIR=$PWD ./deploy/full-stack/preflight-seven-service.sh
+```
 
 ## 5. 更新与启动
 
@@ -114,8 +133,18 @@ docker compose up -d --pull never
 docker compose ps
 ```
 
-`web` 构建一次镜像，`web-replica` 复用同一镜像并通过 `WEB_REPLICA_ID`
-区分实例。`--pull never` 防止启动时再次访问不稳定的远端仓库。
+这是首次七服务上线命令，适用于更新前 ECS 只有 `mysql`、`nginx`、`waline`、
+`web` 等旧四服务的情况。`web` 构建一次镜像，`web-replica` 复用同一镜像并通过
+`WEB_REPLICA_ID` 区分实例。`--pull never` 防止启动时再次访问不稳定的远端仓库，
+因此第 4 节的镜像预检必须先通过。
+
+如果 ECS 已经是七服务完整运行，以后常规更新 Web 和 Nginx 时可以只重建入口服务：
+
+```bash
+docker compose config --quiet
+docker compose up -d --build --pull never web web-replica nginx
+docker compose ps
+```
 
 安装自动任务：
 

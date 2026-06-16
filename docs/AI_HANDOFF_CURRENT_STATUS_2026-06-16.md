@@ -250,9 +250,15 @@ docker compose down -v
 
 优先级较高：
 
-- 把本轮改动提交并推送。
 - ECS 拉取更新，写入三套外部监控状态页链接。
-- ECS 重建 `web`、`web-replica`、`nginx`。
+- 如果 ECS 仍是旧四服务状态，先运行 `deploy/full-stack/preflight-seven-service.sh`，
+  确认七服务镜像都已在 ECS 本地可用。
+- 首次从四服务扩展到七服务时，使用 `docker compose up -d --pull never` 启动完整
+  Compose，不要只启动 `web`、`web-replica`、`nginx`。
+- 若缺少 `allinurl/goaccess:1.10.2` 且镜像源拉取失败，从本地执行 `docker save`
+  后通过 `scp` 上传 ECS，再用 `docker load` 导入。
+- 运行 `verify-stack.sh` 前必须先执行 `deploy/ops/install-systemd-timers.sh`，否则
+  三个 systemd timer 检查会必然失败。
 - 重新运行采集、GoAccess 和验证脚本。
 - 截图整理课程报告。
 

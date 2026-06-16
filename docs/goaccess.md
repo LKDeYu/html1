@@ -39,6 +39,14 @@ sudo logrotate -d /etc/logrotate.d/coordinate-zero-nginx
 
 ## ECS 预拉取
 
+先检查 ECS 本地是否已有固定镜像：
+
+```bash
+docker image inspect allinurl/goaccess:1.10.2 >/dev/null
+```
+
+如果镜像不存在，可以尝试当前 ECS 可用的国内镜像源：
+
 ```bash
 docker pull m.daocloud.io/docker.io/allinurl/goaccess:1.10.2
 docker tag m.daocloud.io/docker.io/allinurl/goaccess:1.10.2 \
@@ -46,5 +54,21 @@ docker tag m.daocloud.io/docker.io/allinurl/goaccess:1.10.2 \
 docker image inspect allinurl/goaccess:1.10.2 >/dev/null
 ```
 
-部分网络环境可能拒绝 DaoCloud 请求；这种情况下应使用 ECS 当前可用的国内
-镜像源预拉取同一精确版本并重新 tag，不能把 Compose 改成 `latest`。
+部分网络环境可能拒绝 DaoCloud 请求，Docker Hub 也可能对该固定标签返回
+`not found`。这种情况下不要把 Compose 改成 `latest`，应从已有该镜像的本地
+电脑导出并上传 ECS：
+
+```bash
+# 本地电脑
+docker image inspect allinurl/goaccess:1.10.2
+docker save allinurl/goaccess:1.10.2 -o allinurl-goaccess-1.10.2.tar
+scp allinurl-goaccess-1.10.2.tar root@ECS公网IP:/var/www/coordinate-zero/deploy/images/
+```
+
+```bash
+# ECS
+cd /var/www/coordinate-zero
+mkdir -p deploy/images
+docker load -i deploy/images/allinurl-goaccess-1.10.2.tar
+docker image inspect allinurl/goaccess:1.10.2 >/dev/null
+```
