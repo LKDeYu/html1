@@ -220,7 +220,7 @@ function createMonitorFrame(frameMaterial: THREE.Material) {
   return group;
 }
 
-function createGradientRenderSource(width = 768, height = 432) {
+function createGradientRenderSource(width = 1024, height = 576) {
   const sourceScene = new THREE.Scene();
   const sourceCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const sourceMaterial = new THREE.ShaderMaterial({
@@ -287,7 +287,7 @@ function createScreen(texture: THREE.Texture) {
     map: texture,
     toneMapped: false,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.98,
     blending: THREE.NormalBlending,
     depthWrite: false,
     side: THREE.DoubleSide,
@@ -312,11 +312,12 @@ export function IntroWorkstation() {
       powerPreference: "high-performance",
     });
     renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.64;
-    renderer.shadowMap.enabled = false;
+    renderer.toneMappingExposure = 0.86;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     root.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -339,47 +340,71 @@ export function IntroWorkstation() {
     });
 
     const floorKeyboardMat = new THREE.MeshStandardMaterial({
-      color: 0x07080d,
-      roughness: 0.78,
-      metalness: 0.12,
+      color: 0x05070d,
+      roughness: 0.72,
+      metalness: 0.16,
       transparent: true,
-      opacity: 0.62,
+      opacity: 0.7,
       depthWrite: false,
     });
     const frameMat = new THREE.MeshStandardMaterial({
-      color: 0x030407,
-      roughness: 0.6,
+      color: 0x0b0e12,
+      roughness: 0.56,
       metalness: 0.32,
     });
 
     const screen = createScreen(screenGradientSource.texture);
     const monitorFrame = createMonitorFrame(frameMat);
-    const floorMesh = createProjectedFloor(7.2, 5.8, floorKeyboardMat);
+    const floorMesh = createProjectedFloor(4.2, 5.8, floorKeyboardMat);
 
     const keyboard = createKeyboard(floorKeyboardMat);
 
+    monitorFrame.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+    keyboard.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+    floorMesh.receiveShadow = true;
+
     scene.add(monitorFrame, screen, floorMesh, keyboard);
 
-    const spot = new THREE.SpotLight(0xbdf9ff, 72);
+    const spot = new THREE.SpotLight(0xeafcff, 96);
     spot.decay = 6;
-    spot.distance = 35;
-    spot.angle = Math.PI / 3.45;
-    spot.penumbra = 0.72;
+    spot.distance = 42;
+    spot.angle = Math.PI / 3.25;
+    spot.penumbra = 0.82;
     spot.map = projectionGradientSource.texture;
-    spot.castShadow = false;
+    spot.castShadow = true;
+    spot.shadow.mapSize.set(1536, 1536);
+    spot.shadow.bias = -0.00008;
+    spot.shadow.normalBias = 0.026;
+    spot.shadow.camera.near = 0.08;
+    spot.shadow.camera.far = 42;
+    spot.shadow.camera.fov = 54;
     spot.position.set(0, 1.0, 0.64);
     spot.target.position.set(0, 0.02, 1.15);
     scene.add(spot, spot.target);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x060608, 0.04);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x050609, 0.1);
     hemiLight.position.set(0, 10, 0);
     scene.add(hemiLight);
 
+    const rimLight = new THREE.PointLight(0x7df3ff, 1.5, 5.5, 2.2);
+    rimLight.position.set(-1.55, 1.18, 2.2);
+    scene.add(rimLight);
+
     const tune = {
-      projectionIntensity: 1.12,
-      reflectionGain: 1.06,
-      highlightBoost: 1.18,
-      lumaVisibilityThreshold: 0.2,
+      projectionIntensity: 1.24,
+      reflectionGain: 1.12,
+      highlightBoost: 1.34,
+      lumaVisibilityThreshold: 0.12,
       invertColor: false,
       halftone: true,
       toneCut: false,
@@ -387,8 +412,8 @@ export function IntroWorkstation() {
 
     const syncProjectionFxFromTune = () => {
       const blend = Math.max(0, tune.projectionIntensity) * Math.max(0, tune.reflectionGain);
-      spot.intensity = 82 * blend;
-      floorKeyboardMat.envMapIntensity = 0.34 * Math.max(0.1, tune.reflectionGain);
+      spot.intensity = 108 * blend;
+      floorKeyboardMat.envMapIntensity = 0.4 * Math.max(0.1, tune.reflectionGain);
 
       projectionGradientSource.setEffects({
         projectionIntensity: tune.projectionIntensity,
@@ -430,7 +455,8 @@ export function IntroWorkstation() {
       floorMesh.scale.setScalar(THREE.MathUtils.clamp(aspect < 1.25 ? 0.9 : 1, 0.9, 1));
       camera.lookAt(0, 0.84, 0.22);
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.15 : 1.5);
+      renderer.setPixelRatio(pixelRatio);
       renderer.setSize(width, height, false);
     };
 

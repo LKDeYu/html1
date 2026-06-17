@@ -15,10 +15,56 @@ void main() {
 }
 `;
 
-const HERO_FRAME_INTERVAL_MS = 1000 / 30;
 const HERO_IDLE_POLL_MS = 260;
 
-const fragmentShaderSource = `#version 300 es
+type CityQuality = {
+  marchSteps: number;
+  aoSamples: number;
+  dprMin: number;
+  dprCap: number;
+  frameIntervalMs: number;
+  shadowFloor: number;
+};
+
+function getCityQuality(): CityQuality {
+  const width = window.innerWidth;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const mobile = width < 760 || coarsePointer;
+  const largeDesktop = width >= 1024 && !coarsePointer;
+
+  if (largeDesktop) {
+    return {
+      marchSteps: 360,
+      aoSamples: 5,
+      dprMin: 1,
+      dprCap: 1.25,
+      frameIntervalMs: 0,
+      shadowFloor: 0.1,
+    };
+  }
+
+  if (mobile) {
+    return {
+      marchSteps: 220,
+      aoSamples: 4,
+      dprMin: 0.72,
+      dprCap: 0.95,
+      frameIntervalMs: 1000 / 45,
+      shadowFloor: 0.16,
+    };
+  }
+
+  return {
+    marchSteps: 300,
+    aoSamples: 5,
+    dprMin: 0.9,
+    dprCap: 1.1,
+    frameIntervalMs: 1000 / 55,
+    shadowFloor: 0.12,
+  };
+}
+
+const createFragmentShaderSource = (quality: CityQuality) => `#version 300 es
 precision highp float;
 out vec4 O;
 uniform float time;
@@ -34,6 +80,9 @@ uniform vec2 wheel;
 #define MN min(R.x,R.y)
 #define hue(a) (.5+.5*sin(3.14*(a)+vec3(1,2,3)))
 #define LP vec3(1.+1.*sin(-T),2.-2.*cos(T),-3.-4.*sin(sin(T)))
+#define MARCH_STEPS ${quality.marchSteps.toFixed(1)}
+#define AO_SAMPLES ${quality.aoSamples.toFixed(1)}
+#define SHADOW_FLOOR ${quality.shadowFloor.toFixed(2)}
 
 vec3 render(vec2 uv);
 
@@ -60,7 +109,7 @@ float map(vec3 p, bool g) {
     glow += 0.05 / (0.05 + d * d * 80.0);
   }
 
-  p.z -= T * 2.65 + 0.14 * (wheel.y / 120.0);
+  p.z -= T * 3.0 + 0.12 * (wheel.y / 120.0);
   p = fract(p) - 0.5;
 
   vec4 k = vec4(1.0, 0.05, 0.03, 0.1);
@@ -87,7 +136,7 @@ vec3 norm(vec3 p) {
 }
 
 bool march(inout vec3 p, vec3 rd, out float dd, out float at) {
-  for (float i = 0.0; i++ < 176.0;) {
+  for (float i = 0.0; i++ < MARCH_STEPS;) {
     float d = map(p, true);
     if (abs(d) < 1e-3) {
       return true;
@@ -152,7 +201,7 @@ float shadow(vec3 p, vec3 lp) {
       break;
     }
     shd = min(shd, 64.0 * d / i);
-    i += d;
+    i += max(d, 0.012);
   }
   return shd;
 }
@@ -160,7 +209,7 @@ float shadow(vec3 p, vec3 lp) {
 float calcAO(vec3 p, vec3 n) {
   float occ = 0.0;
   float sca = 1.0;
-  for (float i = 0.0; i < 3.0; i++) {
+  for (float i = 0.0; i < AO_SAMPLES; i++) {
     float h = 0.01 + i * 0.09;
     float d = map(p + h * n, false);
     occ += (h - d) * sca;
@@ -190,7 +239,7 @@ vec3 render(vec2 uv) {
     float ld = distance(lp, p);
     float atten = 1.0 / (1.0 + ld * 0.25 + ld * ld * 0.125);
     float ao = calcAO(p, n);
-    float shd = mix(0.72, 1.0, clamp(dot(l, n) * 0.5 + 0.5, 0.0, 1.0));
+    float shd = max(SHADOW_FLOOR, shadow(p, lp));
     col += shd * atten * vec3(0.1, 0.095, 0.09) + clamp(dot(l, n), 0.0, 1.0) * atten * ao * shd;
     col += pow(max(0.0, dot(r, e)), 8.0) * atten * ao * shd;
     col += clamp(dot(-rd, l), 0.0, 1.0) * ao * atten * 1.2;
@@ -256,8 +305,9 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
       return;
     }
 
+    const quality = getCityQuality();
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, createFragmentShaderSource(quality));
     if (!vertexShader || !fragmentShader) {
       return;
     }
@@ -292,6 +342,9 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
 
     let frame = 0;
     let timer = 0;
+    let lastRenderTime = 0;
+    let adaptiveFrameIntervalMs = quality.frameIntervalMs;
+    let slowFrameCount = 0;
     const start = performance.now();
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -319,7 +372,7 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.max(0.62, Math.min(window.devicePixelRatio || 1, 1.1) * 0.68);
+      const dpr = Math.max(quality.dprMin, Math.min(window.devicePixelRatio || 1, quality.dprCap));
       canvas.width = Math.max(1, Math.floor(rect.width * dpr));
       canvas.height = Math.max(1, Math.floor(rect.height * dpr));
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -348,6 +401,13 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
         return;
       }
 
+      const now = performance.now();
+      if (adaptiveFrameIntervalMs > 0 && now - lastRenderTime < adaptiveFrameIntervalMs) {
+        schedule();
+        return;
+      }
+      lastRenderTime = now;
+
       pointerRef.current.x += (pointerRef.current.tx - pointerRef.current.x) * 0.04;
       pointerRef.current.y += (pointerRef.current.ty - pointerRef.current.y) * 0.04;
 
@@ -361,8 +421,23 @@ export function InfiniteCityCanvas({ className = "" }: InfiniteCityCanvasProps) 
       gl.uniform2f(wheelLocation, wheelRef.current.x, wheelRef.current.y);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+      const renderCost = performance.now() - now;
+      if (quality.frameIntervalMs === 0) {
+        if (renderCost > 19) {
+          slowFrameCount += 1;
+          if (slowFrameCount > 36) {
+            adaptiveFrameIntervalMs = 1000 / 45;
+          }
+          if (slowFrameCount > 90) {
+            adaptiveFrameIntervalMs = 1000 / 30;
+          }
+        } else {
+          slowFrameCount = Math.max(0, slowFrameCount - 2);
+        }
+      }
+
       if (!reduceMotion.matches) {
-        schedule(HERO_FRAME_INTERVAL_MS);
+        schedule();
       }
     };
 
