@@ -56,8 +56,9 @@ body {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  opacity: 0.64;
+  opacity: 0.82;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 html.dark body {
@@ -504,6 +505,8 @@ html.dark .spatial-menu-inner {
 
 .hero-section {
   position: relative;
+  z-index: 0;
+  isolation: isolate;
   display: grid;
   min-height: 100svh;
   align-items: end;
@@ -515,11 +518,11 @@ html.dark .spatial-menu-inner {
 
 .hero-city-canvas {
   position: absolute;
-  z-index: -12;
+  z-index: 0;
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.98;
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -757,7 +760,7 @@ html.dark .liquid-glass {
 
 .hero-wordmark {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   justify-items: start;
   max-width: 760px;
@@ -829,6 +832,7 @@ html.dark .liquid-glass {
 
 .scroll-cue {
   position: absolute;
+  z-index: 2;
   right: 42px;
   bottom: 34px;
   display: inline-flex;
@@ -4677,6 +4681,7 @@ html.dark .blog-grid article {
   .story-scene {
     position: relative;
     inset: auto;
+    grid-template-columns: minmax(0, 1fr);
     min-height: auto;
     gap: 24px;
     border: 1px solid var(--glass-border);
@@ -4688,6 +4693,7 @@ html.dark .blog-grid article {
     filter: none !important;
     transform: none !important;
     backdrop-filter: blur(24px);
+    overflow: hidden;
   }
 
   .scene-copy h2,
@@ -4709,6 +4715,7 @@ html.dark .blog-grid article {
     position: relative;
     left: auto;
     top: auto;
+    min-width: 0;
     max-width: 100%;
     transform: none;
     pointer-events: auto;
@@ -4741,9 +4748,11 @@ html.dark .blog-grid article {
     position: relative;
     inset: auto;
     width: 100%;
+    max-width: 100%;
     height: 560px;
     min-height: 560px;
     transform: none;
+    justify-self: center;
   }
 
   .scene-skills > .skill-cube-gallery .skill-cube-scene,

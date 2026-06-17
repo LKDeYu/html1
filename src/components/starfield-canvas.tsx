@@ -6,11 +6,11 @@ type Star = {
   x: number;
   y: number;
   z: number;
-  alpha: number;
+  alphaBase: number;
 };
 
 const STAR_COLOR = "#fff";
-const STAR_SIZE = 2;
+const STAR_SIZE = 3;
 const STAR_MIN_SCALE = 0.2;
 const OVERFLOW_THRESHOLD = 50;
 
@@ -37,9 +37,13 @@ export function StarfieldCanvas() {
     let pointerY: number | null = null;
     let touchInput = false;
     let stars: Star[] = [];
-    const velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.00042 };
+    const velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0005 };
 
-    const getStarCount = () => Math.round(Math.min(520, Math.max(215, (window.innerWidth + window.innerHeight) / 6.8)));
+    const getStarCount = () => {
+      const originalDensity = (window.innerWidth + window.innerHeight) / 8;
+      const mobile = window.matchMedia("(max-width: 700px)").matches;
+      return Math.round(Math.min(mobile ? 340 : 620, Math.max(mobile ? 185 : 240, originalDensity)));
+    };
 
     const placeStar = (star: Star) => {
       star.x = Math.random() * width;
@@ -51,7 +55,7 @@ export function StarfieldCanvas() {
         x: 0,
         y: 0,
         z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE),
-        alpha: 0.38 + Math.random() * 0.46,
+        alphaBase: 0.78 + Math.random() * 0.22,
       }));
       stars.forEach(placeStar);
     };
@@ -67,7 +71,7 @@ export function StarfieldCanvas() {
       }
 
       star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
-      star.alpha = 0.38 + Math.random() * 0.46;
+      star.alphaBase = 0.78 + Math.random() * 0.22;
 
       if (direction === "z") {
         star.z = 0.1;
@@ -89,7 +93,8 @@ export function StarfieldCanvas() {
     };
 
     const resize = () => {
-      scale = Math.min(window.devicePixelRatio || 1, 1.35);
+      const mobile = window.matchMedia("(max-width: 700px)").matches;
+      scale = Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.25);
       width = Math.floor(window.innerWidth * scale);
       height = Math.floor(window.innerHeight * scale);
       canvas.width = width;
@@ -129,22 +134,22 @@ export function StarfieldCanvas() {
       stars.forEach((star) => {
         context.beginPath();
         context.lineWidth = STAR_SIZE * star.z * scale;
-        context.globalAlpha = star.alpha;
+        context.globalAlpha = star.alphaBase * (0.5 + 0.5 * Math.random());
         context.moveTo(star.x, star.y);
 
-        const tailLimit = 17 * scale;
-        let tailX = velocity.x * 0.78;
-        let tailY = velocity.y * 0.78;
+        const tailLimit = 46 * scale;
+        let tailX = velocity.x * 2;
+        let tailY = velocity.y * 2;
         const tailLength = Math.hypot(tailX, tailY);
         if (tailLength > tailLimit) {
           tailX = (tailX / tailLength) * tailLimit;
           tailY = (tailY / tailLength) * tailLimit;
         }
         if (Math.abs(tailX) < 0.1) {
-          tailX = 0.28;
+          tailX = 0.34 * scale;
         }
         if (Math.abs(tailY) < 0.1) {
-          tailY = 0.28;
+          tailY = 0.34 * scale;
         }
 
         context.lineTo(star.x + tailX, star.y + tailY);
@@ -183,10 +188,10 @@ export function StarfieldCanvas() {
       if (typeof pointerX === "number" && typeof pointerY === "number") {
         const ox = nextX - pointerX;
         const oy = nextY - pointerY;
-        velocity.tx += (ox / (13 * scale)) * (touchInput ? 1 : -1);
-        velocity.ty += (oy / (13 * scale)) * (touchInput ? 1 : -1);
-        velocity.tx = Math.max(-20, Math.min(20, velocity.tx));
-        velocity.ty = Math.max(-20, Math.min(20, velocity.ty));
+        velocity.tx += (ox / (8 * scale)) * (touchInput ? 1 : -1);
+        velocity.ty += (oy / (8 * scale)) * (touchInput ? 1 : -1);
+        velocity.tx = Math.max(-30, Math.min(30, velocity.tx));
+        velocity.ty = Math.max(-30, Math.min(30, velocity.ty));
       }
 
       pointerX = nextX;
